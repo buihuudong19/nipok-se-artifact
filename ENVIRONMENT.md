@@ -11,7 +11,7 @@ listed at the end are what a re-run on different hardware should preserve.
 | CPU | Intel Core i9-14900HX (hybrid P/E cores) |
 | Resources exposed to WSL2 | 24 vCPUs, 25 GB RAM |
 | Swap | disabled |
-| Host OS | Windows 11 + WSL2 (Ubuntu 22.04 guest) |
+| Host OS | Windows 11 + WSL2 (Ubuntu 24.04 guest) |
 | Note | WSL2 exposes no hardware performance counters, so no cycle-level statistics; per-operation CPU is derived from latency and labeled as derived wherever it appears |
 
 ## Platform stack
