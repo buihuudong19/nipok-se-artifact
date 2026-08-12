@@ -1,0 +1,22 @@
+date: 2026-08-06T23:00:24+07:00
+phase: all repeats: 3 vus: 16 util: 0.6
+tuning: authcpu=4 sidecar=4 dbpool=50 agentcpu=2 heap=512m
+knee-search: rates=[4,8,16,32,64,128] dur=20s achieve>=0.90 fail<=0.05 confirm=1
+agent tuning: cpu=2 mem=1Gi heap=512m (node customer = 2048MiB/3vCPU)
+L1 sweep: SWEEP=1 fracs=[0.3,0.6,1.0] repeats=2 duration=60s
+L8 rtt-sweep: RTT_SWEEP=1 rtt=[0,20,50] mechs=[nipok,schnorr_interactive,ed25519] repeats=2
+verify-path: auth-server dùng FIXED-BASE COMB (NipokAuthenticationProvider → verifier.prepare(X)
+             + PreparedPoint cache theo credential); Straus chỉ là fallback khi precompute lỗi.
+             Backend EC = elisabeth. ⟹ số JMH đối chiếu = verify_server_prepared (55.1 µs).
+             [SỬA 2026-08-07: dòng cũ ghi 'library default (Straus)' là SAI — hằng số viết cứng,
+              không phải kiểm tra runtime; đã đối chiếu mã NipokAuthenticationProvider dòng 108-113.]
+swap: 0 kB
+jmh-json (LT4): $HOME/openbanking-ecosystem/bank/benchmark/crypto-jmh/results/2-ket qua do jmh voi 6 ky thuat/official-final.json (found)
+k6: k6 v0.55.2 (commit/9b848870aa, go1.23.4, linux/amd64)
+password: knee=16 p2_rate=10
+private_key_jwt: knee=80 p2_rate=48
+ed25519: knee=80 p2_rate=48
+schnorr_interactive: knee=64 p2_rate=38
+ml_dsa: knee=80 p2_rate=48
+nipok: knee=80 p2_rate=48
+mtls: knee=96 p2_rate=58

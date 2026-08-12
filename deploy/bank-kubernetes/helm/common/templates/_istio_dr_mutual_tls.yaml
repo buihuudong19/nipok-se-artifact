@@ -1,0 +1,40 @@
+{{- define "common.istio_dr_mutual_tls" -}}
+{{- range $idx, $dr := .Values.destinationRules }}
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ $dr.name }}
+spec:
+  host: {{ $dr.name }}
+{{- if $dr.subsets }}
+{{- with $dr.subsets }}
+  subsets:
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- end }}
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    connectionPool:
+        http:
+          http2MaxRequests: 2000
+          # ⚠ maxRequestsPerConnection: 10 (cũ) = đóng connection sau MỖI 10 request → ở ~1300 rps là
+          # ~130 lần đóng/giây → connection cycle điên cuồng → HTTP/2 GOAWAY ("stream error NO_ERROR") +
+          # request bị gán vào connection đang đóng → treo tới timeout. 100000 → 1 connection phục vụ
+          # cả rep 60s, không cycle. (Bench đo /oauth2/token tải cao; 10 quá thấp cho mọi service tải.)
+          maxRequestsPerConnection: 100000
+        tcp:
+          maxConnections: 1000
+          connectTimeout: 5s
+    outlierDetection:
+        # ⚠ consecutive5xxErrors:5 + baseEjectionTime:30s (cũ) = 5 lần 503 transient liên tiếp → EJECT
+        # pod khỏi pool 30s. Với 1 replica → eject = KHÔNG còn upstream → 503 cho TẤT CẢ 30s (rep stall
+        # rps=1.2). maxEjectionPercent:0 → KHÔNG eject (an toàn cho single-replica bench).
+        consecutive5xxErrors: 100
+        interval: 30s
+        baseEjectionTime: 5s
+        maxEjectionPercent: 0
+
+---
+{{- end -}}
+{{- end -}}

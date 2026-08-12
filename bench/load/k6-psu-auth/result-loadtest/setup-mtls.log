@@ -1,0 +1,39 @@
+
+[1;36m═══ [1] Sinh PKI Ed25519 (Bank PSU CA + cert psu-1)[0m
+Certificate request self-signature ok
+subject=CN = psu-1, O = OpenBanking PSU
+  [32m✔ cert psu-1 = Ed25519[0m
+
+[1;36m═══ [2] Build + load image auth-server (code PSU-mTLS)[0m
+  [32m✔ auth-server image built[0m
+
+[1;36m═══ [3] Build + load image customer-agent (code PSU-mTLS)[0m
+  [32m✔ customer-agent image built[0m
+
+[1;36m═══ [4] Istio: thêm Bank PSU CA vào cacert (NEWLINE!) + CRL rỗng cho PSU CA[0m
+  [32m✔ PSU CA đã có trong cacert[0m
+  [32m✔ PSU CRL appended[0m
+
+[1;36m═══ [5] EnvoyFilter: cho Envoy quảng bá ed25519 trong CertificateRequest (BẮT BUỘC)[0m
+  [32m✔ EnvoyFilter applied[0m
+  [32m✔ Envoy quảng bá Ed25519 ✓[0m
+
+[1;36m═══ [6] Bank auth-server: trust-anchor + active-method=mtls + G4=log (rollout)[0m
+  [32m✔ auth-server mtls Ready[0m
+
+[1;36m═══ [7] Enroll PSU (psu-1, method=MTLS, cert PEM)[0m
+  [32m✔ ingress→auth-server phục vụ (HTTP 200)[0m
+  [32m✔ enroll OK ({"username":"psu-1","method":"MTLS","customerId":"4aba3991-2259-4f5e-b93e-2d5f1ba7e749"})[0m
+
+[1;36m═══ [8] customer-agent: secret p12 + env mtls (rollout)[0m
+  [32m✔ agent mtls Ready[0m
+
+[1;36m═══ [9] TPP: restart để re-auth Vault (token K8s-auth ttl=1h hay hết hạn)[0m
+  [32m✔ tpp-service Ready (Vault re-auth)[0m
+
+[1;36m═══ VERIFY — chạy journey + kiểm MTLS_AUTH[0m
+  customerId(psu-1)=4aba3991-2259-4f5e-b93e-2d5f1ba7e749
+  JOURNEY: {"psuMethod":"mtls","httpStatus":200,"state":"7XFLzMWZbaXIWCubdCGTtw","totalMillis":534.358059,"data":"OK access_token_len=812 token_scope='customer:read' customer[4aba3991-2259-4f5e-b93e-2d5f1ba7e749]=HTTP 403"}
+  --- auth-server MTLS_AUTH ---
+2026-08-06T17:40:24.474Z  INFO 1 --- [auth-server] [p-nio-80-exec-9] PSU_AUDIT                                : MTLS_AUTH user=psu-1 x5t=I4JvL3rPGGBt… issuer='O=OpenBanking,CN=Bank PSU CA' revoc=off outcome=ok
+  [32m✔ JOURNEY HTTP 200 — PSU-mTLS PASS[0m

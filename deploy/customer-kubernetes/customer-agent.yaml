@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: customer-cluster-nsp }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: customer-agent, namespace: customer-cluster-nsp, labels: { app: customer-agent } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: customer-agent } }
+  template:
+    metadata: { labels: { app: customer-agent } }
+    spec:
+      # PSU (customer-agent) gọi cross-cluster tới Bank (front-channel) và TPP (initiate/callback).
+      # Placeholder __BANK_IP__/__TPP_IP__ được 02-deploy-customer-agent.sh thay bằng minikube ip.
+      hostAliases:
+      - ip: "__BANK_IP__"           # bank-cluster-profile IP (Istio ingress NodePort 30443)
+        hostnames: [ "bank.openbanking.dev" ]
+      - ip: "__TPP_IP__"            # tpp-cluster-profile IP (NodePort 30081 của tpp-service)
+        hostnames: [ "tpp.openbanking.dev" ]
+      containers:
+      - name: customer-agent
+        image: customer-agent:latest
+        imagePullPolicy: Never
+        ports: [{ containerPort: 8080 }]
+        env:
+        # Bank front-channel = Istio ingress NodePort 30443 (giống TPP đang dùng).
+        - { name: AGENT_BANK_BASEURL, value: "https://bank.openbanking.dev:30443" }
+        # G4.1 — TPP qua HTTPS NodePort 30081 (mutual TLS). Khớp redirect_uri https đăng ký ở auth-server.
+        - { name: AGENT_TPP_BASEURL,  value: "https://tpp.openbanking.dev:30081" }
+        - { name: AGENT_TPP_CA_PATH,  value: "/etc/tpp-ca/ca.crt" }
+        # G1 — TLS HARDENING: validate chain qua Root-CA Bank (cert gateway SAN=bank.openbanking.dev).
+        # Đặt true CHỈ khi debug. bank-ca ConfigMap do 02-deploy-customer-agent.sh tạo từ ca.crt cert secret.
+        - { name: AGENT_INSECURE_TLS, value: "false" }
+        - { name: AGENT_BANK_CA_PATH, value: "/etc/bank-ca/ca.crt" }
+        # G4.2 — workload cert agent TRÌNH cho Bank (mutual TLS). Secret agent-workload-mtls (Vault-signed).
+        - { name: AGENT_WORKLOAD_CERT_PATH, value: "/etc/agent-mtls/agent.p12" }
+        - { name: AGENT_WORKLOAD_CERT_PASS, value: "changeit" }
+        # P5 đợt 1 — PSU thật trong PostgreSQL (đăng ký qua /psu/register), KHÔNG còn hardcode u/p.
+        - { name: AGENT_PSU_USERNAME, value: "alice" }
+        - { name: AGENT_PSU_PASSWORD, value: "Wonderland#2026" }
+        # G11 — scalar x NIPoK đọc từ FILE Secret-mount (tmpfs); custody SEALED (mã hoá in-mem + off-heap).
+        # Secret 'agent-nipok-key' do register-nipok-user.sh tạo (key x = base64url). Optional → chế độ
+        # password KHÔNG cần secret này. Fallback inline env AGENT_NIPOK_PRIVATEKEY vẫn dùng được nếu set.
+        - { name: AGENT_NIPOK_PRIVATEKEY_PATH, value: "/etc/psu-nipok/x" }
+        - { name: AGENT_NIPOK_CUSTODY_MODE,    value: "sealed" }
+        volumeMounts:
+        - { name: bank-ca, mountPath: /etc/bank-ca, readOnly: true }
+        - { name: tpp-ca, mountPath: /etc/tpp-ca, readOnly: true }           # G4.1 trust TPP server cert
+        - { name: agent-mtls, mountPath: /etc/agent-mtls, readOnly: true }   # G4.2 workload cert
+        - { name: psu-nipok, mountPath: /etc/psu-nipok, readOnly: true }     # G11 scalar x (tmpfs Secret)
+      volumes:
+      - name: bank-ca
+        configMap: { name: bank-ca }      # ca.crt = Root-CA Bank (bank-cluster-ca)
+      - name: tpp-ca
+        configMap: { name: tpp-ca }       # ca.crt = tpp-onboarding-ca (ký TPP server cert)
+      - name: agent-mtls
+        secret: { secretName: agent-workload-mtls }   # agent.p12 (Vault-signed, CN=customer-agent)
+      - name: psu-nipok
+        secret: { secretName: agent-nipok-key, optional: true }   # G11 — key x; optional (password mode khỏi cần)
+---
+apiVersion: v1
+kind: Service
+metadata: { name: customer-agent, namespace: customer-cluster-nsp }
+spec:
+  type: NodePort                    # để host (k6/curl) gọi POST /agent/run
+  selector: { app: customer-agent }
+  ports:
+  - { port: 80, targetPort: 8080, nodePort: 30090, protocol: TCP, name: http }

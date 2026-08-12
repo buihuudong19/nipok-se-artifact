@@ -1,0 +1,9 @@
+(* Biến thể: FULL-PROCESS DUMP trên thiết bị root — off-heap CŨNG lộ (kek ra heap). *)
+free x: bitstring [private].
+free heap: channel.
+fun senc(bitstring, bitstring): bitstring.
+reduc forall m:bitstring, k:bitstring; sdec(senc(m,k), k) = m.
+query attacker(x).
+process
+  new kek: bitstring;
+  out(heap, senc(x, kek)) | out(heap, kek)   (* dump cả off-heap → kek lộ *)

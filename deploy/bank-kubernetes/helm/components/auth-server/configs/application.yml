@@ -1,0 +1,24 @@
+server.port: 80
+server.forward-headers-strategy: framework
+
+spring.application.name: auth-server
+
+app:
+  issuer-uri: http://auth-server:80
+
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
+
+logging:
+  level:
+    root: INFO
+
+management.endpoint.health.probes.enabled: true
+
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 10s
+---
+spring.config.activate.on-profile: docker
+server.port: 80
+
+

@@ -1,0 +1,61 @@
+replicaCount: 1
+
+image:
+  repository: bank-cluster-microservice
+  tag: latest
+  pullPolicy: Never
+  args: []
+  command: []
+
+ports:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+
+livenessProbe_enabled: false
+livenessProbe:
+  httpGet:
+    scheme: HTTP
+    path: /actuator/health/liveness
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 20
+  successThreshold: 1
+
+readinessProbe_enabled: false
+readinessProbe:
+  httpGet:
+    scheme: HTTP
+    path: /actuator/health/readiness
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+  successThreshold: 1
+
+env:
+  SPRING_CONFIG_ADDITIONAL_LOCATION: "optional:file:/config/"
+
+configmap:
+  enabled: false
+  filesGlob: "configs/application*.yml"
+  volumeMounts:
+    mountPath: /config
+
+secretVolumes: []
+configVolumes: []
+
+resources:
+  limits:
+    memory: 400Mi
+
+service:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http

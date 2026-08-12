@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ingress-ed25519-client-sigalg
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: FILTER_CHAIN
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8443
+        filterChain:
+          sni: bank.openbanking.dev
+    patch:
+      operation: MERGE
+      value:
+        transport_socket:
+          name: envoy.transport_sockets.tls
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+            common_tls_context:
+              tls_params:
+                signature_algorithms:
+                - ed25519
+                - ecdsa_secp256r1_sha256
+                - rsa_pss_rsae_sha256
+                - rsa_pkcs1_sha256
+                - rsa_pss_rsae_sha384
+                - rsa_pkcs1_sha384
+                - rsa_pss_rsae_sha512
+                - rsa_pkcs1_sha512

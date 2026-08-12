@@ -1,0 +1,8 @@
+# PKI mặc định cho cert-manager (CA + leaf + monitoring cert).
+# Override bằng -f values-v1/v2/v3.yaml để đổi biến thể thử nghiệm.
+# LƯU Ý: chỉ áp cho cert do cert-manager cấp (gateway-served + browser/API).
+#   mTLS NỘI MESH (workload SPIFFE cert) do istiod cấp, KHÔNG đổi qua đây được
+#   (istiod chỉ hỗ trợ RSA/ECDSA, không có Ed25519).
+pki:
+  algorithm: ECDSA   # ECDSA | Ed25519 | RSA
+  size: 256          # ECDSA: 256/384/521 ; RSA: 2048/3072/4096 ; bỏ qua khi Ed25519

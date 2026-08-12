@@ -1,0 +1,17 @@
+fullnameOverride: customer
+
+image:
+  name: customer-service
+
+env:
+  SPRING_PROFILES_ACTIVE: "docker"
+
+livenessProbe_enabled: true
+
+readinessProbe_enabled: true
+
+configmap:
+  enabled: true
+  volumeMounts:
+    mountPath: /config
+

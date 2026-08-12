@@ -1,0 +1,169 @@
+(* ============================================================================ *)
+(*  nipok-e2e.pv — ProVerif: TOÀN luồng FAPI E2E (mở rộng nipok.pv)               *)
+(*    PSU →[NIPoK]→ AS  →[PAR/PKCE]→  →[JARM: JWS-in-JWE]→ TPP →[mTLS token]→ AS   *)
+(*    → TPP →[token + cert-bound (cnf)]→ RS → data                                *)
+(*  TẦNG 1 (symbolic / Dolev–Yao): trace + correspondence + secrecy.             *)
+(*  CHẠY: proverif nipok-e2e.pv   → 7 RESULT … is true (đã verify, hội tụ <150s)   *)
+(*    S1 secrecy(xPSU) • A1 inj NIPoK-on-cb (anti-relay+replay) • A2 inj PKCE      *)
+(*    A3 JARM-auth • A4 token-integrity • A5 RAR resource-binding (BOLA customer)  *)
+(*    • A6 RAR account-binding bắc cầu (BOLA account).                            *)
+(*  MẸO HỘI TỤ: tách kênh mTLS theo leg (cPar/cTokQ/cTokR/cRs) — KHÔNG dùng 1 kênh *)
+(*    chung (ProVerif khớp nhầm shape → non-termination). JWE→CryptoVerif IND-CCA. *)
+(*  GIỚI HẠN: crypto LÝ-TƯỞNG-HOÁ (FS/ROM/DL soundness → CryptoVerif/EasyCrypt).   *)
+(* ============================================================================ *)
+
+(* ── Kênh ─────────────────────────────────────────────────────────────────── *)
+free net:  channel.            (* front-channel: attacker khống chế (Dolev–Yao) *)
+(* mTLS back-channel TÁCH RIÊNG theo từng leg (mỗi kênh 1 shape) — tránh ProVerif khớp nhầm
+   message giữa các leg ⟹ saturation blowup/non-termination khi dùng 1 kênh chung. *)
+free cPar:  channel [private].  (* TPP → AS: PAR push (pkceChallenge) *)
+free cTokQ: channel [private].  (* TPP → AS: token request (code, verifier) *)
+free cTokR: channel [private].  (* AS → TPP: token response (token) *)
+free cRs:   channel [private].  (* TPP → RS: (token, cnf) *)
+free cRsA:  channel [private].  (* TPP → RS-account: (token, cnf, owner(account)) — Task 1 account *)
+
+(* ── Kiểu ─────────────────────────────────────────────────────────────────── *)
+type scalar. type point. type skey. type pkey. type cb_t. type nonce_t.
+
+(* ── Primitives (lý-tưởng-hoá) ────────────────────────────────────────────── *)
+(* NIPoK NIZK: pf = nizk(x, ctx); verify chỉ đúng cho đúng x & ctx *)
+fun pk(scalar): point.
+fun nizk(scalar, bitstring): bitstring.
+reduc forall x:scalar, ctx:bitstring; verifyZk(pk(x), nizk(x,ctx), ctx) = true.
+
+(* Chữ ký Ed25519 (JARM-JWS của AS, access-token) *)
+fun spk(skey): pkey.
+fun sign(bitstring, skey): bitstring.
+reduc forall m:bitstring, sk:skey; checksign(m, sign(m,sk), spk(sk)) = true.
+reduc forall m:bitstring, sk:skey; getmsg(sign(m,sk)) = m.
+
+(* JARM mô hình hoá là JWS (authenticity) — JWE confidentiality (X25519/ECDH-ES) chứng minh ở
+   CryptoVerif (IND-CCA), KHÔNG mô hình ở đây để ProVerif hội tụ trên model E2E. *)
+fun H(bitstring): bitstring.          (* PKCE S256 + Fiat–Shamir (lý-tưởng) *)
+fun cnf(pkey): bitstring.             (* x5t#S256 — cert-binding của token *)
+
+(* ── Hằng/định danh ───────────────────────────────────────────────────────── *)
+free bankId: bitstring. free tppId: bitstring.
+free certS_cb: cb_t.                  (* channel-binding = hash(cert gateway THẬT) *)
+free certM: cb_t.                     (* hash cert MitM/attacker (≠ certS, attacker biết) *)
+free resPSU:  bitstring.              (* (RAR) tài nguyên PSU SỞ HỮU (vd customerId) — KHÔNG bí mật *)
+free resOther:bitstring.              (* tài nguyên của khách hàng KHÁC — attacker/TPP muốn thu hoạch *)
+free xPSU:    scalar [private].       (* khóa NIPoK của PSU *)
+free skJarm:  skey   [private].       (* AS: ký JARM (Ed25519) *)
+free skTok:   skey   [private].       (* AS: ký access-token *)
+free skTppMtls:skey  [private].       (* TPP: mTLS client key *)
+
+(* ── Events ───────────────────────────────────────────────────────────────── *)
+event PsuProves(point, nonce_t, cb_t).
+event BankAccepts(point, nonce_t, cb_t).
+event CodeIssued(bitstring, bitstring).      (* (code, pkce_challenge) *)
+event TokenIssued(bitstring, bitstring).     (* (token, code) — sau verify PKCE *)
+event TppGotCode(bitstring).
+event RsGrants(bitstring, bitstring).        (* (token, cnf) *)
+event ConsentCovers(bitstring).              (* (RAR) AS phát consent BAO PHỦ tài nguyên này *)
+event RsGrantsResource(bitstring).           (* (RAR) RS cấp data cho tài nguyên này *)
+event RsGrantsAccountResource(bitstring).    (* (RAR account, Task 1) RS-account cấp data cho account có owner này *)
+
+(* ── Queries (thuộc tính an toàn) ─────────────────────────────────────────── *)
+query attacker(xPSU).                                   (* (S1) bí mật khóa NIPoK *)
+(* (A1) INJECTIVE-agreement NIPoK trên cb — ràng pk(xPSU) (Alice): chống relay + anti-replay *)
+query n:nonce_t, cb:cb_t;
+  inj-event(BankAccepts(pk(xPSU),n,cb)) ==> inj-event(PsuProves(pk(xPSU),n,cb)).
+(* (A2) PKCE binding INJECTIVE: mỗi token ⟺ một code AS phát (chống dùng lại code) *)
+query t:bitstring, code:bitstring, ch:bitstring;
+  inj-event(TokenIssued(t,code)) ==> inj-event(CodeIssued(code, ch)).
+(* (A3) JARM authenticity: TPP nhận code ⟹ AS đã phát code đó (sign + aud) *)
+query code:bitstring, ch:bitstring;
+  event(TppGotCode(code)) ==> event(CodeIssued(code, ch)).
+(* (A4) Token integrity: RS cấp data ⟹ token ĐÓ do AS phát (chống token giả) *)
+query t:bitstring, c:bitstring, code:bitstring;
+  event(RsGrants(t,c)) ==> event(TokenIssued(t, code)).
+(* (A5 — RAR/RFC 9396, Task 2) RESOURCE-BINDING chống BOLA/IDOR:
+   RS chỉ cấp data cho tài nguyên r ⟹ r ĐÃ được một consent của AS bao phủ.
+   PASS ⟹ TPP độc hại đổi {customerId} sang resOther (không consent) KHÔNG lấy được data. *)
+query r:bitstring;
+  event(RsGrantsResource(r)) ==> event(ConsentCovers(r)).
+(* (A6 — RAR account/Task 1) RÀNG BUỘC BẮC CẦU chống BOLA cấp account:
+   RS-account chỉ cấp data cho account mà OWNER (customerId) của nó ĐÃ được consent bao phủ.
+   ⟹ TPP độc hại đổi {accountId} sang account của customer KHÁC (owner=resOther, không consent) KHÔNG lấy được data. *)
+query o:bitstring;
+  event(RsGrantsAccountResource(o)) ==> event(ConsentCovers(o)).
+
+(* ── PSU: cb = cert SERVER PSU THỰC kết nối (realCb cố định: certS|certM); KHÔNG để attacker tự gửi *)
+let PSU(realCb:cb_t) =
+  in(net, n:nonce_t);
+  let ctx = (pk(xPSU), n, realCb, bankId) in
+  event PsuProves(pk(xPSU), n, realCb);
+  out(net, (pk(xPSU), nizk(xPSU, ctx))).
+
+(* ── AS: phát nonce, verify NIPoK theo KHÓA ĐĂNG KÝ pk(xPSU) + cb=certS THẬT, rồi phát code (JARM) *)
+let AS =
+  in(cPar, pkceChallenge:bitstring);             (* PAR challenge từ TPP *)
+  new n:nonce_t; out(net, n);                    (* nonce-Bank tươi *)
+  in(net, pf:bitstring);
+  let ctxA = (pk(xPSU), n, certS_cb, bankId) in
+  if verifyZk(pk(xPSU), pf, ctxA) = true then
+  event BankAccepts(pk(xPSU), n, certS_cb);
+  (* consent xong → phát code, bọc JARM = sign(Ed25519) → aenc(X25519 TPP) *)
+  new code:bitstring;
+  event CodeIssued(code, pkceChallenge);
+  let jarm = sign((code, tppId, bankId), skJarm) in       (* JARM-JWS: aud=tpp, iss=bank *)
+  out(net, jarm);                  (* front-channel qua agent; JWE-confidentiality → CryptoVerif *)
+  (* Token endpoint: nhận code + verifier; verify PKCE; phát token cert-bound *)
+  in(cTokQ, (codeIn:bitstring, verifier:bitstring));
+  if codeIn = code then
+  if H(verifier) = pkceChallenge then
+  new tok:bitstring;
+  event ConsentCovers(resPSU);                            (* RAR: consent bao phủ tài nguyên PSU sở hữu *)
+  let token = sign((tok, cnf(spk(skTppMtls)), resPSU), skTok) in  (* cnf=cert TPP + RAR resource binding *)
+  event TokenIssued(token, code);
+  out(cTokR, token).
+
+(* ── TPP: PAR push, nhận JARM, đổi token, gọi RS ──────────────────────────── *)
+let TPP =
+  new verifier:bitstring;
+  let challenge = H(verifier) in
+  out(cPar, challenge);                                    (* PAR push *)
+  in(net, jarm:bitstring);
+  let m = getmsg(jarm) in
+  if checksign(m, jarm, spk(skJarm)) = true then           (* verify JWS Ed25519 của AS *)
+  let (code:bitstring, aud:bitstring, iss:bitstring) = m in
+  if aud = tppId then if iss = bankId then                 (* chống mix-up *)
+  event TppGotCode(code);
+  out(cTokQ, (code, verifier));                            (* token exchange *)
+  in(cTokR, token:bitstring);
+  in(net, rReq:bitstring);                                 (* TPP (CÓ THỂ ĐỘC HẠI) chọn TÙY Ý tài nguyên yêu cầu *)
+  out(cRs, (token, cnf(spk(skTppMtls)), rReq));            (* gọi RS-customer với token + cert + {customerId} *)
+  in(net, acctOwner:bitstring);                            (* TPP chọn TÙY Ý account → owner(account) do account-service xác định *)
+  out(cRsA, (token, cnf(spk(skTppMtls)), acctOwner)).      (* gọi RS-account: owner(account) bị kiểm so với consent *)
+
+(* ── RS: cấp data nếu token hợp lệ + cert khớp cnf ────────────────────────── *)
+let RS =
+  in(cRs, (token:bitstring, presentedCnf:bitstring, rReq:bitstring));
+  let mt = getmsg(token) in
+  if checksign(mt, token, spk(skTok)) = true then          (* verify access-token sig *)
+  let (tok:bitstring, boundCnf:bitstring, boundRes:bitstring) = mt in
+  if boundCnf = presentedCnf then                          (* cert-bound check (cnf) *)
+  event RsGrants(token, presentedCnf);
+  (* RAR enforcement (Task 2): r_req ∈ consent. Consent ở đây = {boundRes} ⟹ membership = equality.
+     BỎ dòng 'if rReq = boundRes' này = tái hiện lỗ hổng BOLA ⟹ query A5 thành false. *)
+  if rReq = boundRes then
+  event RsGrantsResource(rReq).
+
+(* ── RS-account (Task 1): cấp data account chỉ khi owner(account) ∈ consent ({boundRes}) ──────── *)
+let RSAcct =
+  in(cRsA, (token:bitstring, presentedCnf:bitstring, acctOwner:bitstring));
+  let mt = getmsg(token) in
+  if checksign(mt, token, spk(skTok)) = true then
+  let (tok:bitstring, boundCnf:bitstring, boundRes:bitstring) = mt in
+  if boundCnf = presentedCnf then
+  (* Ràng buộc bắc cầu: owner(account) PHẢI khớp tài nguyên consent. BỎ dòng này = BOLA account ⟹ A6 false. *)
+  if acctOwner = boundRes then
+  event RsGrantsAccountResource(acctOwner).
+
+(* ── Hệ thống: nhiều phiên song song; attacker biết public keys ───────────── *)
+process
+  out(net, pk(xPSU));  out(net, certS_cb);  out(net, certM);
+  out(net, spk(skJarm)); out(net, spk(skTok)); out(net, spk(skTppMtls));
+  ( (!PSU(certS_cb)) | (!PSU(certM)) | (!AS) | (!TPP) | (!RS) | (!RSAcct) )
+  (* PSU(certS_cb)=phiên nối thẳng Bank (honest); PSU(certM)=phiên bị MitM (cb=cert attacker) *)

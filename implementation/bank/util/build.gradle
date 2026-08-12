@@ -1,0 +1,41 @@
+plugins {
+	id 'java'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.openbanking.services.util'
+version = '1.0.0-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(24)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+ext {
+    springBootVersion = '3.5.0'
+	lombokVersion = '1.18.44'
+	mapstructVersion = '1.6.3'
+}
+dependencies {
+	implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+	implementation project(':api')
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    testImplementation 'org.junit.platform:junit-platform-launcher'
+	testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+
+	compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	compileOnly "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+	testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

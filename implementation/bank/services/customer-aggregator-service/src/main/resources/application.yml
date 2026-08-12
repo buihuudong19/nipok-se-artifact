@@ -1,0 +1,128 @@
+spring:
+  application:
+    name: customer-aggregator
+  http:
+    codecs:
+      max-in-memory-size: 2MB
+    
+server.port: 7001
+server.error.include-message: always
+
+app:
+  auth-server: localhost
+  services:
+    customer:
+      url: http://localhost:7004/
+    account:
+      url: http://localhost:7008/
+    product:
+      url: http://localhost:7006/
+    payment:
+      url: http://localhost:7005/
+    transaction:
+      url: http://localhost:7007/
+
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:80
+
+logging:
+  level:
+    root: INFO
+    com.openbanking: DEBUG
+
+management.endpoint.health.probes.enabled: true
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 10s
+
+---
+spring.config.activate.on-profile: docker
+server.port: 80
+
+app:
+  auth-server: auth-server
+  services:
+    customer:
+      url: http://customer/
+    account:
+      url: http://account/
+    product:
+      url: http://product/
+    payment:
+      url: http://payment/
+    transaction:
+      url: http://transaction/
+
+---
+springdoc:
+  swagger-ui.path: /customer-openapi/swagger-ui.html
+  api-docs.path: /customer-openapi/v3/api-docs
+  packagesToScan: com.openbanking.services.aggregator.customer
+  pathsToMatch: /**
+
+---
+api:
+  common:
+    version: 1.0.0
+    title: Sample API
+    description: Description of the API...
+    termsOfService: MY TERMS OF SERVICE
+    license: MY LICENSE
+    licenseUrl: MY LICENSE URL
+
+    externalDocDesc: MY WIKI PAGE
+    externalDocUrl: MY WIKI URL
+    contact:
+      name: NAME OF CONTACT
+      url: URL TO CONTACT
+      email: contact@mail.com
+
+  responseCodes:
+    ok.description: OK
+    badRequest.description: Bad Request, invalid format of the request. See response message for more information
+    notFound.description: Not found, the specified id does not exist
+    unprocessableEntity.description: Unprocessable entity, input parameters caused the processing to fail. See response message for more information
+
+  customer-aggregator:
+
+    get-aggregator-customer:
+      description: Returns an aggregated view of the specified customer id
+      notes: |
+        # Normal response
+        If the requested customer id is found the method will return information regarding:
+        1. Base customer information
+        1. Accounts
+        1. Payments and Transaction of each account
+        1. Service Addresses\n(technical information regarding the addresses of the microservices that created the response)
+
+        # Expected partial and error responses
+        In the following cases, only a partial response be created (used to simplify testing of error conditions)
+
+        ## Customer id 
+        200 - Ok, but no accounts will be returned
+
+        ## Non numerical customer id
+        400 - A **Bad Request** error will be returned
+
+        ## Customer id
+        404 - A **Not Found** error will be returned
+
+        ## Negative customer ids
+        422 - An **Unprocessable Entity** error will be returned
+
+    create-aggregator-customer:
+      description: Creates a aggregator customer
+      notes: |
+        # Normal response
+        The aggregator customer information posted to the API will be split up and stored as separate customer-info and other entities.
+
+        # Expected error responses
+        1. If a customer with the same customerId as specified in the posted information already exists,
+           an **422 - Unprocessable Entity** error with a "duplicate key" error message will be returned
+
+    delete-aggregator-customer:
+      description: Deletes a customer aggregator
+      notes: |
+        # Normal response
+        Entities for customer information and related to the specified customerId will be deleted.
+        The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
+
+        This means that a delete request of a non-existing customer will return **200 Ok**.

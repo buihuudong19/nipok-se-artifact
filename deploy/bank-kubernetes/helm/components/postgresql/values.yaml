@@ -1,0 +1,22 @@
+fullnameOverride: postgres
+
+image:
+  repository: docker.io/library
+  name: postgres
+  tag: "16"
+  pullPolicy: IfNotPresent
+ports:
+  - containerPort: 5432
+
+resources:
+  limits:
+    memory: 1Gi                  
+  requests:
+    memory: 512Mi                 
+
+service:
+  ports:
+    - port: 5432                  
+      targetPort: 5432
+      protocol: TCP
+      name: tcp-postgresql

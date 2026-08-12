@@ -1,0 +1,44 @@
+# ════════════════════════════════════════════════════════════════════════════════
+# EnvoyFilter — forward X-Forwarded-Client-Cert (XFCC) tại IngressGateway
+#
+# Mục đích (RFC 8705 GĐ2/3): TLS terminate ở Envoy edge, backend chạy HTTP sau mesh
+# nên KHÔNG tự thấy cert TPP. EnvoyFilter này bắt Envoy chèn cert đã-verify vào header
+# XFCC để auth-server (map cert→client, tính cnf.x5t#S256) và aggregator (verify binding)
+# đọc được.
+#
+# An toàn (chống Spoofing): SANITIZE_SET = XÓA mọi XFCC do client ngoài gửi vào, rồi
+# GHI ĐÈ bằng giá trị Envoy tự verify. App chỉ tin XFCC vì luôn đến từ ingress nội bộ.
+#
+# set_current_client_cert_details:
+#   subject:true → đủ cho GĐ1 (kiểm CN trong access log)
+#   cert/chain:true → cần cho GĐ2/3 (Cert=/Chain= chứa PEM để tính SHA-256 thumbprint)
+# ════════════════════════════════════════════════════════════════════════════════
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ingress-xfcc-forward
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          forward_client_cert_details: SANITIZE_SET
+          set_current_client_cert_details:
+            subject: true
+            cert: true
+            chain: true
+            dns: true
+            uri: true

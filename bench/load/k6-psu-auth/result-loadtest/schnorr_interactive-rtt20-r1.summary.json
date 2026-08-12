@@ -1,0 +1,46 @@
+{
+  "mech": "schnorr_interactive",
+  "scenario": "sub_saturation",
+  "repeat": 1,
+  "vus": 16,
+  "rate": 38,
+  "duration": "60s",
+  "agent_url": "http://customer.openbanking.dev/agent/run?customerId=5dbd11af-9e2e-44d0-889d-65db85b55ce6&scope=customer%3Aread",
+  "customer_id": "5dbd11af-9e2e-44d0-889d-65db85b55ce6",
+  "scope": "customer:read",
+  "iterations": 2281,
+  "success": 2279,
+  "fail": 2,
+  "data_ok": 2279,
+  "rps": 36.01266714642439,
+  "http_req_failed_rate": 0,
+  "journey_latency_ms": {
+    "avg_ms": 542.4266166818787,
+    "min_ms": 311.311339,
+    "max_ms": 1925.635149,
+    "p50_ms": 520.730517,
+    "p95_ms": 542.4955349999999,
+    "p99_ms": 1286.8486285199997,
+    "p999_ms": 1918.5201304000004
+  },
+  "http_req_duration": {
+    "avg_ms": 542.1947793384487,
+    "min_ms": 277.918197,
+    "max_ms": 1925.635149,
+    "p50_ms": 520.716368,
+    "p95_ms": 542.493579,
+    "p99_ms": 1286.8281951999998,
+    "p999_ms": 1918.5170250000003
+  },
+  "node_cpu_pct": {
+    "bank": 500.6,
+    "customer": 77.2,
+    "tpp": 43.8
+  },
+  "authserver_cpu_cores": 0.449,
+  "agent_cpu_cores": null,
+  "window": "63s",
+  "knee_frac": null,
+  "rtt_ms": 20,
+  "journeys_per_cpu_s_authserver": 80.56704493230106
+}

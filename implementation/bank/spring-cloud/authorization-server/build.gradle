@@ -1,0 +1,78 @@
+plugins {
+    id 'org.springframework.boot' version '3.5.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+}
+
+group = 'se.magnus.springcloud'
+version = '1.0.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    springCloudVersion = '2025.0.0'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // P5 đợt 1 — PSU password (Argon2id) + PostgreSQL độc lập. SPI thuần (verify/prove) tách module.
+    implementation project(':psu-auth-spi')
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    // Expose JVM + Ed25519 Timer ra /actuator/prometheus cho dashboard Grafana / k6 cross-check.
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // ---- Ed25519 provider backends (one dep per non-JCA backend) ------------------------
+    // JCA backends (SunEC, BC-JCA) share JcaEd25519SigningStrategy → no extra dep for SunEC;
+    // bcprov below covers BOTH bc-jca and bc-lightweight (same artifact, two APIs).
+
+    // BoringSSL via Conscrypt — 2.6-alpha is the FIRST version exposing Ed25519 through JCA
+    // (alias "EdDSA"). 2.5.2 GA does NOT include Ed25519; do not downgrade.
+    implementation 'org.conscrypt:conscrypt-openjdk-uber:2.6-alpha'
+
+    // BouncyCastle — JCA provider ("BC") + lightweight org.bouncycastle.crypto.signers.Ed25519Signer.
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.79'
+
+    // Google Tink — pure-Java Ed25519Sign/Verify (subtle).
+    implementation 'com.google.crypto.tink:tink:1.16.0'
+
+    // libsodium via Lazysodium-JNA (high FFI overhead — kept for comparison).
+    implementation 'com.goterl:lazysodium-java:5.1.4'
+    implementation 'net.java.dev.jna:jna:5.14.0'
+
+    // libsodium via Panama FFM uses the JDK's java.lang.foreign API directly — no Gradle dep.
+    // Both libsodium paths require libsodium.so on the runtime image (apt install libsodium23).
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.htmlunit:htmlunit'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+// Conscrypt loads native libconscrypt_openjdk_jni.so via System.load. Without this flag,
+// JDK 24 emits a runtime warning ("Restricted methods will be blocked in a future release").
+def nativeAccessJvmArgs = ['--enable-native-access=ALL-UNNAMED']
+
+tasks.named('test') {
+    useJUnitPlatform()
+    jvmArgs nativeAccessJvmArgs
+}
+
+tasks.named('bootRun') {
+    jvmArgs nativeAccessJvmArgs
+}

@@ -1,0 +1,23 @@
+
+[1;36m═══ [1] Keygen ML-DSA-65 (JDK24 built-in: PKCS8 → agent, X.509 → Bank)[0m
+  priv(PKCS8 b64url) len=5414  pub(X.509 b64url) len=2632
+
+[1;36m═══ [3] Bank: active-method=ml_dsa + audience/verifier-id/backend (rollout)[0m
+  [32m✔ auth-server ml_dsa Ready[0m
+
+[1;36m═══ [4] Enroll PSU mldsa-1 (method=ML_DSA, publicKey X.509 ~2.6KB Ở BODY form)[0m
+  [32m✔ ingress→auth-server phục vụ (HTTP 200)[0m
+  [32m✔ enroll OK ({"method":"ML_DSA","username":"mldsa-1","customerId":"96d91d55-8960-4acd-a19e-6a75aecd9118"})[0m
+
+[1;36m═══ [5] customer-agent: secret PKCS8 priv + method=ml_dsa + aud/verifierId (rollout)[0m
+  [32m✔ agent ml_dsa Ready[0m
+
+[1;36m═══ [6] TPP: restart re-auth Vault[0m
+  [32m✔ tpp-service Ready[0m
+
+[1;36m═══ VERIFY — journey ml_dsa + kiểm MLDSA_AUTH[0m
+  customerId(mldsa-1)=96d91d55-8960-4acd-a19e-6a75aecd9118
+  JOURNEY: {"psuMethod":"ml_dsa","httpStatus":200,"state":"DcJbepnKiw5wwVyk8ciegw","totalMillis":627.152056,"data":"OK access_token_len=814 token_scope='customer:read' customer[96d91d55-8960-4acd-a19e-6a75aecd9118]=HTTP 403"}
+  --- auth-server MLDSA_AUTH ---
+2026-08-06T17:06:48.833Z  INFO 1 --- [auth-server] [p-nio-80-exec-1] PSU_AUDIT                                : MLDSA_AUTH user=mldsa-1 nonce=mQKBEpBHxz… cb=32B sigLen=3309 backend=sunjce outcome=ok
+  [32m✔ JOURNEY HTTP 200 — ML-DSA-65 PASS (hậu lượng tử)[0m

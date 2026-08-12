@@ -1,0 +1,32 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bank-cluster-certificate
+spec:
+  commonName: bank.openbanking.dev
+  subject:
+    countries:
+    - my-country
+    localities:
+    - my-locality
+    organizationalUnits:
+    - my-ou
+    organizations:
+    - my-org
+    postalCodes:
+    - my-pc
+    provinces:
+    - my-province
+    serialNumber: my-sn
+    streetAddresses:
+    - my-address
+  dnsNames:
+  - bank.openbanking.dev
+  - health.bank.openbanking.dev
+  duration: 2160h
+  renewBefore: 360h
+  privateKey:
+    {{- include "pki.privateKey" . | nindent 4 }}
+  issuerRef:
+    name: ca-issuer
+  secretName: bank-cluster-certificate

@@ -1,0 +1,17 @@
+fullnameOverride: payment
+
+image:
+  name: payment-service
+
+env:
+  SPRING_PROFILES_ACTIVE: "docker"
+
+livenessProbe_enabled: true
+
+readinessProbe_enabled: true
+
+configmap:
+  enabled: true
+  filesGlob: "configs/*"
+  volumeMounts:
+    mountPath: /config

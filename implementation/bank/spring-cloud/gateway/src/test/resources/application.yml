@@ -1,0 +1,4 @@
+spring.ssl.bundle.jks.gateway:
+  keystore:
+    location: classpath:keystore/edge-test.p12
+    password: testtest

@@ -1,0 +1,66 @@
+server.port: 80
+server.forward-headers-strategy: framework
+
+spring.application.name: auth-server
+
+# P5 đợt 1 — PostgreSQL độc lập (customer_identity) cho credential PSU. Override qua env.
+spring.datasource:
+  url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/customer_identity}"
+  username: "${SPRING_DATASOURCE_USERNAME:user}"
+  password: "${SPRING_DATASOURCE_PASSWORD:pwd}"
+spring.jpa:
+  hibernate.ddl-auto: update      # đợt 1: tự tạo bảng từ entity (prod: Flyway DDL tường minh)
+  open-in-view: false
+  properties.hibernate.jdbc.time_zone: UTC
+
+app:
+  issuer-uri: http://localhost:80
+  # Pepper Argon2id (base64) — secret server. Override qua env APP_PSU_PEPPER (K8s secret).
+  psu:
+    pepper: "${APP_PSU_PEPPER:}"
+    # A/B testing — cơ chế PSU đang BẬT (chỉ 1 provider được nạp → đo lường công bằng):
+    #   password (Argon2id) | nipok (RFC 8235) | mtls (PSU-mTLS Ed25519, RFC 8410)
+    auth:
+      active-method: "${APP_PSU_AUTH_ACTIVE_METHOD:password}"
+    # PSU-mTLS (baseline #2). Cert đến qua XFCC (Envoy đã verify GĐ1); auth-server làm
+    # identity-binding + chain-trust + (tùy chọn) thu hồi. Xem docs/PSU-MTLS.md.
+    mtls:
+      # PEM 1+ cert CA Ed25519 của Bank cấp cho PSU (trust anchor). Mount từ K8s secret.
+      trust-anchor-path: "${APP_PSU_MTLS_TRUST_ANCHOR_PATH:}"
+      # Provider JCA verify Ed25519: Conscrypt (BoringSSL, native) | SunEC (thuần Java, fallback).
+      signature-provider: "${APP_PSU_MTLS_SIGNATURE_PROVIDER:Conscrypt}"
+      # Thu hồi: off (cert ngắn hạn — khuyến nghị) | crl
+      revocation: "${APP_PSU_MTLS_REVOCATION:off}"
+      crl-path: "${APP_PSU_MTLS_CRL_PATH:}"
+  # Mục 5b (STRIDE E): secret client legacy externalize + BCrypt (KHÔNG hardcode {noop} trong source).
+  # Override khi deploy qua env: APP_CLIENTS_WRITER_SECRET / APP_CLIENTS_READER_SECRET.
+  clients:
+    writer-secret: "{bcrypt}$2b$10$cpa6VWRUQWVXkz4TrLvhT.rcEnPTmlDmINjGxE6BvpW0FeT.gIAS6"
+    reader-secret: "{bcrypt}$2b$10$NnQ0wP4m4IG.qtM5h0TR8O7GwymcctzycLDH3Xn9kcnUh0AFuPLD6"
+  ed25519:
+    # Cài đặt Ed25519 dùng để ký access token. Phải khớp với các id trong JMH benchmark
+    # (bank/benchmark/crypto-jmh) để dễ đối chiếu số liệu.
+    #   conscrypt-boringssl — MẶC ĐỊNH, BoringSSL của Google qua Conscrypt (native, nhanh nhất)
+    #   jca-sunec           — JDK SunEC, thuần Java; safety fallback nếu Conscrypt fail
+    #   bc-jca              — BouncyCastle qua khung JCA
+    #   bc-lightweight      — BouncyCastle lightweight API
+    #   tink                — Google Tink (subtle Ed25519)
+    #   libsodium-*         — libsodium qua JNA hoặc Panama FFM
+    # Có thể override qua biến môi trường APP_ED25519_PROVIDER.
+    provider: ${APP_ED25519_PROVIDER:conscrypt-boringssl}
+
+
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
+
+logging:
+  level:
+    root: INFO
+
+management.endpoint.health.probes.enabled: true
+
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 10s
+---
+spring.config.activate.on-profile: docker
+server.port: 80

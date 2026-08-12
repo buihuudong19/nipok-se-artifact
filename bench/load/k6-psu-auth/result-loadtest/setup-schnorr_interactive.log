@@ -1,0 +1,25 @@
+
+[1;36m═══ [1] Keygen Schnorr (x, Y=xG) bằng crypto server elisabeth — ĐỘC LẬP NIPoK[0m
+  x (priv→agent)=3ZOKS5hxskVhEeN8EEbspc_NfZb3WOec5qyx6lzIpgE
+  Y (pub →Bank )=hFE2erWRvHacMW9HyzEW2ljoTzQkcuK8XMMdXBbuZDA
+
+[1;36m═══ [3] Bank: active-method=schnorr_interactive (rollout)[0m
+  [32m✔ auth-server schnorr Ready[0m
+
+[1;36m═══ [4] Enroll PSU schnorr-1 (method=SCHNORR_INTERACTIVE, publicKey Y)[0m
+  [32m✔ ingress→auth-server phục vụ (HTTP 200)[0m
+  [32m✔ enroll OK ({"customerId":"4bb6dd9e-6a31-47f3-b008-0aac41bda357","username":"schnorr-1","method":"SCHNORR_INTERACTIVE"})[0m
+
+[1;36m═══ [5] customer-agent: secret x + method=schnorr_interactive (rollout)[0m
+  [32m✔ agent schnorr Ready[0m
+
+[1;36m═══ [6] TPP: restart re-auth Vault[0m
+  [32m✔ tpp-service Ready[0m
+
+[1;36m═══ VERIFY — journey schnorr_interactive (3-pass) + kiểm SCHNORR_RESPOND[0m
+  customerId(schnorr-1)=4bb6dd9e-6a31-47f3-b008-0aac41bda357
+  JOURNEY: {"psuMethod":"schnorr_interactive","httpStatus":200,"state":"ck2rYE-oz3JMaRu3NFfkVw","totalMillis":638.630516,"data":"OK access_token_len=817 token_scope='customer:read' customer[4bb6dd9e-6a31-47f3-b008-0aac41bda357]=HTTP 403"}
+  --- auth-server SCHNORR_COMMIT/RESPOND ---
+2026-08-06T16:50:16.878Z  INFO 1 --- [auth-server] [p-nio-80-exec-1] PSU_AUDIT                                : SCHNORR_COMMIT user=schnorr-1 sid=iu5qlJR0… cb=32B active=1
+2026-08-06T16:50:16.888Z  INFO 1 --- [auth-server] [p-nio-80-exec-2] PSU_AUDIT                                : SCHNORR_RESPOND user=schnorr-1 sid=iu5qlJR0… cb=32B outcome=ok
+  [32m✔ JOURNEY HTTP 200 — Interactive Schnorr 3-pass PASS[0m

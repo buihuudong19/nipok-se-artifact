@@ -1,0 +1,45 @@
+dependencies:
+- name: common
+  repository: file://../../common
+  version: 1.0.0
+- name: mongodb
+  repository: file://../../components/mongodb
+  version: 1.0.0
+- name: sqlserver
+  repository: file://../../components/mssqlserver
+  version: 1.0.0
+- name: postgresql
+  repository: file://../../components/postgresql
+  version: 1.0.0
+- name: mysql
+  repository: file://../../components/mysql
+  version: 1.0.0
+- name: gateway
+  repository: file://../../components/gateway
+  version: 1.0.0
+- name: auth-server
+  repository: file://../../components/auth-server
+  version: 1.0.0
+- name: product
+  repository: file://../../components/product
+  version: 1.0.0
+- name: account
+  repository: file://../../components/account
+  version: 1.0.0
+- name: customer
+  repository: file://../../components/customer
+  version: 1.0.0
+- name: payment
+  repository: file://../../components/payment
+  version: 1.0.0
+- name: transaction
+  repository: file://../../components/transaction
+  version: 1.0.0
+- name: customer-aggregator
+  repository: file://../../components/customer-aggregator
+  version: 1.0.0
+- name: account-aggregator
+  repository: file://../../components/account-aggregator
+  version: 1.0.0
+digest: sha256:5aad3f17b232979f65e285f5ebdbab102f3772d4006b36b54662a0e24866beed
+generated: "2026-05-05T17:59:49.931819122+07:00"

@@ -1,0 +1,85 @@
+# ── Database containers ──────────────────────────────────────────────────────
+mongodb:
+  env:
+    MONGO_INITDB_ROOT_USERNAME: "root"
+    MONGO_INITDB_ROOT_PASSWORD: "rootpassword"
+    MONGO_CUSTOMER_DATABASE: "customer-db"
+    MONGO_CUSTOMER_USERNAME: "customer_user"
+    MONGO_CUSTOMER_PASSWORD: "customer_password"
+    MONGO_PRODUCT_DATABASE: "product-db"
+    MONGO_PRODUCT_USERNAME: "product_user"
+    MONGO_PRODUCT_PASSWORD: "product_password"
+
+postgresql:
+  env:
+    POSTGRES_USER: "user"
+    POSTGRES_PASSWORD: "pwd"
+    POSTGRES_DB: "account-db"
+    POSTGRES_ACCOUNT_DATABASE: "account-db"
+
+mysql:
+  env:
+    MYSQL_ROOT_PASSWORD: "rootpassword"
+    MYSQL_DATABASE: "payment-db"
+    MYSQL_USER: "payment_user"
+    MYSQL_PASSWORD: "payment_password"
+
+sqlserver:
+  env:
+    ACCEPT_EULA: "Y"
+    MSSQL_SA_PASSWORD: "Sqlserver@123"
+    MSSQL_PID: "Express"
+
+account:
+  env:
+    POSTGRES_USERNAME: "user"
+    POSTGRES_PASSWORD: "pwd"
+    POSTGRES_ACCOUNT_DATABASE: "account-db"
+
+customer:
+  env:
+    MONGO_DATABASE: "customer-db"
+    MONGO_USERNAME: "customer_user"
+    MONGO_PASSWORD: "customer_password"
+
+product:
+  env:
+    MONGO_DATABASE: "product-db"
+    MONGO_USERNAME: "product_user"
+    MONGO_PASSWORD: "product_password"
+
+payment:
+  env:
+    MYSQL_PAYMENT_DATABASE: "payment-db"
+    MYSQL_PAYMENT_USERNAME: "payment_user"
+    MYSQL_PAYMENT_PASSWORD: "payment_password"
+
+transaction:
+  env:
+    MSSQL_SA_PASSWORD: "Sqlserver@123"
+    MSSQL_TRANSACTION_DATABASE: "transaction-db"
+
+gateway:
+  env:
+    SPRING_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_LOCATION: "file:/keystore/edge-test.p12"
+    SPRING_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_PASSWORD: "testtest"
+
+# ── Secrets (managed separately) ─────────────────────────────────────────────
+secrets:
+
+# ── JWT Public Key (inline JWKS cho Istio RequestAuthentication) ──────────────
+# Điền giá trị này bằng cách chạy: kubernetes/generate-jwk-secret.sh
+# Script sẽ in ra chuỗi JSON "Inline public JWKS" — copy và paste vào đây.
+# Ví dụ: jwtPublicJwks: '{"keys":[{"kty":"OKP","crv":"Ed25519","kid":"...","use":"sig","x":"..."}]}'
+# LƯU Ý: Đây chỉ là PUBLIC key — không chứa private key, an toàn để lưu trong values.yaml.
+jwtPublicJwks: '{"keys":[{"kty":"OKP","crv":"Ed25519","kid":"auth-server-key-202605","use":"sig","x":"j6BYjFu_Xk73sEIGKXOqbPqgcc79TSg1hCzZ5iNb5ME"}]}'
+
+destinationRules:
+  - name: customer-aggregator
+  - name: account-aggregator
+  - name: auth-server
+  - name: product
+  - name: customer
+  - name: account
+  - name: payment
+  - name: transaction

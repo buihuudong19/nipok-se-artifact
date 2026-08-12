@@ -1,0 +1,6 @@
+# V3 — baseline "chậm" để thước đo có độ phân giải: RSA-3072
+# helm upgrade --install istio-bank-cluster-addons environments/istio-system \
+#   -f environments/istio-system/values-v3-rsa.yaml -n istio-system
+pki:
+  algorithm: RSA
+  size: 3072

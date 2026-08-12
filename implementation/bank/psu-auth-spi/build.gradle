@@ -1,0 +1,51 @@
+// psu-auth-spi — module THUẦN (no Spring/JDBC/Net). Chứa SPI + crypto verify/prove cho PSU-auth.
+// Mục tiêu: JMH bench trực tiếp (Tầng 1 crypto) + chia sẻ giữa auth-server (verify) & customer-agent (prove).
+plugins {
+    id 'java-library'
+    id 'maven-publish'   // publish → mavenLocal để customer-agent (gradle project riêng) dùng chung crypto
+}
+
+group = 'com.openbanking'
+version = '1.0.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(24) }
+    withSourcesJar()
+}
+
+repositories { mavenCentral() }
+
+publishing {
+    publications {
+        maven(MavenPublication) { from components.java }
+    }
+}
+
+dependencies {
+    // Chỉ thư viện crypto thuần — KHÔNG framework. Argon2id qua BouncyCastle.
+    api 'org.bouncycastle:bcprov-jdk18on:1.79'
+    // NIPoK (RFC 8235) — đại số edwards25519 ĐẦY ĐỦ (Scalar mod ℓ, point ops, double-scalar-mul).
+    // Conscrypt/BoringSSL KHÔNG phơi bày raw scalar-mult → dùng elisabeth (constant-time, audited).
+    // SHA-512 (tính thách thức e) để Conscrypt lo ở tầng server (provider tiêm vào engine).
+    api 'cafe.cryptography:curve25519-elisabeth:0.1.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') { useJUnitPlatform() }
+
+// Sinh cặp khóa NIPoK (x, X=xB) bằng đúng crypto server. In '<x_b64url> <X_b64url>'.
+tasks.register('nipokKeygen', JavaExec) {
+    group = 'psu-auth'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.openbanking.psu.auth.spi.tools.NipokKeygen'
+}
+
+// Sinh cặp khóa Schnorr tương tác (x, Y=xG) độc lập NIPoK. In '<x_b64url> <Y_b64url>'.
+tasks.register('schnorrKeygen', JavaExec) {
+    group = 'psu-auth'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.openbanking.psu.auth.spi.tools.SchnorrKeygen'
+}

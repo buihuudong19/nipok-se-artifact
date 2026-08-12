@@ -1,0 +1,30 @@
+fullnameOverride: sqlserver
+image:
+  repository: mcr.microsoft.com/mssql
+  name: server
+  tag: "2022-latest"
+  pullPolicy: IfNotPresent
+  command: ["/bin/bash", "/init/init.sh"]
+
+configVolumes:
+  - name: sqlserver-init-script
+    configMapName: sqlserver-init-script
+    mountPath: /init
+ports:
+  - containerPort: 1433
+
+resources:
+  limits:
+    memory: 2Gi 
+    cpu: 2
+  requests:
+    memory: 2Gi   
+    cpu: 1
+
+service:
+  type: ClusterIP
+  ports:
+    - port: 1433
+      targetPort: 1433
+      protocol: TCP
+      name: tcp-sqlserver

@@ -1,0 +1,128 @@
+
+spring:
+  application:
+    name: account-aggregator
+  http:
+    codecs:
+      max-in-memory-size: 2MB
+      
+server.port: 7002
+server.error.include-message: always
+
+app:
+  auth-server: localhost
+  services:
+    account:
+      url: http://localhost:7008/
+    product:
+      url: http://localhost:7006/
+    payment:
+      url: http://localhost:7005/
+    transaction:
+      url: http://localhost:7007/
+
+spring.security.oauth2.resourceserver.jwt.issuer-uri: http://${app.auth-server}:80
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri: http://${app.auth-server}:80/oauth2/jwks
+
+logging:
+  level:
+    root: INFO
+    "[com.openbanking]": DEBUG
+
+management.endpoint.health.probes.enabled: true
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 10s
+
+---
+spring.config.activate.on-profile: docker
+
+server.port: 80
+app:
+  auth-server: auth-server
+  services:
+    account:
+      url: http://account/
+    customer:
+      url: http://customer/
+    product:
+      url: http://product/
+    payment:
+      url: http://payment/
+    transaction:
+      url: http://transaction/
+
+---
+api:
+  common:
+    version: 1.0.0
+    title: Sample API
+    description: Description of the API...
+    termsOfService: MY TERMS OF SERVICE
+    license: MY LICENSE
+    licenseUrl: MY LICENSE URL
+
+    externalDocDesc: MY WIKI PAGE
+    externalDocUrl: MY WIKI URL
+    contact:
+      name: NAME OF CONTACT
+      url: URL TO CONTACT
+      email: contact@mail.com
+
+  responseCodes:
+    ok.description: OK
+    badRequest.description: Bad Request, invalid format of the request. See response message for more information
+    notFound.description: Not found, the specified id does not exist
+    unprocessableEntity.description: Unprocessable entity, input parameters caused the processing to fail. See response message for more information
+
+  account-aggregator:
+    create-aggregator-account:
+      description: Creates a aggregator account
+      notes: |
+        # Normal response
+        The aggregator account information posted to the API will be split up and stored as separate account-info and other entities.
+
+        # Expected error responses
+        1. If a account with the same accountId as specified in the posted information already exists,
+           an **422 - Unprocessable Entity** error with a "duplicate key" error message will be returned
+
+    delete-aggregator-account:
+      description: Deletes a account aggregator
+      notes: |
+        # Normal response
+        Entities for account information and related to the specified accountId will be deleted.
+        The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
+
+        This means that a delete request of a non-existing account will return **200 Ok**.
+
+    get-aggregator-account:
+      description: Returns an aggregated view of the specified account id
+      notes: |
+        # Normal response
+        If the requested account id is found the method will return information regarding:
+        1. Base account information
+        1. Reviews
+        1. Recommendations
+        1. Service Addresses\n(technical information regarding the addresses of the microservices that created the response)
+
+        # Expected partial and error responses
+        In the following cases, only a partial response be created (used to simplify testing of error conditions)
+
+        ## Account id
+        200 - Ok, but no recommendations will be returned
+
+        ## Account id 
+        200 - Ok, but no reviews will be returned
+
+        ## Non numerical account id
+        400 - A **Bad Request** error will be returned
+
+        ## Account id
+        404 - A **Not Found** error will be returned
+
+        ## Negative account ids
+        422 - An **Unprocessable Entity** error will be returned
+springdoc:
+  swagger-ui.path: /account-openapi/swagger-ui.html
+  api-docs.path: /account-openapi/v3/api-docs
+  packagesToScan: com.openbanking.services.aggregator.account
+  pathsToMatch: /**

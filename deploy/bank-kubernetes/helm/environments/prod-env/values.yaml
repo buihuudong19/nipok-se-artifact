@@ -1,0 +1,100 @@
+secrets:
+
+gateway:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+auth-server:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+customer:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+product:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+account:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+payment:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+transaction:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+customer-aggregator:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi
+
+account-aggregator:
+  image:
+    tag: v1
+  env:
+    SPRING_PROFILES_ACTIVE: "docker,prod"
+  resources:
+    requests:
+      memory: 200Mi
+    limits:
+      memory: 400Mi

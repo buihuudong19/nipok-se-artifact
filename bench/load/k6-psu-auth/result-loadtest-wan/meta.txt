@@ -1,0 +1,14 @@
+date: 2026-08-12T12:41:22+07:00
+phase: all repeats: 5 vus: 16 util: 0.6
+tuning: authcpu=4 sidecar=4 dbpool=50 agentcpu=2 heap=512m
+knee-search: rates=[4,8,16,32,64,128] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+agent tuning: cpu=2 mem=1Gi heap=512m (node customer = 2048MiB/3vCPU)
+L1 sweep: SWEEP=1 fracs=[0.2,0.4,0.6,0.8,1.0] repeats=3 duration=60s
+L8 rtt-sweep: RTT_SWEEP=1 rtt=[0,20,50,100] mechs=[nipok,schnorr_interactive,ed25519] repeats=3
+verify-path: auth-server dùng FIXED-BASE COMB (NipokAuthenticationProvider → verifier.prepare(X)
+             + PreparedPoint cache theo credential); đường Straus (NipokEngine.verify) CHỈ là
+             fallback khi precompute ném exception. Backend EC = elisabeth (mặc định; FBC chỉ có
+             ở backend này). ⟹ số JMH đối chiếu đúng là verify_server_prepared, KHÔNG phải verify_server.
+swap: 0 kB
+jmh-json (LT4): $HOME/openbanking-ecosystem/bank/benchmark/crypto-jmh/results/2-ket qua do jmh voi 6 ky thuat/official-final.json (found)
+k6: k6 v0.55.2 (commit/9b848870aa, go1.23.4, linux/amd64)

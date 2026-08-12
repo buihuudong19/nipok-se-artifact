@@ -1,0 +1,6 @@
+# V1 — baseline hiện tại: ECDSA P-256
+# helm upgrade --install istio-bank-cluster-addons environments/istio-system \
+#   -f environments/istio-system/values-v1-ecdsa.yaml -n istio-system
+pki:
+  algorithm: ECDSA
+  size: 256

@@ -1,0 +1,20 @@
+(* ============================================================================ *)
+(*  custody-boundary.pv — Hình thức hóa RANH GIỚI tin cậy của custody phần mềm  *)
+(*  (Sơ đồ 1: sealedX = AES-GCM(x) trên HEAP; KEK ở OFF-HEAP).                   *)
+(*  Mục tiêu: ProVerif chứng minh CHÍNH XÁC custody-secrecy phụ thuộc giả thiết  *)
+(*  "KEK không lộ ra vùng attacker đọc được" — KHÔNG chứng minh 'an toàn phần   *)
+(*  cứng'; chỉ delimit assumption I1+I2.                                         *)
+(* ============================================================================ *)
+free x: bitstring [private].      (* private scalar (witness) — tài sản cần giữ *)
+free heap: channel.               (* ON-HEAP: attacker ĐỌC được (heap snapshot) *)
+
+(* AEAD lý-tưởng-hoá (giải mã CHỈ khi có đúng KEK) *)
+fun senc(bitstring, bitstring): bitstring.
+reduc forall m:bitstring, k:bitstring; sdec(senc(m,k), k) = m.
+
+query attacker(x).
+
+(* SEALED: ciphertext lên heap (attacker thấy); KEK Ở OFF-HEAP (KHÔNG ra kênh public). *)
+process
+  new kek: bitstring;
+  out(heap, senc(x, kek))         (* attacker có senc(x,kek) nhưng KHÔNG có kek *)

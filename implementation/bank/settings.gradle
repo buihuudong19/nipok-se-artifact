@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+include ':api'
+include ':util'
+include ':service-integration'
+include ':services:product-service'
+include ':services:account-service'
+include ':services:transaction-service'
+include ':services:customer-service'
+include ':services:payment-service'
+include ':services:account-aggregator-service'
+include ':services:customer-aggregator-service'
+include ':spring-cloud:gateway'
+include ':spring-cloud:authorization-server'
+include ':psu-auth-spi'
+
