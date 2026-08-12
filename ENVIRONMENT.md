@@ -11,7 +11,7 @@ listed at the end are what a re-run on different hardware should preserve.
 | CPU | Intel Core i9-14900HX (hybrid P/E cores) |
 | Resources exposed to WSL2 | 24 vCPUs, 25 GB RAM |
 | Swap | disabled |
-| Host OS | Windows 11 + WSL2 (Ubuntu 24.04 guest) |
+| Host OS | Windows 11 + WSL2 (Ubuntu 24.04 guest, kernel 6.6.87.2-microsoft-standard-WSL2) |
 | Note | WSL2 exposes no hardware performance counters, so no cycle-level statistics; per-operation CPU is derived from latency and labeled as derived wherever it appears |
 
 ## Platform stack
@@ -36,6 +36,27 @@ listed at the end are what a re-run on different hardware should preserve.
 
 ProVerif, CryptoVerif, and EasyCrypt are installed via opam;
 `formal/run-all.sh` reproduces every verification result reported in §5.
+
+## Randomness and seeds
+
+No fixed seeds are used anywhere in the measurement pipeline, by design,
+and the stochastic sources are disclosed here so the omission is a
+documented decision rather than a gap:
+
+- **JMH microbenchmarks** generate keys and nonces from `SecureRandom`
+  per invocation; measurement variance from all sources is captured by
+  the reported protocol (5 forks x (8 warmup + 10 measurement)
+  iterations, means with 99.9% confidence intervals) rather than by
+  seeding, which is the standard JMH practice for timing benchmarks.
+- **k6 campaigns** use an open-model constant-arrival-rate executor;
+  arrival timing is driven by the load generator and has no seed
+  parameter. Run-to-run dispersion is characterized empirically by the
+  three repetitions per point of the injected-RTT sweep
+  (`result-loadtest-wan/`); capacity campaigns are single-run and are
+  labeled as such in the paper.
+- **Protocol randomness** (server nonce N, wallet KEK, GCM IVs) is
+  drawn from the platform CSPRNG at run time; the NIPoK proof nonce is
+  deterministic (RFC 8032 style) and consumes no runtime randomness.
 
 ## Limits of reproduction
 
