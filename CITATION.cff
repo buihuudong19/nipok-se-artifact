@@ -3,6 +3,21 @@ message: "If you use this package, please cite the article and the version of th
 type: software
 title: "NIPoK-SE Formal Verification Artifact and Reproducibility Package: ProVerif, CryptoVerif, and EasyCrypt Models, Implementation, Deployment Manifests, Benchmark Harnesses, and Raw Measurement Data"
 version: "3.0"
+date-released: "2026-11-19"
+doi: "10.5281/zenodo.24371174"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.24371175"
+    description: "Version 3.0 of the software"
+  - type: doi
+    value: "10.5281/zenodo.24371174"
+    description: "All versions of the software from 3.0 on; resolves to the latest"
+  - type: doi
+    value: "10.5281/zenodo.24370110"
+    description: "Raw measurement data of version 3.0"
+  - type: doi
+    value: "10.5281/zenodo.21904704"
+    description: "Version 2.0 (submitted manuscript)"
 abstract: >-
   Formal models (ProVerif, CryptoVerif, EasyCrypt), the source code of the NIPoK-SE prototype and of six baseline
   PSU-authentication mechanisms, a three-cluster Kubernetes testbed, JMH and k6 benchmark harnesses, analysis scripts

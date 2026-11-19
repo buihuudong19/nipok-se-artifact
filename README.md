@@ -1,13 +1,15 @@
 # NIPoK-SE: reproducibility package
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24371174.svg)](https://doi.org/10.5281/zenodo.24371174)
+
 Formal models, testbed, benchmark harnesses and derived results for the paper
 
 > Dong Bui-Huu, Thang Trinh-Cao, Vinh Pham-An, Tan Le-Nhat and Khuong Nguyen-An. *A Privacy-Preserving Framework using
 > Non-Interactive Proofs of Knowledge for End-to-End Secure Authentication in Open Banking*. Submitted to the Journal of
 > Network and Computer Applications, 2026.
 
-Version 3.0 accompanies the revised manuscript. Version 2.0 (doi:10.5281/zenodo.21904704) accompanied the submitted
-manuscript; `CHANGELOG.md` lists the differences.
+Version 3.0 (doi:10.5281/zenodo.24371175) accompanies the revised manuscript. Version 2.0 (doi:10.5281/zenodo.21904704)
+accompanied the submitted manuscript; `CHANGELOG.md` lists the differences.
 
 ## Contents
 
@@ -50,4 +52,12 @@ published with version 2.0 are no longer used.
 
 ## License and citation
 
-The package is released under the MIT license (`LICENSE`). Citation metadata are in `CITATION.cff`.
+The package is released under the MIT license (`LICENSE`). Citation metadata are in `CITATION.cff`. Please cite the
+article and the version of the package that you used:
+
+| Record on Zenodo | DOI |
+|---|---|
+| Version 3.0 of this package (revised manuscript) | [10.5281/zenodo.24371175](https://doi.org/10.5281/zenodo.24371175) |
+| All versions from 3.0 on (resolves to the latest) | [10.5281/zenodo.24371174](https://doi.org/10.5281/zenodo.24371174) |
+| Raw measurement data of version 3.0 | [10.5281/zenodo.24370110](https://doi.org/10.5281/zenodo.24370110) |
+| Version 2.0 (submitted manuscript) | [10.5281/zenodo.21904704](https://doi.org/10.5281/zenodo.21904704) |
