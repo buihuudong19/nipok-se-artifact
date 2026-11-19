@@ -1,0 +1,40 @@
+{{- define "common.istio_dr_mutual_tls" -}}
+{{- range $idx, $dr := .Values.destinationRules }}
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ $dr.name }}
+spec:
+  host: {{ $dr.name }}
+{{- if $dr.subsets }}
+{{- with $dr.subsets }}
+  subsets:
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- end }}
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    connectionPool:
+        http:
+          http2MaxRequests: 2000
+          # Note: maxRequestsPerConnection: 10 (old value) = the connection is closed after every 10 requests -> at ~1300 rps
+          # that is ~130 closes per second -> constant connection cycling -> HTTP/2 GOAWAY ("stream error NO_ERROR") +
+          # requests assigned to a closing connection -> they hang until the timeout. 100000 -> one connection serves
+          # a whole 60 s repetition without cycling. (The benchmark loads /oauth2/token heavily; 10 is too low for any loaded service.)
+          maxRequestsPerConnection: 100000
+        tcp:
+          maxConnections: 1000
+          connectTimeout: 5s
+    outlierDetection:
+        # Note: consecutive5xxErrors:5 + baseEjectionTime:30s (old values) = 5 consecutive transient 503 -> the pod is ejected
+        # from the pool for 30 s. With 1 replica, ejection = NO upstream left -> 503 for EVERY request for 30 s (repetition stall,
+        # rps=1.2). maxEjectionPercent:0 -> NO ejection (safe for a single-replica benchmark).
+        consecutive5xxErrors: 100
+        interval: 30s
+        baseEjectionTime: 5s
+        maxEjectionPercent: 0
+
+---
+{{- end -}}
+{{- end -}}

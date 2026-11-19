@@ -1,0 +1,51 @@
+// crypto-jmh-c7 - security-cost ablation (Reviewer 1, Comment 7): JMH cost breakdown of one journey (NIPoK and the
+// broader security envelope). Measurement tool, not production code. Same configuration as crypto-jmh of the statistical
+// evaluation (JMH plugin 0.7.2, toolchain 24, mavenLocal for psu-auth-spi), plus Nimbus JOSE+JWT, Tink, Conscrypt and
+// Jackson databind in the SAME VERSIONS as the auth-server: run-R1C7.sh build reads the versions from BOOT-INF/lib of the
+// auth-server bootJar and passes them with -P...; the defaults below apply only to a manual build. Jackson is used by the
+// copy of SecurityAuditLogger.record (AuditLoggerCopy, benchmark as_audit_record).
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.2'
+}
+
+group = 'se.magnus.bench'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)   // same as the auth-server runtime (Temurin 24)
+    }
+}
+
+repositories { mavenLocal(); mavenCentral() }   // mavenLocal: psu-auth-spi published by the bank build
+
+def nimbusVersion    = (findProperty('nimbusVersion')    ?: '9.37.3').toString()
+def tinkVersion      = (findProperty('tinkVersion')      ?: '1.16.0').toString()
+def conscryptVersion = (findProperty('conscryptVersion') ?: '2.6-alpha').toString()
+def jacksonVersion   = (findProperty('jacksonVersion')   ?: '2.19.0').toString()
+
+dependencies {
+    jmhImplementation 'com.openbanking:psu-auth-spi:1.0.0'                        // real NIPoK code (brings elisabeth)
+    jmhImplementation "com.nimbusds:nimbus-jose-jwt:${nimbusVersion}"             // JWS/JWE as in auth-server, TPP, aggregators
+    jmhImplementation "com.google.crypto.tink:tink:${tinkVersion}"                // needed by Nimbus Ed25519Signer/X25519
+    jmhImplementation "org.conscrypt:conscrypt-openjdk-uber:${conscryptVersion}"  // SHA-512 of the auth-server, token signing
+    jmhImplementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"  // JSON of SecurityAuditLogger
+}
+
+jmh {
+    // Used only when run through Gradle; run-R1C7.sh runs the jar with its own parameters (see run-R1C7.sh jmh).
+    warmupIterations = 8
+    iterations = 10
+    fork = 5
+    timeUnit = 'us'
+    // Conscrypt loads a native library (System.load): JDK 24 needs this flag to avoid the warning or the block.
+    jvmArgsAppend = ['--enable-native-access=ALL-UNNAMED']
+}
+
+// Prints the versions used (run-R1C7.sh writes them to jmh/params/build.txt).
+tasks.register('c7Versions') {
+    doLast {
+        println "C7_VERSIONS nimbus=${nimbusVersion} tink=${tinkVersion} conscrypt=${conscryptVersion} jackson=${jacksonVersion}"
+    }
+}

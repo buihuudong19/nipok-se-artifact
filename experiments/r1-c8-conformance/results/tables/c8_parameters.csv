@@ -1,0 +1,11 @@
+parameter,prototype,set_by,if_mismatched
+Suite,"edwards25519 prime-order subgroup; SHA-512 over 4-byte length-prefixed fields; untagged challenge; nonce tags NIPoK-nonce-key-v1, NIPoK-nonce-v1",protocol version,verification
+Wire format,"base64url, no padding, of N || V || s (96 bytes), form field password of POST /psu/auth",protocol version,decoding
+N,"32 random bytes, hidden field nipokNonce of GET /psu/login-page; single use; TTL 60 s; at most 100000 live",authorization server,nonce store
+id_V,testbed 'bank' (code default); deployment: the issuer identifier of the bank's authorization server,bank; configured in each agent at enrollment,verification
+cb,SHA-256 of the DER leaf certificate of the bank gateway; agent: from its TLS handshake; server: configured value (forwarded header trusted: false by default),bank certificate; update at rotation,verification
+id_P,"UTF-8 bytes of the username registered at the bank, no normalization",bank account,verification
+X,"32-byte canonical point of order l, one per PSU and method at each bank",customer agent (wallet),registration (400)
+Registration,"POST /psu/register (username, method=NIPOK, publicKey), header X-Onboarding-Token; 201 / 400 / 403 / 409; testbed mode enforce (code default off)",bank onboarding,403 / 400 / 409
+Lockout,"5 consecutive failures, then 60 s, doubling per further failure, at most 900 s",bank policy,refused while locked
+TPP,"none: PAR, JARM, certificate-bound tokens and client authentication are unchanged",-,-

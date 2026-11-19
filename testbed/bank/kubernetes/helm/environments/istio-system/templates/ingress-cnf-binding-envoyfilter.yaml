@@ -1,0 +1,100 @@
+# ================================================================================
+# EnvoyFilter (Lua) - enforces the certificate-bound token binding AT the IngressGW (RFC 8705 §3)
+#
+# Why at the gateway: the certificate compared for the binding comes from the REAL TLS SESSION
+# (sha256PeerCertificateDigest) - only the holder of the private key can complete the handshake -> it CANNOT
+# be forged, unlike the XFCC header (which can be forged if an internal source injects it).
+# This is a light "ext_authz" layer (inline Lua, no extra pod).
+#
+# Logic: if the access token has cnf.x5t#S256 and the certificate of the TLS session differs / is missing -> 403.
+# A token without cnf passes (the client-secret path is blocked at the aggregator).
+# The JWT signature is NOT verified here (the aggregator verifies it); a token with a forged cnf fails at the aggregator.
+# ================================================================================
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ingress-cnf-binding
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.lua.cnf_binding
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+          inline_code: |
+            local B64 = {}
+            do
+              local chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+              for i = 1, #chars do B64[string.byte(chars, i)] = i - 1 end
+            end
+
+            local function b64url_decode_str(s)
+              local acc, nbits, out = 0, 0, {}
+              for i = 1, #s do
+                local v = B64[string.byte(s, i)]
+                if v then
+                  acc = acc * 64 + v; nbits = nbits + 6
+                  if nbits >= 8 then
+                    nbits = nbits - 8
+                    out[#out + 1] = string.char(math.floor(acc / 2 ^ nbits) % 256)
+                    acc = acc % (2 ^ nbits)
+                  end
+                end
+              end
+              return table.concat(out)
+            end
+
+            local function b64url_to_hex(s)
+              local acc, nbits, hex = 0, 0, {}
+              for i = 1, #s do
+                local v = B64[string.byte(s, i)]
+                if v then
+                  acc = acc * 64 + v; nbits = nbits + 6
+                  if nbits >= 8 then
+                    nbits = nbits - 8
+                    hex[#hex + 1] = string.format("%02x", math.floor(acc / 2 ^ nbits) % 256)
+                    acc = acc % (2 ^ nbits)
+                  end
+                end
+              end
+              return table.concat(hex)
+            end
+
+            function envoy_on_request(handle)
+              local auth = handle:headers():get("authorization")
+              if not auth then return end
+              local jwt = string.match(auth, "^[Bb]earer%s+(.+)$")
+              if not jwt then return end
+              local payload_b64 = string.match(jwt, "^[^%.]+%.([^%.]+)%.")
+              if not payload_b64 then return end
+              local payload = b64url_decode_str(payload_b64)
+              local cnf = string.match(payload, '"x5t#S256"%s*:%s*"([^"]+)"')
+              if not cnf then return end  -- token not certificate-bound -> left to the aggregator
+
+              local ssl = handle:streamInfo():downstreamSslConnection()
+              if not ssl or not ssl:peerCertificatePresented() then
+                handle:logWarn("cnf-binding: bound token presented without client certificate")
+                handle:respond({[":status"] = "403"}, "client certificate required for certificate-bound token")
+                return
+              end
+              local certHex = string.lower((ssl:sha256PeerCertificateDigest() or ""):gsub(":", ""))
+              local cnfHex = b64url_to_hex(cnf)
+              if certHex ~= cnfHex then
+                handle:logWarn("cnf-binding mismatch cnf=" .. cnfHex .. " cert=" .. certHex)
+                handle:respond({[":status"] = "403"}, "certificate binding mismatch")
+              end
+            end

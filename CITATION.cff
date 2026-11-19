@@ -1,0 +1,58 @@
+cff-version: 1.2.0
+message: "If you use this package, please cite the article and the version of the package that you used."
+type: software
+title: "NIPoK-SE Formal Verification Artifact and Reproducibility Package: ProVerif, CryptoVerif, and EasyCrypt Models, Implementation, Deployment Manifests, Benchmark Harnesses, and Raw Measurement Data"
+version: "3.0"
+abstract: >-
+  Formal models (ProVerif, CryptoVerif, EasyCrypt), the source code of the NIPoK-SE prototype and of six baseline
+  PSU-authentication mechanisms, a three-cluster Kubernetes testbed, JMH and k6 benchmark harnesses, analysis scripts
+  and derived results of the revised manuscript. The raw measurement data are archived with the Zenodo record of this
+  version.
+license: MIT
+repository-code: "https://github.com/buihuudong19/nipok-se-artifact"
+keywords:
+  - open banking
+  - OAuth 2.0
+  - non-interactive proof of knowledge
+  - Schnorr
+  - formal verification
+  - benchmark
+  - Kubernetes
+authors:
+  - family-names: Bui-Huu
+    given-names: Dong
+    orcid: "https://orcid.org/0009-0007-6617-8505"
+  - family-names: Trinh-Cao
+    given-names: Thang
+    orcid: "https://orcid.org/0009-0009-4617-6056"
+  - family-names: Pham-An
+    given-names: Vinh
+    orcid: "https://orcid.org/0009-0001-0320-5306"
+  - family-names: Le-Nhat
+    given-names: Tan
+    orcid: "https://orcid.org/0000-0001-6019-8635"
+  - family-names: Nguyen-An
+    given-names: Khuong
+    orcid: "https://orcid.org/0000-0002-9910-6387"
+preferred-citation:
+  type: article
+  title: "A Privacy-Preserving Framework using Non-Interactive Proofs of Knowledge for End-to-End Secure Authentication in Open Banking"
+  journal: "Journal of Network and Computer Applications"
+  status: submitted
+  year: 2026
+  authors:
+    - family-names: Bui-Huu
+      given-names: Dong
+      orcid: "https://orcid.org/0009-0007-6617-8505"
+    - family-names: Trinh-Cao
+      given-names: Thang
+      orcid: "https://orcid.org/0009-0009-4617-6056"
+    - family-names: Pham-An
+      given-names: Vinh
+      orcid: "https://orcid.org/0009-0001-0320-5306"
+    - family-names: Le-Nhat
+      given-names: Tan
+      orcid: "https://orcid.org/0000-0001-6019-8635"
+    - family-names: Nguyen-An
+      given-names: Khuong
+      orcid: "https://orcid.org/0000-0002-9910-6387"

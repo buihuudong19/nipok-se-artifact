@@ -1,0 +1,51 @@
+// psu-auth-spi - PURE module (no Spring/JDBC/network). Contains the SPI and the crypto verify/prove of the PSU authentication.
+// Goal: direct JMH benchmarks (crypto layer 1) + shared by the auth-server (verify) and the customer-agent (prove).
+plugins {
+    id 'java-library'
+    id 'maven-publish'   // published to mavenLocal so that the customer-agent (separate Gradle project) shares the crypto
+}
+
+group = 'com.openbanking'
+version = '1.0.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(24) }
+    withSourcesJar()
+}
+
+repositories { mavenCentral() }
+
+publishing {
+    publications {
+        maven(MavenPublication) { from components.java }
+    }
+}
+
+dependencies {
+    // Pure crypto libraries only - NO framework. Argon2id through BouncyCastle.
+    api 'org.bouncycastle:bcprov-jdk18on:1.79'
+    // NIPoK (RFC 8235) - FULL edwards25519 algebra (Scalar mod l, point operations, double-scalar multiplication).
+    // Conscrypt/BoringSSL does NOT expose a raw scalar multiplication -> elisabeth is used (constant time, audited).
+    // SHA-512 (challenge e) is left to Conscrypt at the server (provider injected into the engine).
+    api 'cafe.cryptography:curve25519-elisabeth:0.1.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') { useJUnitPlatform() }
+
+// Generates a NIPoK key pair (x, X=xB) with exactly the server cryptography. Prints '<x_b64url> <X_b64url>'.
+tasks.register('nipokKeygen', JavaExec) {
+    group = 'psu-auth'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.openbanking.psu.auth.spi.tools.NipokKeygen'
+}
+
+// Generates an interactive Schnorr key pair (x, Y=xG), independent of NIPoK. Prints '<x_b64url> <Y_b64url>'.
+tasks.register('schnorrKeygen', JavaExec) {
+    group = 'psu-auth'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.openbanking.psu.auth.spi.tools.SchnorrKeygen'
+}

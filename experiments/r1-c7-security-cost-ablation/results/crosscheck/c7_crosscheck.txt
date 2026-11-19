@@ -1,0 +1,185 @@
+R1-C7 cross-checks (c7_crosscheck.py 1.1, 2026-11-19T06:57:07)
+C7: benchmark-R1-C7
+C6 WAN: benchmark-R1-C6/loadtest/wan
+C6 (A2, E): benchmark-R1-C6
+
+A. Same scenario (RTT 0, 8 journeys/s, 3 runs × 60 s, run-all-psu.sh of C6): C6 WAN phase against the C7 hops step
+   journey: mean pooled by successful journeys; p50, p99: median of the three runs; CPU per journey (ms, cgroup):
+   median of the three runs (AS = auth-server container, GW = istio-ingressgateway, agent = customer-agent)
+   mechanism          C6 mean   C7 mean     Δ ms     Δ %   C6 p50   C7 p50   C6 p99   C7 p99      AS C6/C7      GW C6/C7   agent C6/C7
+   NIPoK                46.53     47.90    +1.37   +2.9%     46.0     46.8     60.2     61.1    9.59/ 9.58    3.68/ 4.00   14.40/13.45
+   Schnorr-IZK          48.36     49.36    +1.00   +2.1%     47.5     48.6     62.3     61.6    9.72/ 9.76    3.89/ 4.23   14.30/14.25
+   Pure-EdDSA           47.53     47.22    -0.31   -0.6%     47.1     46.4     63.1     60.1    9.98/ 9.28    3.63/ 3.91   14.82/14.14
+   Private-Key-JWT      45.80     46.91    +1.11   +2.4%     44.9     46.2     59.8     60.9    9.36/ 9.68    3.60/ 3.94   13.86/14.52
+   ML-DSA-65            46.50     47.00    +0.50   +1.1%     45.5     46.3     60.9     59.2    9.71/ 9.32    3.60/ 3.93   14.79/14.33
+   mTLS-PSU             43.77     43.57    -0.21   -0.5%     42.8     42.8     58.6     55.0    8.80/ 8.03    2.79/ 3.02   13.04/13.97
+   Password            179.05    155.36   -23.69  -13.2%    177.0    153.3    201.6    167.9 144.69/116.40    4.10/ 4.63   18.74/20.39
+   scenario (rate, duration, rtt_ms, scenario) of every run: ["(8, '60s', 0, 'sub_saturation')"]
+   successful/failed journeys: NIPoK C6 1442/0, C7 1441/0; Schnorr-IZK C6 1441/0, C7 1441/0; Pure-EdDSA C6 1442/0, C7 1442/0; Private-Key-JWT C6 1443/0, C7 1442/0; ML-DSA-65 C6 1440/0, C7 1442/0; mTLS-PSU C6 1441/0, C7 1441/0; Password C6 1443/0, C7 1440/0
+   host_noisy: none
+   six public-key mechanisms: difference of mean journey -0.31 to +1.37 ms (-0.6% to +2.9%); threshold for 'match': ±5%
+   gateway CPU per journey C7 − C6 (median of three runs): +0.23 to +0.34 ms for these six mechanisms (C7 hops enables the gateway access log, C6 does not)
+   NIPoK            match
+   Schnorr-IZK      match
+   Pure-EdDSA       match
+   Private-Key-JWT  match
+   ML-DSA-65        match
+   mTLS-PSU         match
+   Password         MISMATCH (auth-server CPU per journey C6 144.69, C7 116.40 ms: -19.6%)
+
+A2. Same load of 8 journeys/s in the six load-test blocks of C6 (kneestep8 step of the knee search, one 30 s run per block)
+   journey: k6 mean (ms); auth-server CPU per journey (ms, cgroup). Blocks: smallest to largest over the six blocks;
+   C6 WAN and C7 hops: pooled mean of the three runs (CPU: median). 'within' = C7 lies between the smallest and largest of the six blocks.
+   mechanism        6 C6 blocks journey      C6 WAN   C7 hops  C7 vs blocks   6 C6 blocks AS CPU     WAN CPU   C7 CPU
+   NIPoK               46.7 to    49.0     46.53     47.90  within            12.5 to    13.8     9.59     9.58
+   Schnorr-IZK         47.0 to    50.2     48.36     49.36  within            11.4 to    16.4     9.72     9.76
+   Pure-EdDSA          46.9 to    49.1     47.53     47.22  within            13.3 to    15.8     9.98     9.28
+   Private-Key-JWT     47.0 to    49.7     45.80     46.91  lower by 0.2%     13.1 to    14.5     9.36     9.68
+   ML-DSA-65           47.2 to    50.0     46.50     47.00  lower by 0.5%     12.0 to    13.9     9.71     9.32
+   mTLS-PSU            43.9 to    46.5     43.77     43.57  lower by 0.7%     10.6 to    12.1     8.80     8.03
+   Password           152.0 to   160.6    179.05    155.36  within           115.0 to   128.1   144.69   116.40
+   Password: the C6 WAN session is above the range of the six blocks (179.05 against 152.0 to 160.6 ms; auth-server CPU 144.69 against 115.0 to 128.1 ms); C7 within.
+   successful journeys per kneestep8 run: NIPoK 241/241/241/241/240/241; Schnorr-IZK 241/241/241/241/241/240; Pure-EdDSA 240/240/240/241/240/241; Private-Key-JWT 240/241/241/240/241/240; ML-DSA-65 241/241/241/241/241/240; mTLS-PSU 241/241/241/241/241/240; Password 241/241/240/241/241/241
+   host_noisy in the kneestep8 runs: none
+
+B. Journey breakdown by stage (hops.json; Figure 10): time at the gateway + part outside the gateway = mean journey
+   NIPoK            journey   47.90 = gateway   27.28 + outside  20.62 ms
+   Schnorr-IZK      journey   49.36 = gateway   27.63 + outside  21.73 ms
+   Pure-EdDSA       journey   47.22 = gateway   26.51 + outside  20.71 ms
+   Private-Key-JWT  journey   46.91 = gateway   26.13 + outside  20.78 ms
+   ML-DSA-65        journey   47.00 = gateway   25.70 + outside  21.30 ms
+   mTLS-PSU         journey   43.57 = gateway   24.92 + outside  18.65 ms
+   Password         journey  155.36 = gateway  130.04 + outside  25.32 ms
+   (the identity holds by construction: the part outside the gateway is the remainder; what is checked is that it is not negative)
+
+C. Separately measured component ≤ the stage that contains it in a NIPoK journey (µs; stage = mean duration at the gateway × requests)
+   verify proof (JMH as_verify_prepared)                           65.1 µs  ≤  POST /psu/auth                    4096.5 µs  (  1.6%)  ok
+   authenticate() without DB and audit (JMH as_auth_total)         66.7 µs  ≤  POST /psu/auth                    4096.5 µs  (  1.6%)  ok
+   authenticate() + audit record (JMH)                            437.6 µs  ≤  POST /psu/auth                    4096.5 µs  ( 10.7%)  ok
+   token signing in the running auth-server (metric, SunEC)       438.0 µs  ≤  POST /oauth2/token                2756.4 µs  ( 15.9%)  ok
+   build and sign the token (JMH as_token_encode SunEC)           393.2 µs  ≤  POST /oauth2/token                2756.4 µs  ( 14.3%)  ok
+   JARM signing and encryption (JMH as_jarm_wrap)                 292.1 µs  ≤  GET /oauth2/authorize (2 requests)    2081.2 µs  ( 14.0%)  ok
+   RS token check + cnf (JMH rs_token_verify + rs_cnf_binding)     387.6 µs  ≤  GET /customer-aggregate/{id}     17036.1 µs  (  2.3%)  ok
+   Envoy CPU for TLS handshakes ECDSA P-256 × 1.02 connections/journey     574.8 µs  ≤  outside the gateway              20619.6 µs  (  2.8%)  ok
+
+D. CPU of the auth-server security operations in one NIPoK journey (JMH × executions) against the measured auth-server CPU
+   authenticate(): nonce, payload decoding, verify (as_auth_total) 1 ×    66.65 µs =    66.65 µs
+   PSU_AUTH audit record (as_audit_record)                        1 ×   370.95 µs =   370.95 µs
+   build and sign the access token, SunEC (as_token_encode)       1 ×   393.20 µs =   393.20 µs
+   JARM signing and encryption (as_jarm_wrap)                     1 ×   292.08 µs =   292.08 µs
+   XFCC of the two mTLS requests of the TPP: PAR, token (as_xfcc_chain) 2 ×    37.71 µs =    75.43 µs
+   thumbprint for cnf (as_token_cnf_x5t)                          1 ×     0.26 µs =     0.26 µs
+   total                                                                            1198.57 µs = 1.199 ms
+   executions per journey (from the auth-server code): PSU_AUTH writes one audit record per authentication; CONSENT_GRANTED only
+   when no valid consent exists (ConsentService reuses an existing consent), so it is not counted; XfccClientCertificateFilter runs on
+   every URL but parses only when an XFCC header is present (the mTLS requests of the TPP: PAR, token); no ID token (scope customer:read).
+   auth-server CPU per NIPoK journey, C7 hops: 12.44, 8.37, 9.58 ms (median 9.58), so the security operations are about 12.5% (9.6% to 14.3%)
+   auth-server CPU per NIPoK journey, C6 WAN : 11.74, 9.30, 9.59 ms (median 9.59), so the security operations are about 12.5% (10.2% to 12.9%)
+   The security components together are much smaller than the CPU and the latency of the journey; a large gap here is expected.
+
+E. Same JMH operations in C6 and C7 (µs/op; mean over forks ± half 95% CI, t(n − 1); JCA SHA-512 in both)
+   operation                              C6 run                     C6        C7 (17 Nov)  C7 − C6
+   verify, precomputed key (FBC)          C6 main         67.19 ±  0.85      64.22 ±  0.36    -4.4%
+   verify, precomputed key (FBC)          C6 fbc-ab       68.17 ±  0.96      64.22 ±  0.36    -5.8%
+   verify, key not precomputed (Straus)   C6 main         95.64 ±  0.78      91.81 ±  0.71    -4.0%
+   verify, key not precomputed (Straus)   C6 fbc-ab       97.77 ±  1.06      91.81 ±  0.71    -6.1%
+   generate proof, resident wallet        C6 main         37.98 ±  0.41      36.50 ±  0.11    -3.9%
+   base-point multiplication vB           C6 main         36.23 ±  0.38      34.66 ±  0.25    -4.3%
+   change of verify with a precomputed key, within each campaign: C6 main (13 Nov) -29.7%; C6 fbc-ab (15 Nov) -30.3%; C7 (17 Nov) -30.0%
+   C7 − C6 over all pairs: -6.1% to -3.9%; same direction for all four operations
+   configuration: C6 10 forks, C7 5 forks; 8 + 10 iterations × 1 s in both; JVM C6 24+36, C7 24+36; 1 thread
+   proof context (from the benchmark code): C6 cb = null, id_P alice; C7 cb = 32-byte SHA-256 of the gateway certificate, id_P nipok-1
+
+md5 of the inputs:
+   c8927eec9e6cc11bb45f92a9ba28ce0a  benchmark-R1-C6/jmh/fbc-ab/fbc_ab_avgt.json
+   38cfa32159bb46e0b78d0cb251cee836  benchmark-R1-C6/jmh/main/official-final.json
+   4a9b224642f53240e519adac21f47b89  benchmark-R1-C6/loadtest/block1/ed25519-kneestep8-r2.summary.json
+   d8ceccaeff040fb636d26288ee6b573f  benchmark-R1-C6/loadtest/block1/ml_dsa-kneestep8-r2.summary.json
+   db0b9f2a1fca1a11d4bb050a539ef41e  benchmark-R1-C6/loadtest/block1/mtls-kneestep8-r2.summary.json
+   5cef9b837c2cb3fcd0e00c7ec799988b  benchmark-R1-C6/loadtest/block1/nipok-kneestep8-r2.summary.json
+   9a7c6c4bc362858c4c2d203e93b23bc2  benchmark-R1-C6/loadtest/block1/password-kneestep8-r2.summary.json
+   aca16e2b682ccefbb762728f9f9c8574  benchmark-R1-C6/loadtest/block1/private_key_jwt-kneestep8-r2.summary.json
+   e100680e39ad12bc28315a36f18db89b  benchmark-R1-C6/loadtest/block1/schnorr_interactive-kneestep8-r2.summary.json
+   ac20d8ff79e51ecf17b1925d63fd65cf  benchmark-R1-C6/loadtest/block2/ed25519-kneestep8-r2.summary.json
+   cac7abdb972270b1db9c8db28790202c  benchmark-R1-C6/loadtest/block2/ml_dsa-kneestep8-r2.summary.json
+   8448aef578bd709a780f97226165d07d  benchmark-R1-C6/loadtest/block2/mtls-kneestep8-r2.summary.json
+   ab1caaef420f93f3e15820fa6837e732  benchmark-R1-C6/loadtest/block2/nipok-kneestep8-r2.summary.json
+   60cbe690b2ed748fbb76580d04956368  benchmark-R1-C6/loadtest/block2/password-kneestep8-r2.summary.json
+   3f027b421f11de19c3d23f54532d1322  benchmark-R1-C6/loadtest/block2/private_key_jwt-kneestep8-r2.summary.json
+   5a52f8b366786c626ada82e8d8c83f06  benchmark-R1-C6/loadtest/block2/schnorr_interactive-kneestep8-r2.summary.json
+   17a0a92e3d740673a0cae57ffdabf28b  benchmark-R1-C6/loadtest/block3/ed25519-kneestep8-r2.summary.json
+   e483ece4f5a8d1855ca3021fb79a3b52  benchmark-R1-C6/loadtest/block3/ml_dsa-kneestep8-r2.summary.json
+   317377c7ea686009bc7a07a2a00bd74d  benchmark-R1-C6/loadtest/block3/mtls-kneestep8-r2.summary.json
+   946602de6dc1b7cba63a1af2bec07a7a  benchmark-R1-C6/loadtest/block3/nipok-kneestep8-r2.summary.json
+   2180c9b652f9974d6e0058cda1db3dba  benchmark-R1-C6/loadtest/block3/password-kneestep8-r2.summary.json
+   6be39b7d60b5db4a46949bc20b3a4b91  benchmark-R1-C6/loadtest/block3/private_key_jwt-kneestep8-r2.summary.json
+   7012dcda439f46c0d11b068b921795e7  benchmark-R1-C6/loadtest/block3/schnorr_interactive-kneestep8-r2.summary.json
+   02a81dfb3463f84c239ee8e8d6a30ae4  benchmark-R1-C6/loadtest/block4/ed25519-kneestep8-r2.summary.json
+   252bed946f6b290eb8936e383b5bd664  benchmark-R1-C6/loadtest/block4/ml_dsa-kneestep8-r2.summary.json
+   dd6de57a48d5305cc464ced8cb9cdf5a  benchmark-R1-C6/loadtest/block4/mtls-kneestep8-r2.summary.json
+   be7b97c2106802427545505166ee8031  benchmark-R1-C6/loadtest/block4/nipok-kneestep8-r2.summary.json
+   0ca30f7bd3b22df6f294ca29e4663271  benchmark-R1-C6/loadtest/block4/password-kneestep8-r2.summary.json
+   2d24c198288a697e8648bc97ca373025  benchmark-R1-C6/loadtest/block4/private_key_jwt-kneestep8-r2.summary.json
+   66b9d1ee5b94c203fef9e99e7385e7d7  benchmark-R1-C6/loadtest/block4/schnorr_interactive-kneestep8-r2.summary.json
+   a10048a8fe3200de00fb50c7c54955e0  benchmark-R1-C6/loadtest/block5/ed25519-kneestep8-r2.summary.json
+   0b83d49a9f7cd09fac64b3a83ae3ee1b  benchmark-R1-C6/loadtest/block5/ml_dsa-kneestep8-r2.summary.json
+   551f65acc851da22c0450a96ecf12bf8  benchmark-R1-C6/loadtest/block5/mtls-kneestep8-r2.summary.json
+   734c4f531437e2ae04f3be86baabf4cf  benchmark-R1-C6/loadtest/block5/nipok-kneestep8-r2.summary.json
+   5100faaebcd94e0b01b3e1d663b4c462  benchmark-R1-C6/loadtest/block5/password-kneestep8-r2.summary.json
+   4d019f2661b4ee76498a9fc539384601  benchmark-R1-C6/loadtest/block5/private_key_jwt-kneestep8-r2.summary.json
+   8606df4ba353198081614f904f87e3c0  benchmark-R1-C6/loadtest/block5/schnorr_interactive-kneestep8-r2.summary.json
+   1221cd6bca3e60fef4eae6bdfd3b513d  benchmark-R1-C6/loadtest/block6/ed25519-kneestep8-r2.summary.json
+   3878a0460db0662cc62de74b55ceceac  benchmark-R1-C6/loadtest/block6/ml_dsa-kneestep8-r2.summary.json
+   40ec88df4ae72624d5aa98d378e01677  benchmark-R1-C6/loadtest/block6/mtls-kneestep8-r2.summary.json
+   be7f0f5b64205b834f30a6c9f1db7cad  benchmark-R1-C6/loadtest/block6/nipok-kneestep8-r2.summary.json
+   c354c9ca98a0a7b7a99bb76284e891c7  benchmark-R1-C6/loadtest/block6/password-kneestep8-r2.summary.json
+   14508849f6abe454ae2de7b78d08f314  benchmark-R1-C6/loadtest/block6/private_key_jwt-kneestep8-r2.summary.json
+   c9f420977f3ab31be22c6407760fec1c  benchmark-R1-C6/loadtest/block6/schnorr_interactive-kneestep8-r2.summary.json
+   b0447d6ad7cce6fc8ad8665ff52bafe4  benchmark-R1-C6/loadtest/wan/ed25519-rtt0-r1.summary.json
+   72705d9a263ee57a0820135ac2341118  benchmark-R1-C6/loadtest/wan/ed25519-rtt0-r2.summary.json
+   fc8c2ce6be2c5dbd44b9204f8d8e1f3d  benchmark-R1-C6/loadtest/wan/ed25519-rtt0-r3.summary.json
+   034d6b6ca044ab98fc4b9aeca04ce69a  benchmark-R1-C6/loadtest/wan/ml_dsa-rtt0-r1.summary.json
+   2e4acab44e72818204d18bd67d101271  benchmark-R1-C6/loadtest/wan/ml_dsa-rtt0-r2.summary.json
+   85d66b77313300cbc968b8b51a3325ce  benchmark-R1-C6/loadtest/wan/ml_dsa-rtt0-r3.summary.json
+   a08e6bb10fefd3cdf3c0099a75792a21  benchmark-R1-C6/loadtest/wan/mtls-rtt0-r1.summary.json
+   4aa1288e12304d2acf49ffce902946b6  benchmark-R1-C6/loadtest/wan/mtls-rtt0-r2.summary.json
+   580ab87f1e90361ab0aafa4573c5ee12  benchmark-R1-C6/loadtest/wan/mtls-rtt0-r3.summary.json
+   523626520205585fe460f78fe73bd8ef  benchmark-R1-C6/loadtest/wan/nipok-rtt0-r1.summary.json
+   06581460d5b8841f031aef3defe47ee6  benchmark-R1-C6/loadtest/wan/nipok-rtt0-r2.summary.json
+   7b9e274b814e137d21c3fb2b92bd3bb9  benchmark-R1-C6/loadtest/wan/nipok-rtt0-r3.summary.json
+   d8384eeaa658318668dfd603a531e62f  benchmark-R1-C6/loadtest/wan/password-rtt0-r1.summary.json
+   5fdee8d7adb39c23b73a988e4524fc7a  benchmark-R1-C6/loadtest/wan/password-rtt0-r2.summary.json
+   265b33a10491d5e98eb3eebdbdbbd071  benchmark-R1-C6/loadtest/wan/password-rtt0-r3.summary.json
+   f43d1ced4c42b44958199a2b5f1d6649  benchmark-R1-C6/loadtest/wan/private_key_jwt-rtt0-r1.summary.json
+   a0ca117a2bebf001d1848d5f7280dadf  benchmark-R1-C6/loadtest/wan/private_key_jwt-rtt0-r2.summary.json
+   cce54db5d908c10574ecd0b3810a6160  benchmark-R1-C6/loadtest/wan/private_key_jwt-rtt0-r3.summary.json
+   face9c34104f5e021154b68b0c9d1c39  benchmark-R1-C6/loadtest/wan/schnorr_interactive-rtt0-r1.summary.json
+   0d2d783be4acc5a903a0a552b66a74a5  benchmark-R1-C6/loadtest/wan/schnorr_interactive-rtt0-r2.summary.json
+   98a5edb9c0e7cf8672ba85b323d666b5  benchmark-R1-C6/loadtest/wan/schnorr_interactive-rtt0-r3.summary.json
+   a8d11b7e4fd06cd38ea2c912558409f9  benchmark-R1-C7/e2e/hops/ed25519/ed25519-rtt0-r1.summary.json
+   c14997605c5460aa5567349069aca202  benchmark-R1-C7/e2e/hops/ed25519/ed25519-rtt0-r2.summary.json
+   9fa4820527c135cf8f8cd3751e386b48  benchmark-R1-C7/e2e/hops/ed25519/ed25519-rtt0-r3.summary.json
+   b2abc63b59ad05fa7d417adf21a5aafc  benchmark-R1-C7/e2e/hops/hops.json
+   90958936875d1eaa2e662826b4128d5d  benchmark-R1-C7/e2e/hops/ml_dsa/ml_dsa-rtt0-r1.summary.json
+   28d8f0f5c65adb0ccf119f1b909f48d3  benchmark-R1-C7/e2e/hops/ml_dsa/ml_dsa-rtt0-r2.summary.json
+   a955a70da9ebfc213ba81b56ecc982e0  benchmark-R1-C7/e2e/hops/ml_dsa/ml_dsa-rtt0-r3.summary.json
+   70ab1161299b170d8aa97b32968f1c88  benchmark-R1-C7/e2e/hops/mtls/mtls-rtt0-r1.summary.json
+   7bb7849e349241404fef0e089d7d086e  benchmark-R1-C7/e2e/hops/mtls/mtls-rtt0-r2.summary.json
+   e5156cd8705d69ba9ddb12f1a4fc7a1c  benchmark-R1-C7/e2e/hops/mtls/mtls-rtt0-r3.summary.json
+   9acc27eaf8992f29a2a1f8a0bf215146  benchmark-R1-C7/e2e/hops/nipok/nipok-rtt0-r1.summary.json
+   d35d2054ac0c33c6af15f1ed26bc312f  benchmark-R1-C7/e2e/hops/nipok/nipok-rtt0-r2.summary.json
+   cd567c8f3376fa7ed6a83f2096c8d0ca  benchmark-R1-C7/e2e/hops/nipok/nipok-rtt0-r3.summary.json
+   f22e44abb46efdf3b7bd8c3d222361e8  benchmark-R1-C7/e2e/hops/password/password-rtt0-r1.summary.json
+   6bb0e7cb998e5bf41e63f6fa04384dc8  benchmark-R1-C7/e2e/hops/password/password-rtt0-r2.summary.json
+   caa6537b241f1f23e329d704dba47347  benchmark-R1-C7/e2e/hops/password/password-rtt0-r3.summary.json
+   185f7f5b8e08774c71c0160189e315dc  benchmark-R1-C7/e2e/hops/private_key_jwt/private_key_jwt-rtt0-r1.summary.json
+   0ea145a433e2fa548a8fe702a1725a29  benchmark-R1-C7/e2e/hops/private_key_jwt/private_key_jwt-rtt0-r2.summary.json
+   94b01786eda9ec0acb48c5fcb18d8e06  benchmark-R1-C7/e2e/hops/private_key_jwt/private_key_jwt-rtt0-r3.summary.json
+   cf69d7a330f0369d82ef8cc733a0706c  benchmark-R1-C7/e2e/hops/schnorr_interactive/schnorr_interactive-rtt0-r1.summary.json
+   c373aab2a141d6ec9f42b36ac9b7f3a5  benchmark-R1-C7/e2e/hops/schnorr_interactive/schnorr_interactive-rtt0-r2.summary.json
+   b65cb7a8efc08407d358fd53b32804a9  benchmark-R1-C7/e2e/hops/schnorr_interactive/schnorr_interactive-rtt0-r3.summary.json
+   18c9b022807bfcd5f2fd4efcc674d391  benchmark-R1-C7/e2e/tls/handshake-load.txt
+   8d710ea6d0a52e3e2f7d8935a28760b4  benchmark-R1-C7/jmh/ablation/envelope-token-sunec.json
+   d16ae51e7db9eb6abdc812f95452c337  benchmark-R1-C7/jmh/ablation/envelope.json
+   e97692feb28ac3f310cbc1244af272dc  benchmark-R1-C7/jmh/ablation/nipok-agent.json
+   547aa7579b5e0fb0166679e619640040  benchmark-R1-C7/jmh/ablation/nipok-as.json

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-18T15:30:22.133Z" hostname="MyLaptop" time="3.041">
+  <properties/>
+  <testcase name="enrollment_key_vectors()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="0.002"/>
+  <testcase name="valid_vectors_reproduce_exactly_and_verify()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="0.022"/>
+  <testcase name="malformed_blobs_are_rejected_at_decoding()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="0.0"/>
+  <testcase name="invalid_vectors_are_rejected()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="0.006"/>
+  <testcase name="generic_verifier_port_fails_closed()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="0.003"/>
+  <testcase name="sealed_wallet_is_thread_safe()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="3.005"/>
+  <testcase name="canonical_scalar_rule()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

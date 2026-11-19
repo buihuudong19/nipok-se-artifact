@@ -1,0 +1,41 @@
+// crypto-jmh - Ed25519 benchmark (keygen/sign/verify) over several Java implementations.
+// Fully separate from the auth-server; a measurement tool only, not production code.
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.2'   // JMH source set + jmhJar task
+}
+
+group = 'se.magnus.bench'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)   // matches the auth-server runtime (Temurin 24)
+    }
+}
+
+repositories { mavenLocal(); mavenCentral() }   // mavenLocal: psu-auth-spi (NIPoK) published by the bank build
+
+// Crypto libraries for src/jmh (NOT in production). Every implementation is guarded by available(),
+// so a missing native part (libsodium/conscrypt) only SKIPS that case without breaking the whole run.
+dependencies {
+    jmhImplementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'        // BouncyCastle (lightweight + JCA)
+    jmhImplementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'        // X509v3CertificateBuilder (Ed25519 certificates for the PSU-mTLS benchmark)
+    jmhImplementation 'com.google.crypto.tink:tink:1.13.0'           // Google Tink (subtle Ed25519)
+    jmhImplementation 'com.goterl:lazysodium-java:5.1.4'             // libsodium through JNA
+    jmhImplementation 'net.java.dev.jna:jna:5.14.0'
+    jmhImplementation 'org.conscrypt:conscrypt-openjdk-uber:2.6-alpha'   // BoringSSL through the JCA provider (Ed25519 since 2.6)
+    // NIPoK - prove/verify crypto SHARED by server/client (elisabeth + Conscrypt SHA-512).
+    jmhImplementation 'com.openbanking:psu-auth-spi:1.0.0'
+    // libsodium-panama-ffm: NO dependency needed (java.lang.foreign, built into JDK 22+),
+    //   but libsodium.so must be installed + the flag --enable-native-access.
+}
+
+jmh {
+    warmupIterations = 5
+    iterations = 8
+    fork = 2
+    timeUnit = 'us'
+    // Flag for FFM (Panama) native calls in the child JVM forked by JMH:
+    jvmArgsAppend = ['--enable-native-access=ALL-UNNAMED', '--sun-misc-unsafe-memory-access=allow']
+}

@@ -1,0 +1,38 @@
+step,benchmark,mode,unit,n_forks,mean,sd_forks,ci95_lo,ci95_hi,ci95_half_width,cv_pct,jmh_score_error_99_9
+main,Argon2Benchmark.verify_server,avgt,us/op,10,99397.5,5703.42,95317.5,103477,4079.98,5.73799,2068.15
+main,EdDsaAuthBenchmark.sign_client,avgt,us/op,10,73.8964,1.18378,73.0496,74.7433,0.846822,1.60194,0.665135
+main,EdDsaAuthBenchmark.verify_server,avgt,us/op,10,91.7632,0.774955,91.2089,92.3176,0.55437,0.844516,0.585003
+main,EdDsaAuthBenchmark.verify_server_prepared,avgt,us/op,10,68.8665,1.48249,67.806,69.9271,1.06051,2.15269,0.722938
+main,MlDsaAuthBenchmark.sign_client,avgt,us/op,10,411.007,3.23518,408.693,413.322,2.31431,0.787134,2.21151
+main,MlDsaAuthBenchmark.verify_server,avgt,us/op,10,99.4091,0.377615,99.1389,99.6792,0.27013,0.37986,0.252375
+main,MtlsCertBenchmark.parse_and_verify,avgt,us/op,10,97.2934,0.9196,96.6355,97.9512,0.657842,0.945182,0.398436
+main,MtlsCertBenchmark.sign_client,avgt,us/op,10,72.4883,1.2693,71.5803,73.3963,0.908004,1.75104,0.535269
+main,MtlsCertBenchmark.verify_only,avgt,us/op,10,90.1313,1.36475,89.155,91.1076,0.97628,1.51417,0.515682
+main,NipokBenchmark.prove_client,avgt,us/op,10,37.9775,0.574198,37.5668,38.3883,0.410757,1.51194,0.257451
+main,NipokBenchmark.verify_server,avgt,us/op,10,95.6426,1.09157,94.8618,96.4235,0.780863,1.1413,0.446419
+main,NipokBenchmark.verify_server_prepared,avgt,us/op,10,67.1909,1.18407,66.3439,68.0379,0.847031,1.76224,0.504897
+main,PrivateKeyJwtBenchmark.parse_and_verify,avgt,us/op,10,91.0483,1.36477,90.072,92.0246,0.976298,1.49895,0.556253
+main,PrivateKeyJwtBenchmark.sign_client,avgt,us/op,10,73.6261,1.20027,72.7675,74.4847,0.858618,1.63022,0.525719
+main,PrivateKeyJwtBenchmark.verify_only,avgt,us/op,10,89.8081,0.79242,89.2412,90.3749,0.566863,0.882349,0.429826
+main,SchnorrBenchmark.compute_s,avgt,us/op,10,0.374544,0.00425239,0.371502,0.377586,0.00304198,1.13535,0.00195135
+main,SchnorrBenchmark.gen_R,avgt,us/op,10,36.2299,0.531952,35.8494,36.6105,0.380535,1.46827,0.251771
+main,SchnorrBenchmark.gen_e,avgt,us/op,10,0.385318,0.00535159,0.381489,0.389146,0.0038283,1.38888,0.00181658
+main,SchnorrBenchmark.verify_server,avgt,us/op,10,94.4572,1.07983,93.6847,95.2297,0.772466,1.1432,0.455788
+main,SchnorrBenchmark.verify_server_prepared,avgt,us/op,10,67.046,1.03719,66.304,67.7879,0.741962,1.54699,0.466499
+fbc-ab avgt,NipokBenchmark.verify_server,avgt,us/op,10,97.7689,1.4858,96.7061,98.8318,1.06288,1.51971,0.600762
+fbc-ab avgt,NipokBenchmark.verify_server_prepared,avgt,us/op,10,68.17,1.34896,67.205,69.135,0.964991,1.97882,0.54829
+fbc-ab thrpt,NipokBenchmark.verify_server,thrpt,ops/s,10,10048.4,118.6,9963.52,10133.2,84.8411,1.18029,46.1488
+fbc-ab thrpt,NipokBenchmark.verify_server_prepared,thrpt,ops/s,10,14721.1,116.725,14637.6,14804.6,83.5,0.792909,52.0105
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_libsodium[m12288_t3],avgt,ms/op,10,6.49926,0.0584777,6.45743,6.54109,0.0418324,0.899759,0.0408469
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_libsodium[m19456_t2],avgt,ms/op,10,8.04991,0.0738395,7.99709,8.10273,0.0528216,0.91727,0.0381749
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_libsodium[m47104_t1],avgt,ms/op,10,16.494,0.313586,16.2697,16.7183,0.224326,1.90121,0.12486
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_libsodium[m65536_t3],avgt,ms/op,10,55.6558,2.80648,53.6482,57.6634,2.00764,5.04257,1.32035
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_libsodium[m7168_t5],avgt,ms/op,10,5.46515,0.0247113,5.44747,5.48283,0.0176774,0.452161,0.0141892
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_libsodium[m9216_t4],avgt,ms/op,10,5.95738,0.0218659,5.94174,5.97302,0.0156419,0.367038,0.0153014
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m12288_t3],avgt,ms/op,10,12.2667,0.0397542,12.2382,12.2951,0.0284385,0.324084,0.0320622
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m19456_t2],avgt,ms/op,10,14.2545,0.062556,14.2098,14.2993,0.0447499,0.43885,0.0457237
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m47104_t1],avgt,ms/op,10,21.5198,0.267766,21.3283,21.7114,0.191548,1.24427,0.146889
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m65536_t3],avgt,ms/op,10,89.3997,4.34469,86.2917,92.5077,3.10801,4.85985,1.50517
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m65536_t3_p4],avgt,ms/op,10,92.0789,5.61167,88.0646,96.0933,4.01434,6.09441,1.87384
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m7168_t5],avgt,ms/op,10,11.1128,0.121316,11.026,11.1996,0.0867839,1.09167,0.0613377
+argon2id-sensitivity,Argon2SensitivityBenchmark.verify_server_bc[m9216_t4],avgt,ms/op,10,11.7673,0.0506838,11.731,11.8035,0.036257,0.430718,0.0337036

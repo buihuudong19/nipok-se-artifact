@@ -1,0 +1,9 @@
+benchmark (us/op)                        n G/T     GraalVM    CV%     Temurin    CV%     T/G |     old (G)     new (T) new/old
+Argon2Benchmark.verify_server             4/4   137350.792   2.23   88708.527   6.68   0.646 |  146516.609   99397.455   0.678
+EdDsaAuthBenchmark.verify_server          4/4       74.572   0.88      87.265   0.54   1.170 |      76.180      91.763   1.205
+MlDsaAuthBenchmark.verify_server          4/4      101.597   0.31      99.539   0.77   0.980 |     102.335      99.409   0.971
+NipokBenchmark.verify_server              4/4       80.189   0.56      93.623   0.70   1.168 |      81.518      95.643   1.173
+NipokBenchmark.verify_server_prepared     4/4       53.663   3.31      65.177   0.36   1.215 |      55.136      67.191   1.219
+CV% = standard deviation between forks / mean. T/G = Temurin/GraalVM within the same session (> 1: Temurin is slower).
+new/old = main JMH step of this campaign (main/official-final.json; OpenJDK 64-Bit Server VM 24+36, 10 forks) / JMH run of the submitted version (six-mechanisms/official-final.json; OpenJDK 64-Bit Server VM 24+36-jvmci-b01, 5 forks).
+Fixed parameters: group=elisabeth, shaProvider=default, sigProvider=elisabeth, backend=sunjce.

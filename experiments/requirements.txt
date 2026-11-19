@@ -1,0 +1,8 @@
+# Python packages of the analysis scripts in experiments/ (Python 3.11).
+# The pinned versions are those used to generate the published results.
+numpy==1.26.4
+scipy==1.11.4
+matplotlib==3.6.3
+seaborn==0.13.2
+# Optional: second independent implementation of the conformance check (r1-c8-conformance/tools/nipok_nacl_check.py)
+PyNaCl==1.6.2

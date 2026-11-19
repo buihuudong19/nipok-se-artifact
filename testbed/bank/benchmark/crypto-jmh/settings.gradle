@@ -1,0 +1,2 @@
+// Standalone project - NOT part of the multi-project build of bank/, does NOT touch the auth-server.
+rootProject.name = 'crypto-jmh'

@@ -1,0 +1,11 @@
+metric,straus,fbc,delta,delta_ci95_forks,ref_straus,ref_fbc,ref_delta
+Mean latency (\textmu s/op),$97.77 \pm 1.06$,$\mathbf{68.17 \pm 0.96}$,$-30.3\%$,-30.3% [-31.4; -29.1],,,
+Throughput (ops/s),"10{,}048","\textbf{14{,}721}",$+46.5\%$,+46.5% [+45.1; +47.9],,,
+Capacity/core$^{\dagger}$ (ops/s),"10{,}228","14{,}669",$+43.4\%$,derived from the means,,,
+p50 / p90 (\textmu s),94.8 / 105.5,64.3 / 72.2,$-32.3$/$-31.6\%$,p50 -32.0% [-32.8; -31.2]; p90 -31.6% [-32.8; -30.4],,,
+p99 / p99.9 (\textmu s),158.0 / 576.8,114.7 / 512.5,$-27.4$/$-11.1\%$,p99 -27.7% [-29.8; -25.5]; p99.9 -4.2% [-30.0; +31.0],,,
+Max (\textmu s),"5{,}186","3{,}604",$-30.5\%$,a single sample; no CI,,,
+Allocation (B/op),"401{,}016","448{,}328",$+11.8\%$,,,,
+Allocation rate (MB/s),"3{,}911","6{,}273",$+60.4\%$,,,,
+GC count / time (ms),912 / 878,"1{,}393 / 1{,}264",$+52.7$/$+44.0\%$,"total over 10 forks x 10 measurements of 1 s (proportional to the number of forks); per measured second: Straus 9.12 collections, 8.78 ms; FBC 13.93 collections, 12.64 ms",,,
+CPU\% at 1k ops/s$^{\dagger}$,9.78,6.82,$-30.3\%$,suy ra,,,

@@ -1,0 +1,8 @@
+# Default PKI for cert-manager (CA + leaf + monitoring certificate).
+# Override with -f values-v1/v2/v3.yaml to switch to an experimental variant.
+# NOTE: applies only to the certificates issued by cert-manager (gateway-served + browser/API).
+#   The IN-MESH mTLS (workload SPIFFE certificates) is issued by istiod and CANNOT be changed here
+#   (istiod supports only RSA/ECDSA, not Ed25519).
+pki:
+  algorithm: ECDSA   # ECDSA | Ed25519 | RSA
+  size: 256          # ECDSA: 256/384/521 ; RSA: 2048/3072/4096 ; ignored for Ed25519

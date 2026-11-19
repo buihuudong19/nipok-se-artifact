@@ -1,0 +1,905 @@
+{
+ "name": "NIPoK-SE test vectors v2 (R1-C8)",
+ "version": "2",
+ "generated_by": "gen_vectors_v2.py 1.1 with nipok_ref.py 1.1 (pure Python); v1 values unchanged",
+ "changes_from_v1": [
+  "category and normalized rejection stage for every vector; explicit context and wire blob for every invalid vector; rule for every rejected key",
+  "IV05 stage corrected to noncanonical_s (v1 label 'equation'); outcome unchanged",
+  "new: TV4; IV14-IV31 (invalid proofs, malformed blobs and contexts, identities, channel bindings, forwarding between two banks); KV07-KV10; stateful scenarios SC1-SC8; deployment rules DR1-DR5; parameter profile"
+ ],
+ "encoding": {
+  "group": "edwards25519; points: 32-byte compressed (RFC 8032 §5.1.2), canonical; scalars: 32-byte little-endian, 0 <= s < l",
+  "hash": "H(c1,...,cn) = SHA-512(len(c1)||c1||...||len(cn)||cn) mod l, len = 4-byte big-endian byte length, digest read little-endian (64 bytes)",
+  "challenge": "e = H(B, V, X, utf8(id_P), N, cb, utf8(id_V)); B = basepoint encoding; cb = empty byte string when channel binding is off",
+  "nonce": "kappa_v = H(utf8('NIPoK-nonce-key-v1'), x); v = H(utf8('NIPoK-nonce-v1'), kappa_v, X, utf8(id_P), N, cb, utf8(id_V)); V = vB; s = v - e*x mod l",
+  "verify": "decode the blob (alphabet, then |raw| = 96), then s canonical (0 <= s < l), then (stateful) consume N in the nonce store, then accept iff compress(s*B + e*X) == V; e as in 'challenge' over the verifier's own context (X registered, id_P submitted, N from the blob, cb and id_V configured)",
+  "wire": "blob = base64url without padding (RFC 4648, Sec. 5) of N || V || s, 96 bytes (128 characters); any character outside the base64url alphabet, including '=', '+', '/' and white space, is rejected",
+  "enrollment_key": "X canonical encoding, [8]X != O (RFC 8235 §3.2), X in the prime-order subgroup ([l]X == O)",
+  "identity_strings": "id_P and id_V are hashed as their UTF-8 bytes, without Unicode normalization or case folding; id_P_utf8 gives the bytes when the text is ambiguous"
+ },
+ "stages": {
+  "decode_encoding": "blob not in the base64url alphabet (AS: nipok_bad_encoding)",
+  "decode_length": "decoded blob is not 96 bytes (AS: nipok_bad_proof_len)",
+  "noncanonical_s": "s >= l (AS: nipok_noncanonical_response)",
+  "nonce_store": "N not issued, already consumed or expired (AS: nipok_nonce_invalid; stateful)",
+  "equation": "compress(s*B + e*X) != V (AS: nipok_verify_fail)",
+  "key_length": "public key is not 32 bytes (registration: HTTP 400 invalid_public_point)",
+  "key_noncanonical": "y >= p, or x = 0 with the sign bit set (HTTP 400 invalid_public_point)",
+  "key_not_on_curve": "no curve point has this y (HTTP 400 invalid_public_point)",
+  "key_small_order": "[8]X = O (HTTP 400 invalid_public_point)",
+  "key_not_in_subgroup": "[l]X != O (HTTP 400 invalid_public_point)"
+ },
+ "basepoint": "5866666666666666666666666666666666666666666666666666666666666666",
+ "valid": [
+  {
+   "id": "TV1",
+   "x": "7f7f6ae1fc3f31f91102121937db596f4eebed770aaeffd052adbd14f600c908",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "id_P_utf8": "616c696365",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "kappa_v": "eeb47ae4f3fcf1368ee6fdb15c70e8ff02857ec55a0f2c347a5753159996b208",
+   "v": "3f9efa6259a5a95fc7f80e1e4e030417bf4733468796274b35b7393d0754e702",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "e": "71558d67a56ab54f8ebb742117ca64058f0b4c34dc5bfb297a55f97dfbab8103",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM",
+   "expected": "accept",
+   "category": "generation_verification"
+  },
+  {
+   "id": "TV2",
+   "x": "b349741eda1d30472abf326f94150d31ada77d3c35647827d71eb10f83b37801",
+   "X": "adfda51ae98b71093a60bac75c2cbc2da899bb91da6172925ca4511165611412",
+   "id_P": "bob",
+   "id_P_utf8": "626f62",
+   "N": "3b8a2d7c597c296d8ac52b372fa58d19bf6e6c3ddb8cf41121278deecfae5904",
+   "cb": "",
+   "id_V": "bank",
+   "kappa_v": "68bdb557ba796fc899b2aaec1265f51af06d86f3c0bde6ff4146a4e19194fc05",
+   "v": "8f50e863b68c280a9a72c690e81fd6b3e1d870092562a778b071cf0d484ef807",
+   "V": "ee40e5337c0457c9856b6d74b4a5f6bae74d37c18c4d0dbb1e0557d35e6f6486",
+   "e": "158d77d5ce2b022f8b89ef2935c1e71ae1f22eb8470be697c070c975c1d2f70c",
+   "s": "ca8ebcd47cc98c45836a0c57cc2839a8a2a15ea9ca21aea7cf737537eeb7910d",
+   "blob": "O4otfFl8KW2KxSs3L6WNGb9ubD3bjPQRISeN7s-uWQTuQOUzfARXyYVrbXS0pfa65003wYxNDbseBVfTXm9khsqOvNR8yYxFg2oMV8woOaiioV6pyiGup89zdTfut5EN",
+   "expected": "accept",
+   "category": "generation_verification"
+  },
+  {
+   "id": "TV3",
+   "x": "3a3478710bb0aefcb86b2382cdaf5906c5ef25f2ac615d93e187fe9ee813fd01",
+   "X": "dc41d3bdb8346d8a0d7d3b8833fb874df4251811426fc0f0247710f63f58bfcf",
+   "id_P": "người-dùng-01",
+   "id_P_utf8": "6e67c6b0e1bb9d692d64c3b96e672d3031",
+   "N": "be8c20c79e5c5ae3c7c19770e1a091143a0023d2ac32703e5569fd0af74ac65f",
+   "cb": "36be9f98c3dcf07acc7acbfe7b81181c6f6384daa75c0ca77fd3dfacc1340ae6",
+   "id_V": "https://bank.example/as",
+   "kappa_v": "4d8993f1871829d4ff1dd20e0131af3e7e96cecb2db04570d3cfb640490fe209",
+   "v": "af35cb6ec1736ddfceff3ff8c17e4c04eb9e414ee89f8672995e50a93e24fb07",
+   "V": "1b9ac9953e453f517b2aa434caa76b0c5e87645a81a1a1bd99a4c45d0289be2f",
+   "e": "57f6fa0d54292715940998295d1c0f2dc96bab42008795035cda35dccc6a2c01",
+   "s": "4d32b04ccc77c5d7c8f191d0d39d2d4532f6885aa3bf9e6ab56868aec0a6a902",
+   "blob": "vowgx55cWuPHwZdw4aCRFDoAI9KsMnA-VWn9CvdKxl8bmsmVPkU_UXsqpDTKp2sMXodkWoGhob2ZpMRdAom-L00ysEzMd8XXyPGR0NOdLUUy9ohao7-earVoaK7ApqkC",
+   "expected": "accept",
+   "category": "generation_verification"
+  },
+  {
+   "id": "TV4",
+   "x": "3be99cb6dfce38aa080acf89e46f1545ce1c990a11dbab27e117d1c98ff47304",
+   "X": "a3c954b95e00f0ef96acf48439d3b509a2064e6085a8a0899c6816b433765bf0",
+   "id_P": "alice",
+   "id_P_utf8": "616c696365",
+   "N": "7e22454807c8dfed5a49bfe6a86f01f5ef1b1cf837efcc038c1d8fcc16df82d9",
+   "cb": "4cefaa09d1b29b71a232b89bdde71e21e42c7602a81f178d9dac0f9339af4d5b",
+   "id_V": "https://as.bank-a.example",
+   "kappa_v": "2acb19989cea03d17a37457831b1693750907e74b17bb76611a5defc6c7dea09",
+   "v": "cc7c2b587f7dc1e84c74447e2722bf0f905b2fe5118a81cce3f1b16b9fad0d0a",
+   "V": "e718b88c7ea49f9f05153b3760446d75d81ba2e8fe1d756fa7107f8997c3b89e",
+   "e": "5e818db8b65744d36935342b542aa560994c76ab52871dfff70bcbae54fa5600",
+   "s": "8961e82294fb5eaf8d874e5b4b5fad8baeb050788c89d1eac773c04810c71a05",
+   "blob": "fiJFSAfI3-1aSb_mqG8B9e8bHPg378wDjB2PzBbfgtnnGLiMfqSfnwUVOzdgRG112Bui6P4ddW-nEH-Jl8O4nolh6CKU-16vjYdOW0tfrYuusFB4jInR6sdzwEgQxxoF",
+   "expected": "accept",
+   "category": "generation_verification",
+   "case": "bank A of the two-bank vectors: issuer URL as id_V, 32-byte cb, own key",
+   "inputs_derivation": {
+    "x": "SHA-512('NIPoK-SE v2 TV4 witness (example only)') read little-endian, mod l",
+    "N": "SHA-256('NIPoK-SE v2 nonce issued by bank A')",
+    "cb": "SHA-256('NIPoK-SE v2 example certificate of the gateway of bank A')"
+   }
+  }
+ ],
+ "invalid": [
+  {
+   "id": "IV01",
+   "base": "TV1",
+   "case": "s replaced by s + l (non-canonical encoding of the same residue)",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "cdeb14d91b8efc2f32ff51b958eb04347e7784c36109360e213eeeee197f641c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "noncanonical_s",
+   "equation_alone": "holds",
+   "category": "invalid_proof",
+   "stage": "noncanonical_s",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi83rFNkbjvwvMv9RuVjrBDR-d4TDYQk2DiE-7u4Zf2Qc"
+  },
+  {
+   "id": "IV02",
+   "base": "TV1",
+   "case": "s = l",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "edd3f55c1a631258d69cf7a2def9de1400000000000000000000000000000010",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "noncanonical_s",
+   "equation_alone": "fails",
+   "category": "invalid_proof",
+   "stage": "noncanonical_s",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-3T9VwaYxJY1pz3ot753hQAAAAAAAAAAAAAAAAAAAAQ"
+  },
+  {
+   "id": "IV03",
+   "base": "TV1",
+   "case": "one bit of s flipped (byte 0, bit 0)",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e1171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "invalid_proof",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-EXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV04",
+   "base": "TV1",
+   "case": "one bit of V flipped (byte 0, bit 0)",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8918a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "invalid_proof",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qJGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV05",
+   "base": "TV1",
+   "case": "V and s swapped",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "s": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "invalid_proof",
+   "stage": "noncanonical_s",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7rgFx98ASvq11tiWhZ68SUffneEw2EJNg4hPu7uGX9kDIgYoHu4fwLddhgock4AQhoKPMLBzJ5vz1R8v_QZKYqL",
+   "note": "v1 labeled rejected_by 'equation'; the decoding rule rejects it first, because the bytes of V read as a scalar exceed l; the outcome (reject) and equation_alone (fails) are unchanged"
+  },
+  {
+   "id": "IV06",
+   "base": "TV1",
+   "case": "mismatched identity: id_P = bob",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "bob",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "mismatched_identity",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV07",
+   "base": "TV1",
+   "case": "cross-endpoint forwarding: verifier id_V = bank-b",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank-b",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "cross_endpoint_forwarding",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV08",
+   "base": "TV1",
+   "case": "altered channel binding: cb of another certificate",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "c8ce96b45640860ba5b5fb3bd7f69817f43a85f06cf82439aa8b883b5c44a07f",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "altered_channel_binding",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV09",
+   "base": "TV1",
+   "case": "channel binding removed: cb empty",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "altered_channel_binding",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV10",
+   "base": "TV1",
+   "case": "proof replayed under another server nonce N",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "2f5a1750dc48f354ec10756d8cdc672e9f693a1b7b44af2ded3d65e70f8d67e1",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "replayed_nonce",
+   "stage": "equation",
+   "blob": "L1oXUNxI81TsEHVtjNxnLp9pOht7RK8t7T1l5w-NZ-GIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV11",
+   "base": "TV1",
+   "case": "wrong public key: X of TV2",
+   "X": "adfda51ae98b71093a60bac75c2cbc2da899bb91da6172925ca4511165611412",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "id_P": "alice",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "rejected_by": "equation",
+   "equation_alone": "fails",
+   "category": "mismatched_identity",
+   "stage": "equation",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV12",
+   "base": "TV1",
+   "case": "malformed blob: 95 bytes",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2Q",
+   "expected": "reject",
+   "rejected_by": "length",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "category": "malformed_context",
+   "stage": "decode_length"
+  },
+  {
+   "id": "IV13",
+   "base": "TV1",
+   "case": "malformed blob: standard base64 alphabet instead of base64url",
+   "blob": "M8KGHomo/WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL/0GSmKi+AXH3wBK+rXW2JaFnrxJR9+d4TDYQk2DiE+7u4Zf2QM",
+   "expected": "reject",
+   "rejected_by": "encoding (only when the string contains + or /)",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "category": "malformed_context",
+   "stage": "decode_encoding"
+  },
+  {
+   "id": "IV14",
+   "base": "TV1",
+   "case": "s replaced by l - s (canonical, wrong value)",
+   "category": "invalid_proof",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "0dbcd6e0183828807a3a9d8c6408b9f581887b3c9ef6c9f1dec11111e6809b03",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKiw281uAYOCiAejqdjGQIufWBiHs8nvbJ8d7BERHmgJsD"
+  },
+  {
+   "id": "IV15",
+   "base": "TV1",
+   "case": "s replaced by s + 15l (largest multiple that fits in 32 bytes; bit 255 set)",
+   "category": "invalid_proof",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "noncanonical_s",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "c38286ee8cf9fd00eb92dca2859536587f7784c36109360e213eeeee197f64fc",
+   "equation_alone": "holds",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi8OChu6M-f0A65LcooWVNlh_d4TDYQk2DiE-7u4Zf2T8",
+   "equation_alone_libsodium": "fails",
+   "note": "with s reduced mod l (elisabeth) the equation alone holds; libsodium ignores bit 255 of a scalar, so the equation alone fails there: without the canonical-s rule the two backends disagree"
+  },
+  {
+   "id": "IV16",
+   "base": "TV1",
+   "case": "V = identity encoding and s = 0",
+   "category": "invalid_proof",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "0100000000000000000000000000000000000000000000000000000000000000",
+   "s": "0000000000000000000000000000000000000000000000000000000000000000",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7oBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  },
+  {
+   "id": "IV17",
+   "base": "TV1",
+   "case": "sign bit of V flipped (the point -V)",
+   "category": "invalid_proof",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a0b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKC-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV18",
+   "base": "TV1",
+   "case": "malformed blob: 97 bytes (one zero byte appended)",
+   "category": "malformed_context",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "decode_length",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QMAA"
+  },
+  {
+   "id": "IV19",
+   "base": "TV1",
+   "case": "malformed blob: empty string",
+   "category": "malformed_context",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "decode_length",
+   "blob": ""
+  },
+  {
+   "id": "IV20",
+   "base": "TV1",
+   "case": "malformed blob: valid blob followed by '=='",
+   "category": "malformed_context",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "decode_encoding",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM=="
+  },
+  {
+   "id": "IV21",
+   "base": "TV1",
+   "case": "malformed blob: line feed inserted after 64 characters",
+   "category": "malformed_context",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "decode_encoding",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIa\nCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV22",
+   "base": "TV3",
+   "case": "id_P in Unicode NFD at the verifier, the proof used NFC (TV3)",
+   "category": "malformed_context",
+   "X": "dc41d3bdb8346d8a0d7d3b8833fb874df4251811426fc0f0247710f63f58bfcf",
+   "id_P": "người-dùng-01",
+   "cb": "36be9f98c3dcf07acc7acbfe7b81181c6f6384daa75c0ca77fd3dfacc1340ae6",
+   "id_V": "https://bank.example/as",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "be8c20c79e5c5ae3c7c19770e1a091143a0023d2ac32703e5569fd0af74ac65f",
+   "V": "1b9ac9953e453f517b2aa434caa76b0c5e87645a81a1a1bd99a4c45d0289be2f",
+   "s": "4d32b04ccc77c5d7c8f191d0d39d2d4532f6885aa3bf9e6ab56868aec0a6a902",
+   "equation_alone": "fails",
+   "blob": "vowgx55cWuPHwZdw4aCRFDoAI9KsMnA-VWn9CvdKxl8bmsmVPkU_UXsqpDTKp2sMXodkWoGhob2ZpMRdAom-L00ysEzMd8XXyPGR0NOdLUUy9ohao7-earVoaK7ApqkC",
+   "id_P_utf8": "6e6775cc9b6fcc9bcc80692d6475cc806e672d3031"
+  },
+  {
+   "id": "IV23",
+   "base": "TV1",
+   "case": "field boundary moved: cb' = cb || 'b' (33 bytes), id_V' = 'ank'; plain concatenation would be identical",
+   "category": "malformed_context",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d4162",
+   "id_V": "ank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV24",
+   "base": "TV1",
+   "case": "verifier cb truncated to 16 bytes",
+   "category": "altered_channel_binding",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e9",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV25",
+   "base": "TV2",
+   "case": "proof made with channel binding off (TV2), verifier expects cb",
+   "category": "altered_channel_binding",
+   "X": "adfda51ae98b71093a60bac75c2cbc2da899bb91da6172925ca4511165611412",
+   "id_P": "bob",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "3b8a2d7c597c296d8ac52b372fa58d19bf6e6c3ddb8cf41121278deecfae5904",
+   "V": "ee40e5337c0457c9856b6d74b4a5f6bae74d37c18c4d0dbb1e0557d35e6f6486",
+   "s": "ca8ebcd47cc98c45836a0c57cc2839a8a2a15ea9ca21aea7cf737537eeb7910d",
+   "equation_alone": "fails",
+   "blob": "O4otfFl8KW2KxSs3L6WNGb9ubD3bjPQRISeN7s-uWQTuQOUzfARXyYVrbXS0pfa65003wYxNDbseBVfTXm9khsqOvNR8yYxFg2oMV8woOaiioV6pyiGup89zdTfut5EN"
+  },
+  {
+   "id": "IV26",
+   "base": "TV1",
+   "case": "id_P = 'ALICE' at the verifier, the proof used 'alice'",
+   "category": "mismatched_identity",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "ALICE",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+   "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM"
+  },
+  {
+   "id": "IV27",
+   "base": "TV1",
+   "case": "prover hashed another public key (X of TV2) in place of its own X",
+   "category": "mismatched_identity",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "id_P": "alice",
+   "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41",
+   "id_V": "bank",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba",
+   "V": "b2be84a0b1df2dfcac69a55920e8bf8557e46c1857fc5c447415b10fac6ad508",
+   "s": "103d71c17010421a1d688ab5dd67899e0672b0060cdf2a9c2a0de82232037c0c",
+   "equation_alone": "fails",
+   "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qyvoSgsd8t_KxppVkg6L-FV-RsGFf8XER0FbEPrGrVCBA9ccFwEEIaHWiKtd1niZ4GcrAGDN8qnCoN6CIyA3wM"
+  },
+  {
+   "id": "IV28",
+   "base": "TV4",
+   "case": "TV4 proof (bank A) forwarded to bank B: id_V and cb of bank B",
+   "category": "cross_endpoint_forwarding",
+   "X": "a3c954b95e00f0ef96acf48439d3b509a2064e6085a8a0899c6816b433765bf0",
+   "id_P": "alice",
+   "cb": "f4e4c9cc23fe6fcf7780f2aeb71c6b82478b74d82cde5614392537f12c2dcc51",
+   "id_V": "https://as.bank-b.example",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "7e22454807c8dfed5a49bfe6a86f01f5ef1b1cf837efcc038c1d8fcc16df82d9",
+   "V": "e718b88c7ea49f9f05153b3760446d75d81ba2e8fe1d756fa7107f8997c3b89e",
+   "s": "8961e82294fb5eaf8d874e5b4b5fad8baeb050788c89d1eac773c04810c71a05",
+   "equation_alone": "fails",
+   "blob": "fiJFSAfI3-1aSb_mqG8B9e8bHPg378wDjB2PzBbfgtnnGLiMfqSfnwUVOzdgRG112Bui6P4ddW-nEH-Jl8O4nolh6CKU-16vjYdOW0tfrYuusFB4jInR6sdzwEgQxxoF"
+  },
+  {
+   "id": "IV29",
+   "base": "TV4",
+   "case": "TV4 proof checked with the id_V of bank B only (same gateway certificate)",
+   "category": "cross_endpoint_forwarding",
+   "X": "a3c954b95e00f0ef96acf48439d3b509a2064e6085a8a0899c6816b433765bf0",
+   "id_P": "alice",
+   "cb": "4cefaa09d1b29b71a232b89bdde71e21e42c7602a81f178d9dac0f9339af4d5b",
+   "id_V": "https://as.bank-b.example",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "7e22454807c8dfed5a49bfe6a86f01f5ef1b1cf837efcc038c1d8fcc16df82d9",
+   "V": "e718b88c7ea49f9f05153b3760446d75d81ba2e8fe1d756fa7107f8997c3b89e",
+   "s": "8961e82294fb5eaf8d874e5b4b5fad8baeb050788c89d1eac773c04810c71a05",
+   "equation_alone": "fails",
+   "blob": "fiJFSAfI3-1aSb_mqG8B9e8bHPg378wDjB2PzBbfgtnnGLiMfqSfnwUVOzdgRG112Bui6P4ddW-nEH-Jl8O4nolh6CKU-16vjYdOW0tfrYuusFB4jInR6sdzwEgQxxoF"
+  },
+  {
+   "id": "IV30",
+   "base": "TV4",
+   "case": "TV4 proof checked with the cb of bank B only (same id_V)",
+   "category": "cross_endpoint_forwarding",
+   "X": "a3c954b95e00f0ef96acf48439d3b509a2064e6085a8a0899c6816b433765bf0",
+   "id_P": "alice",
+   "cb": "f4e4c9cc23fe6fcf7780f2aeb71c6b82478b74d82cde5614392537f12c2dcc51",
+   "id_V": "https://as.bank-a.example",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "7e22454807c8dfed5a49bfe6a86f01f5ef1b1cf837efcc038c1d8fcc16df82d9",
+   "V": "e718b88c7ea49f9f05153b3760446d75d81ba2e8fe1d756fa7107f8997c3b89e",
+   "s": "8961e82294fb5eaf8d874e5b4b5fad8baeb050788c89d1eac773c04810c71a05",
+   "equation_alone": "fails",
+   "blob": "fiJFSAfI3-1aSb_mqG8B9e8bHPg378wDjB2PzBbfgtnnGLiMfqSfnwUVOzdgRG112Bui6P4ddW-nEH-Jl8O4nolh6CKU-16vjYdOW0tfrYuusFB4jInR6sdzwEgQxxoF"
+  },
+  {
+   "id": "IV31",
+   "base": "TV4",
+   "case": "relay: agent answers a nonce of bank B while connected to bank A (cb and id_V of A); checked at bank B",
+   "category": "cross_endpoint_forwarding",
+   "X": "a3c954b95e00f0ef96acf48439d3b509a2064e6085a8a0899c6816b433765bf0",
+   "id_P": "alice",
+   "cb": "f4e4c9cc23fe6fcf7780f2aeb71c6b82478b74d82cde5614392537f12c2dcc51",
+   "id_V": "https://as.bank-b.example",
+   "expected": "reject",
+   "stage": "equation",
+   "N": "89dadc75903fa7e63630eebbabedefe0b9df61e595246adbb54b64d6e0c6a857",
+   "V": "288b72a638bb21cdb0486d494378a1870632ffe0da3213842906ce204dcaa8da",
+   "s": "0f304e930679cbbacdf9486d04e9311eceec68a25e5135878df1f96384dfdb08",
+   "equation_alone": "fails",
+   "blob": "idrcdZA_p-Y2MO67q-3v4LnfYeWVJGrbtUtk1uDGqFcoi3KmOLshzbBIbUlDeKGHBjL_4NoyE4QpBs4gTcqo2g8wTpMGecu6zflIbQTpMR7O7GiiXlE1h43x-WOE39sI"
+  }
+ ],
+ "enrollment_keys": [
+  {
+   "id": "KV01",
+   "case": "X of TV1",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58",
+   "expected": "accept"
+  },
+  {
+   "id": "KV02",
+   "case": "identity point",
+   "X": "0100000000000000000000000000000000000000000000000000000000000000",
+   "expected": "reject",
+   "rule": "key_small_order"
+  },
+  {
+   "id": "KV03",
+   "case": "point of order 8",
+   "X": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+   "expected": "reject",
+   "rule": "key_small_order"
+  },
+  {
+   "id": "KV04",
+   "case": "mixed-order point: X(TV1) + T, T of order 8",
+   "X": "d086be7013b9505645b99bf257119e4eef77975891e27d04036746ab0dcd4f39",
+   "expected": "reject",
+   "rule": "key_not_in_subgroup"
+  },
+  {
+   "id": "KV05",
+   "case": "non-canonical encoding: y = 3 + p",
+   "X": "f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "expected": "reject",
+   "rule": "key_noncanonical"
+  },
+  {
+   "id": "KV06",
+   "case": "y with no point on the curve",
+   "X": "0200000000000000000000000000000000000000000000000000000000000000",
+   "expected": "reject",
+   "rule": "key_not_on_curve"
+  },
+  {
+   "id": "KV07",
+   "case": "point of order 2 (y = p - 1)",
+   "X": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "expected": "reject",
+   "rule": "key_small_order"
+  },
+  {
+   "id": "KV08",
+   "case": "point of order 4 (y = 0)",
+   "X": "0000000000000000000000000000000000000000000000000000000000000000",
+   "expected": "reject",
+   "rule": "key_small_order"
+  },
+  {
+   "id": "KV09",
+   "case": "31 bytes",
+   "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e",
+   "expected": "reject",
+   "rule": "key_length"
+  },
+  {
+   "id": "KV10",
+   "case": "x = 0 with the sign bit set (non-canonical encoding of the identity)",
+   "X": "0100000000000000000000000000000000000000000000000000000000000080",
+   "expected": "reject",
+   "rule": "key_noncanonical"
+  }
+ ],
+ "scenarios": [
+  {
+   "id": "SC1",
+   "category": "replayed_nonce",
+   "case": "the same accepted blob submitted a second time",
+   "steps": "issue N; submit a valid blob for N (accept); submit the same blob again",
+   "expected": "reject at nonce_store",
+   "harness": [
+    "D1a",
+    "D1b"
+   ]
+  },
+  {
+   "id": "SC2",
+   "category": "replayed_nonce",
+   "case": "a fresh, valid proof for a nonce already consumed",
+   "steps": "issue N; log in with N; prove again for N and submit",
+   "expected": "reject at nonce_store",
+   "harness": [
+    "D2"
+   ]
+  },
+  {
+   "id": "SC3",
+   "category": "replayed_nonce",
+   "case": "a failed attempt consumes the nonce",
+   "steps": "issue N; submit an invalid proof for N (reject); submit a valid proof for N",
+   "expected": "reject at nonce_store",
+   "harness": [
+    "D3a",
+    "D3b"
+   ]
+  },
+  {
+   "id": "SC4",
+   "category": "replayed_nonce",
+   "case": "nonce never issued by the verifier",
+   "steps": "draw 32 random bytes as N; prove and submit",
+   "expected": "reject at nonce_store",
+   "harness": [
+    "C13"
+   ]
+  },
+  {
+   "id": "SC5",
+   "category": "replayed_nonce",
+   "case": "nonce used after its TTL",
+   "steps": "issue N; wait longer than the TTL (60 s in the prototype); submit a valid proof",
+   "expected": "reject at nonce_store",
+   "harness": [
+    "D4"
+   ]
+  },
+  {
+   "id": "SC6",
+   "category": "replayed_nonce",
+   "case": "one valid blob submitted from k sessions at once",
+   "steps": "issue N; submit the same valid blob from k sessions concurrently",
+   "expected": "exactly one accept",
+   "harness": [
+    "D5"
+   ]
+  },
+  {
+   "id": "SC7",
+   "category": "replayed_nonce",
+   "case": "nonces issued before a restart of the verifier",
+   "steps": "issue N1, N2; consume N1; restart the authorization server; submit valid proofs for N2 and N1",
+   "expected": "both reject (in-memory nonce store)",
+   "harness": []
+  },
+  {
+   "id": "SC8",
+   "category": "lockout",
+   "case": "lockout after repeated failures (bank policy)",
+   "steps": "submit 5 invalid proofs for one user; then a valid one",
+   "expected": "reject until the lockout ends (60 s, doubling per further failure, at most 900 s)",
+   "harness": []
+  }
+ ],
+ "deployment_rules": [
+  {
+   "id": "DR1",
+   "rule": "channel binding on at both ends",
+   "why": "a proof without cb is rejected by a verifier that expects cb, and a verifier without an expected cb rejects a bound proof (fail closed)",
+   "harness": [
+    "F2",
+    "F3"
+   ]
+  },
+  {
+   "id": "DR2",
+   "rule": "trust a forwarded cb header only when the gateway overwrites it",
+   "why": "with app.psu.nipok.trust-forwarded-cb-header=true and no overwrite, a client chooses cb and a relay passes",
+   "harness": [
+    "F4",
+    "F5"
+   ]
+  },
+  {
+   "id": "DR3",
+   "rule": "a distinct id_V per verifier (the issuer identifier of its authorization server)",
+   "why": "with cb off and a shared id_V such as the default 'bank', a proof relayed between two banks is accepted; distinct id_V values stop it even with cb off",
+   "harness": [
+    "G3",
+    "G4"
+   ]
+  },
+  {
+   "id": "DR4",
+   "rule": "id_P exchanged byte for byte (NFC recommended for non-ASCII names)",
+   "why": "the verifier hashes the submitted bytes; NFC and NFD forms of one name give different challenges",
+   "harness": [
+    "C11",
+    "C12"
+   ]
+  },
+  {
+   "id": "DR5",
+   "rule": "keys checked at registration (canonical, [8]X != O, [l]X == O) and one key per PSU and method",
+   "why": "every verifier, whatever its library, then accepts the same set of keys; a second registration returns 409",
+   "harness": [
+    "H5",
+    "H6",
+    "R4",
+    "R5",
+    "R8"
+   ]
+  }
+ ],
+ "profile": [
+  {
+   "parameter": "suite",
+   "value": "edwards25519 prime-order subgroup, SHA-512, 4-byte length prefixes; untagged challenge; nonce tags NIPoK-nonce-key-v1, NIPoK-nonce-v1",
+   "set_by": "protocol version",
+   "if_mismatched": "equation"
+  },
+  {
+   "parameter": "wire",
+   "value": "POST /psu/auth, form field password = base64url(N || V || s), 96 bytes",
+   "set_by": "protocol version",
+   "if_mismatched": "decode_encoding / decode_length"
+  },
+  {
+   "parameter": "N",
+   "value": "32 random bytes in field nipokNonce of GET /psu/login-page; single use; TTL 60 s; store keyed by N, at most 100000 live nonces",
+   "set_by": "authorization server",
+   "if_mismatched": "nonce_store"
+  },
+  {
+   "parameter": "id_V",
+   "value": "app.psu.nipok.verifier-id (prototype: 'bank'); deployment: issuer identifier, distinct per bank",
+   "set_by": "bank",
+   "if_mismatched": "equation"
+  },
+  {
+   "parameter": "cb",
+   "value": "SHA-256 of the DER leaf certificate of the bank gateway (tls-server-end-point); agent: from its TLS handshake; AS: app.psu.nipok.expected-cb",
+   "set_by": "bank (certificate)",
+   "if_mismatched": "equation"
+  },
+  {
+   "parameter": "id_P",
+   "value": "UTF-8 bytes of the username registered at the bank",
+   "set_by": "bank account",
+   "if_mismatched": "equation"
+  },
+  {
+   "parameter": "X",
+   "value": "32-byte canonical point of order l; one per PSU and method at each bank",
+   "set_by": "customer agent (wallet)",
+   "if_mismatched": "registration rejected (400)"
+  },
+  {
+   "parameter": "registration",
+   "value": "POST /psu/register (username, method=NIPOK, publicKey) with X-Onboarding-Token; 201, 400, 403, 409",
+   "set_by": "bank onboarding",
+   "if_mismatched": "403 / 400 / 409"
+  },
+  {
+   "parameter": "lockout",
+   "value": "5 consecutive failures, then 60 s, doubling per further failure, at most 900 s",
+   "set_by": "bank policy",
+   "if_mismatched": "-"
+  }
+ ],
+ "two_bank_inputs": {
+  "bank_A": {
+   "id_V": "https://as.bank-a.example",
+   "cb": "4cefaa09d1b29b71a232b89bdde71e21e42c7602a81f178d9dac0f9339af4d5b",
+   "N": "7e22454807c8dfed5a49bfe6a86f01f5ef1b1cf837efcc038c1d8fcc16df82d9"
+  },
+  "bank_B": {
+   "id_V": "https://as.bank-b.example",
+   "cb": "f4e4c9cc23fe6fcf7780f2aeb71c6b82478b74d82cde5614392537f12c2dcc51",
+   "N": "89dadc75903fa7e63630eebbabedefe0b9df61e595246adbb54b64d6e0c6a857"
+  },
+  "derivation": "cb = SHA-256('NIPoK-SE v2 example certificate of the gateway of bank A|B'), N = SHA-256('NIPoK-SE v2 nonce issued by bank A|B')"
+ }
+}

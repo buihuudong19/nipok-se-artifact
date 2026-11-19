@@ -1,3 +1,0 @@
-time="2026-08-12T12:56:03+07:00" level=warning msg="Insufficient VUs, reached 64 active VUs and cannot initialize more" executor=constant-arrival-rate scenario=cold_start
-
-  nipok/cold_start rep0: rps=9.57 p99=8049ms ok=931 fail=1 data_ok=100%

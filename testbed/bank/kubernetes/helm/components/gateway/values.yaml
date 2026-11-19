@@ -1,0 +1,45 @@
+fullnameOverride: gateway
+
+image:
+  name: gateway
+
+ports:
+  - containerPort: 8443
+
+env:
+  SPRING_PROFILES_ACTIVE: "docker"
+
+livenessProbe_enabled: true
+livenessProbe:
+  httpGet:
+    scheme: HTTPS
+    port: 8443
+readinessProbe_enabled: true
+readinessProbe:
+  httpGet:
+    scheme: HTTPS
+    port: 8443
+
+configmap:
+  enabled: true
+  volumeMounts:
+    mountPath: /config
+
+keystoreSecret:
+  enabled: true
+
+secretVolumes:
+  - name: gateway-keystore
+    secretName: gateway-keystore
+    mountPath: /keystore
+
+service:
+  # ClusterIP: Spring Cloud Gateway is an internal service, NOT exposed externally.
+  # External traffic enters through the Istio IngressGateway (NodePort 30443) -> VirtualService.
+  # NodePort 30443 belongs to istio-ingressgateway (see 03-deploy-bank.sh, PHASE 2).
+  type: ClusterIP
+  ports:
+  - name: https-gateway
+    port: 443
+    targetPort: 8443
+

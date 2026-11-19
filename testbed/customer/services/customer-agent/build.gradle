@@ -1,0 +1,39 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.openbanking.services.agent.customer'
+version = '1.0.0-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(24)
+	}
+}
+
+repositories {
+	mavenLocal()    // psu-auth-spi (NIPoK crypto shared by server and client) published by the bank build
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	// Prometheus for the journey metrics - same as the other services.
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+	// jsoup: scrape form login + consent (thay vai browser parse HTML).
+	implementation 'org.jsoup:jsoup:1.18.1'
+	// NIPoK - crypto prove (SimulatorWalletProvider/NipokEngine/Ed25519Group) SHARED with
+	// the auth-server (verify). Run publishToMavenLocal in the bank build first (see 02-deploy-customer-agent.sh).
+	implementation 'com.openbanking:psu-auth-spi:1.0.0'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

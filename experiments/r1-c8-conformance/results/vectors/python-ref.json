@@ -1,0 +1,558 @@
+{
+ "tool": "nipok_ref.py 1.1 (pure Python, standard library only)",
+ "python": "3.11.18",
+ "vectors_file": "testbed/bank/psu-auth-spi/src/test/resources/nipok-test-vectors-v2.json",
+ "vectors_name": "NIPoK-SE test vectors v2 (R1-C8)",
+ "total": 45,
+ "matching": 45,
+ "mismatching": 0,
+ "results": [
+  {
+   "id": "TV1",
+   "category": "generation_verification",
+   "expected": "accept",
+   "result": "accept",
+   "stage": null,
+   "match": true,
+   "detail": {
+    "X": true,
+    "kappa_v": true,
+    "v": true,
+    "V": true,
+    "e": true,
+    "s": true,
+    "blob": true,
+    "verify": true
+   }
+  },
+  {
+   "id": "TV2",
+   "category": "generation_verification",
+   "expected": "accept",
+   "result": "accept",
+   "stage": null,
+   "match": true,
+   "detail": {
+    "X": true,
+    "kappa_v": true,
+    "v": true,
+    "V": true,
+    "e": true,
+    "s": true,
+    "blob": true,
+    "verify": true
+   }
+  },
+  {
+   "id": "TV3",
+   "category": "generation_verification",
+   "expected": "accept",
+   "result": "accept",
+   "stage": null,
+   "match": true,
+   "detail": {
+    "X": true,
+    "kappa_v": true,
+    "v": true,
+    "V": true,
+    "e": true,
+    "s": true,
+    "blob": true,
+    "verify": true
+   }
+  },
+  {
+   "id": "TV4",
+   "category": "generation_verification",
+   "expected": "accept",
+   "result": "accept",
+   "stage": null,
+   "match": true,
+   "detail": {
+    "X": true,
+    "kappa_v": true,
+    "v": true,
+    "V": true,
+    "e": true,
+    "s": true,
+    "blob": true,
+    "verify": true
+   }
+  },
+  {
+   "id": "IV01",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "noncanonical_s",
+   "expected_stage": "noncanonical_s",
+   "match": true,
+   "detail": {
+    "equation_alone": "holds",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV02",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "noncanonical_s",
+   "expected_stage": "noncanonical_s",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV03",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV04",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV05",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "noncanonical_s",
+   "expected_stage": "noncanonical_s",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV06",
+   "category": "mismatched_identity",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV07",
+   "category": "cross_endpoint_forwarding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV08",
+   "category": "altered_channel_binding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV09",
+   "category": "altered_channel_binding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV10",
+   "category": "replayed_nonce",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV11",
+   "category": "mismatched_identity",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV12",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "decode_length",
+   "expected_stage": "decode_length",
+   "match": true,
+   "detail": {}
+  },
+  {
+   "id": "IV13",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "decode_encoding",
+   "expected_stage": "decode_encoding",
+   "match": true,
+   "detail": {}
+  },
+  {
+   "id": "IV14",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV15",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "noncanonical_s",
+   "expected_stage": "noncanonical_s",
+   "match": true,
+   "detail": {
+    "equation_alone": "holds",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV16",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV17",
+   "category": "invalid_proof",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV18",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "decode_length",
+   "expected_stage": "decode_length",
+   "match": true,
+   "detail": {}
+  },
+  {
+   "id": "IV19",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "decode_length",
+   "expected_stage": "decode_length",
+   "match": true,
+   "detail": {}
+  },
+  {
+   "id": "IV20",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "decode_encoding",
+   "expected_stage": "decode_encoding",
+   "match": true,
+   "detail": {}
+  },
+  {
+   "id": "IV21",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "decode_encoding",
+   "expected_stage": "decode_encoding",
+   "match": true,
+   "detail": {}
+  },
+  {
+   "id": "IV22",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV23",
+   "category": "malformed_context",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV24",
+   "category": "altered_channel_binding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV25",
+   "category": "altered_channel_binding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV26",
+   "category": "mismatched_identity",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV27",
+   "category": "mismatched_identity",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV28",
+   "category": "cross_endpoint_forwarding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV29",
+   "category": "cross_endpoint_forwarding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV30",
+   "category": "cross_endpoint_forwarding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "IV31",
+   "category": "cross_endpoint_forwarding",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "equation",
+   "expected_stage": "equation",
+   "match": true,
+   "detail": {
+    "equation_alone": "fails",
+    "blob_equals_fields": true
+   }
+  },
+  {
+   "id": "KV01",
+   "category": "key_registration",
+   "expected": "accept",
+   "result": "accept",
+   "stage": null,
+   "expected_stage": null,
+   "match": true
+  },
+  {
+   "id": "KV02",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_small_order",
+   "expected_stage": "key_small_order",
+   "match": true
+  },
+  {
+   "id": "KV03",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_small_order",
+   "expected_stage": "key_small_order",
+   "match": true
+  },
+  {
+   "id": "KV04",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_not_in_subgroup",
+   "expected_stage": "key_not_in_subgroup",
+   "match": true
+  },
+  {
+   "id": "KV05",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_noncanonical",
+   "expected_stage": "key_noncanonical",
+   "match": true
+  },
+  {
+   "id": "KV06",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_not_on_curve",
+   "expected_stage": "key_not_on_curve",
+   "match": true
+  },
+  {
+   "id": "KV07",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_small_order",
+   "expected_stage": "key_small_order",
+   "match": true
+  },
+  {
+   "id": "KV08",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_small_order",
+   "expected_stage": "key_small_order",
+   "match": true
+  },
+  {
+   "id": "KV09",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_length",
+   "expected_stage": "key_length",
+   "match": true
+  },
+  {
+   "id": "KV10",
+   "category": "key_registration",
+   "expected": "reject",
+   "result": "reject",
+   "stage": "key_noncanonical",
+   "expected_stage": "key_noncanonical",
+   "match": true
+  }
+ ]
+}

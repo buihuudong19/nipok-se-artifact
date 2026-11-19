@@ -1,0 +1,15 @@
+% Argon2id sensitivity rows computed by c6_jmh_agg.py: library & m (MiB) & t & p & ms/op [95% CI] & x NIPoK verify
+BC (main) & 64 & 3 & 1 & 99.40 [95.32, 103.48] & 1{,}479 [1{,}416, 1{,}541] \\  % m65536_t3; testbed (Argon2Params.financialDefault, p=1) - main step (Argon2Benchmark)
+libsodium & 64 & 3 & 1 & 55.66 [53.65, 57.66] & 828 [799, 858] \\  % m65536_t3; testbed (Argon2Params.financialDefault, p=1)
+libsodium & 46 & 1 & 1 & 16.49 [16.27, 16.72] & 246 [241, 250] \\  % m47104_t1; OWASP 1
+libsodium & 19 & 2 & 1 & 8.05 [8.00, 8.10] & 120 [118, 122] \\  % m19456_t2; OWASP 2 (password_owasp)
+libsodium & 12 & 3 & 1 & 6.50 [6.46, 6.54] & 97 [95, 98] \\  % m12288_t3; OWASP 3
+libsodium & 9 & 4 & 1 & 5.96 [5.94, 5.97] & 89 [88, 90] \\  % m9216_t4; OWASP 4
+libsodium & 7 & 5 & 1 & 5.47 [5.45, 5.48] & 81 [80, 82] \\  % m7168_t5; OWASP 5
+BC & 64 & 3 & 1 & 89.40 [86.29, 92.51] & 1{,}331 [1{,}284, 1{,}377] \\  % m65536_t3; testbed (Argon2Params.financialDefault, p=1)
+BC & 64 & 3 & 4 & 92.08 [88.06, 96.09] & 1{,}370 [1{,}311, 1{,}428] \\  % m65536_t3_p4; RFC 9106 Section 4, second recommended option (p=4)
+BC & 46 & 1 & 1 & 21.52 [21.33, 21.71] & 320 [316, 325] \\  % m47104_t1; OWASP 1
+BC & 19 & 2 & 1 & 14.25 [14.21, 14.30] & 212 [210, 215] \\  % m19456_t2; OWASP 2 (password_owasp)
+BC & 12 & 3 & 1 & 12.27 [12.24, 12.30] & 183 [180, 185] \\  % m12288_t3; OWASP 3
+BC & 9 & 4 & 1 & 11.77 [11.73, 11.80] & 175 [173, 177] \\  % m9216_t4; OWASP 4
+BC & 7 & 5 & 1 & 11.11 [11.03, 11.20] & 165 [163, 168] \\  % m7168_t5; OWASP 5

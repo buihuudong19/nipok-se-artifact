@@ -1,0 +1,32 @@
+
+== [1] output: results of benchmark-R1-C7 and benchmark-R1-C6
+
+== [2] Figure 10: journey breakdown by stage at the bank gateway
+   [ok] hop-breakdown/c7_hop_breakdown.{pdf,png,csv,txt}
+
+== [3] Figure 11: journey latency under a burst
+   [ok] burst-timeline/c7_burst_timeline.{pdf,png,csv,txt}
+
+== [4] Table 11 (ablation) and Table 12 (registration, key lifecycle, recovery, failure classes, concurrency)
+   [ok] tables/: generated bodies (every row) and the bodies printed in the paper (onecol, bold)
+
+== [5] cross-checks against C6 and within C7
+      NIPoK            match
+      Schnorr-IZK      match
+      Pure-EdDSA       match
+      Private-Key-JWT  match
+      ML-DSA-65        match
+      mTLS-PSU         match
+      Password         MISMATCH (auth-server CPU per journey C6 144.69, C7 116.40 ms: -19.6%)
+   [ok] crosscheck/: done
+
+== [6] README, MAPPING, checksums
+   [ok] 24 files, 1.4M
+
+== [7] done in 4 s
+   ./burst-timeline
+   ./crosscheck
+   ./hop-breakdown
+   ./tables
+
+   [ok] MAPPING.md lists which file gives which table, figure or macro of the paper; log: generate.log

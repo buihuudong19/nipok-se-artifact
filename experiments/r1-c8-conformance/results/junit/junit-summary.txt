@@ -1,0 +1,5 @@
+com.openbanking.psu.auth.spi.crypto.ec.LibsodiumEd25519GroupTest            tests  2  failures 0  errors 0  skipped 0
+com.openbanking.psu.auth.spi.crypto.nipok.NipokC8Test                       tests  7  failures 0  errors 0  skipped 0
+com.openbanking.psu.auth.spi.crypto.nipok.NipokC8VectorsTest                tests  2  failures 0  errors 0  skipped 0
+com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest                   tests  6  failures 0  errors 0  skipped 0
+TOTAL tests 17, failures 0, errors 0, skipped 0

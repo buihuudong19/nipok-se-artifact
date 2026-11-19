@@ -1,0 +1,9 @@
+% Values of the Lt* macros computed from benchmark-R1-C6 (6 blocks) by c6_loadtest_agg.py
+\newcommand{\LtNipokKnee}{96}  % j/s, median knee over blocks (min-max 92-96)
+\newcommand{\LtNipokThrpt}{82.6}  % j/s, constant VU 16, mean over blocks (SD 0.7)
+\newcommand{\LtNipokCpuMs}{11.3}  % ms auth-server CPU per journey, mean over blocks (SD 0.32)
+\newcommand{\LtNipokEff}{88.6}  % journeys per CPU second, mean over blocks (SD 2.4)
+\newcommand{\LtNipokVerifySharePct}{0.59}  % JMH verify / CPU per journey (67.2 us / 11295 us)
+\newcommand{\LtHealthyRate}{58.0}  % j/s at 60% of the knee, median p99 102 ms <= 120 ms
+\newcommand{\LtPwdOwaspThrpt}{66.9}  % j/s, Password (OWASP parameters) (m=19456,t=2,p=1), constant-VU 16 (SD 1.1)
+\newcommand{\LtPwdOwaspCpuMs}{54.0}  % ms auth-server CPU per journey, Password (OWASP parameters) (SD 1.65)

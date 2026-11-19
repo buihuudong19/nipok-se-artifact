@@ -1,0 +1,67 @@
+server.port: 80
+server.forward-headers-strategy: framework
+
+spring.application.name: auth-server
+
+# Separate PostgreSQL database (customer_identity) for the PSU credentials. Override through env.
+spring.datasource:
+  url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/customer_identity}"
+  username: "${SPRING_DATASOURCE_USERNAME:user}"
+  password: "${SPRING_DATASOURCE_PASSWORD:}"
+spring.jpa:
+  hibernate.ddl-auto: update      # tables created from the entities (production: explicit Flyway DDL)
+  open-in-view: false
+  properties.hibernate.jdbc.time_zone: UTC
+
+app:
+  issuer-uri: http://localhost:80
+  # Argon2id pepper (base64) - server secret. Override through env APP_PSU_PEPPER (Kubernetes secret).
+  psu:
+    pepper: "${APP_PSU_PEPPER:}"
+    # A/B testing - PSU mechanism ENABLED (only one provider is loaded -> fair measurement):
+    #   password (Argon2id) | nipok (RFC 8235) | mtls (PSU-mTLS Ed25519, RFC 8410) | schnorr_interactive | ed25519 | private_key_jwt | ml_dsa
+    auth:
+      active-method: "${APP_PSU_AUTH_ACTIVE_METHOD:password}"
+    # PSU-mTLS baseline. The certificate arrives in XFCC (verified by Envoy at the ingress); the auth-server does
+    # identity binding + chain trust + (optional) revocation. See docs/PSU-MTLS.md.
+    mtls:
+      # PEM with 1+ Ed25519 CA certificates issued by the bank for PSUs (trust anchor). Mounted from a Kubernetes secret.
+      trust-anchor-path: "${APP_PSU_MTLS_TRUST_ANCHOR_PATH:}"
+      # JCA provider for Ed25519 verification: Conscrypt (BoringSSL, native) | SunEC (pure Java, fallback).
+      signature-provider: "${APP_PSU_MTLS_SIGNATURE_PROVIDER:Conscrypt}"
+      # Revocation: off (short-lived certificates - recommended) | crl
+      revocation: "${APP_PSU_MTLS_REVOCATION:off}"
+      crl-path: "${APP_PSU_MTLS_CRL_PATH:}"
+  # Legacy client secrets externalised and hashed with BCrypt (no hard-coded {noop} in the source; STRIDE: elevation of privilege).
+  # The values below are BCrypt hashes of random values that were discarded after hashing, so these legacy clients
+  # cannot authenticate until a deployment sets its own BCrypt hash through env: APP_CLIENTS_WRITER_SECRET / APP_CLIENTS_READER_SECRET.
+  clients:
+    writer-secret: "{bcrypt}$2b$10$tKVdPf5WlzWQsbdUwecBlONS24qBbZeHkrn39R9SAgKeaVwkRAmUa"
+    reader-secret: "{bcrypt}$2b$10$7o1/gibS4lzmgL/Au/Qfsej/4O7vOuoyrZc5VhxfRHXatc7txXdFu"
+  ed25519:
+    # Ed25519 implementation used to sign access tokens. The ids match those of the JMH benchmark
+    # (bank/benchmark/crypto-jmh), so that the numbers can be compared.
+    #   conscrypt-boringssl - DEFAULT, Google BoringSSL through Conscrypt (native, fastest)
+    #   jca-sunec           - JDK SunEC, pure Java; safety fallback if Conscrypt fails
+    #   bc-jca              - BouncyCastle through the JCA
+    #   bc-lightweight      - BouncyCastle lightweight API
+    #   tink                - Google Tink (subtle Ed25519)
+    #   libsodium-*         - libsodium through JNA or Panama FFM
+    # Can be overridden with the environment variable APP_ED25519_PROVIDER.
+    provider: ${APP_ED25519_PROVIDER:conscrypt-boringssl}
+
+
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
+
+logging:
+  level:
+    root: INFO
+
+management.endpoint.health.probes.enabled: true
+
+server.shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 10s
+---
+spring.config.activate.on-profile: docker
+server.port: 80

@@ -1,0 +1,16 @@
+item,value,ref_value,manuscript_context
+curve_verify_range,67.0–68.9 µs,,"""53--55~µs for the curve schemes"""
+three_ops_sum,141.4 [140.5; 142.3] µs,,"""three protocol operations together stay below 120~µs"""
+nipok_vs_eddsa_verify,"0.9757 [0.9579; 0.9939] p=0.01; TOST ±1% p=0.9409, ±2% p=0.6873, ±3% p=0.2620, ±5% p=0.0045",,"""indistinguishable from a plain Ed25519 check … within the confidence intervals"""
+jwt_over_nipok,1.337x (geometric CI [1.319; 1.355]),,"""about 1.4× cheaper than private-key-JWT"""
+mtls_over_nipok,1.341x (geometric CI [1.321; 1.362]),,"""… or mTLS"" (1.4×)"
+mldsa_over_nipok,1.480x (geometric CI [1.461; 1.499]),,"""1.9× cheaper than ML-DSA-65"""
+sign_range,72.5 (mTLS) – 73.9 (EdDSA) µs; prove 38.0 µs,,"""\FairNipokProve µs against \FairEdDsaSign--\FairJwtSign µs"" (range starts with EdDSA and JWT)"
+mldsa_sign_over_prove,10.82x [10.70; 10.95],,"note of macro FairMlDsaSign (""12.8x NIPoK prove"")"
+straus_nipok_over_eddsa,1.0422 [1.0324; 1.0522],,NIPoK Straus / EdDSA Straus (same-library control)
+schnorr_cheaper_both_axes,verify Schnorr/NIPoK 0.9979 [0.9824; 1.0136]; prove (gen_R+compute_s)/prove 0.9638,,"""Schnorr-IZK … cheaper on both CPU axes"""
+ga_numbers,prove 38 µs · verify 67 µs,,"ga.tex: ""prove 33 µs · verify 55 µs"""
+fbc_vs_main_same_op,1.0145 [0.9969; 1.0325],,"\VerifyLatFBC (fbc-ab) versus \FairNipokVerify (main): ""two separate campaigns ... not directly comparable"""
+err_ratio_fbc_straus,95% CI over forks ±0.96 / ±1.06 = 0.91; JMH 99.9% ±0.55 / ±0.60 = 0.91,,"""run-to-run error half that of Straus"" (sentence removed from the revised paper)"
+pctl_fbc_faster,"p50: FBC faster, p90: FBC faster, p99: FBC faster, p99.9: FBC faster",,"""faster at every reported percentile up to p99.9"""
+max,"Straus 5186 µs, FBC 3604 µs",,"""a single 3.51~ms maximum"""

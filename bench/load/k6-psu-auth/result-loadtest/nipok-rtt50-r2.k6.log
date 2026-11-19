@@ -1,3 +1,0 @@
-time="2026-08-07T01:08:10+07:00" level=warning msg="Insufficient VUs, reached 288 active VUs and cannot initialize more" executor=constant-arrival-rate scenario=sub_saturation
-
-  nipok/sub_saturation rep2: rps=18.99 p99=16515ms ok=1462 fail=1 data_ok=100%

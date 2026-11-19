@@ -1,0 +1,87 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: customer-agent
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
+
+# customer-agent = PSU/headless browser. Override through env at deployment.
+customer:
+  agent:
+    tpp-base-url: "${AGENT_TPP_BASEURL:https://tpp.openbanking.dev}"
+    bank-base-url: "${AGENT_BANK_BASEURL:https://bank.openbanking.dev}"
+    # TLS hardening. insecure-tls=false (production) needs a gateway certificate with SAN=bank.openbanking.dev + root CA.
+    insecure-tls: ${AGENT_INSECURE_TLS:true}
+    # PEM root CA of the bank (mounted ConfigMap) to validate the chain when insecure-tls=false. Empty = system trust.
+    bank-ca-path: "${AGENT_BANK_CA_PATH:}"
+    # PEM CA to validate the TPP server certificate (tpp-onboarding-ca). Empty = system trust.
+    tpp-ca-path: "${AGENT_TPP_CA_PATH:}"
+    # PKCS12 workload certificate PRESENTED by the agent to bank and TPP (mutual TLS). Empty = none presented.
+    workload-cert-path: "${AGENT_WORKLOAD_CERT_PATH:}"
+    workload-cert-pass: "${AGENT_WORKLOAD_CERT_PASS:changeit}"
+    psu:
+      # ENABLED PSU mechanism (A/B measurement): password | nipok | mtls | private_key_jwt | ed25519 | ml_dsa | schnorr_interactive
+      method: "${AGENT_PSU_METHOD:password}"
+      username: "${AGENT_PSU_USERNAME:u}"
+      password: "${AGENT_PSU_PASSWORD:p}"
+    # PSU-mTLS (RFC 8410) - PKCS12 Ed25519 certificate + key of the PSU (enrolled at the bank). PRESENTED by the agent in the TLS session
+    # to the bank at /oauth2/authorize => MtlsPreAuthFilter authenticates (instead of password/NIPoK). Mounted secret.
+    mtls:
+      cert-path: "${AGENT_PSU_MTLS_CERT_PATH:}"
+      cert-pass: "${AGENT_PSU_MTLS_CERT_PASS:changeit}"
+    # PSU-Private-Key-JWT (RFC 7523/8037) - 32-byte Ed25519 seed (base64url) signing the JWT assertion. seed-path
+    # (secret tmpfs) preferred over the inline seed. audience MUST match APP_PSU_JWT_AUDIENCE at the bank.
+    jwt:
+      seed: "${AGENT_PSU_JWT_SEED:}"
+      seed-path: "${AGENT_PSU_JWT_SEED_PATH:}"
+      audience: "${AGENT_PSU_JWT_AUDIENCE:https://bank.openbanking.dev}"
+      lifetime-seconds: ${AGENT_PSU_JWT_LIFETIME:60}
+      # Signing backend: SunEC (default) | elisabeth (same signing library as the NIPoK prove - fair measurement).
+      signature-provider: "${AGENT_PSU_JWT_SIGNATURE_PROVIDER:SunEC}"
+    # PSU-Pure-EdDSA (RFC 8032) - 32-byte Ed25519 seed (base64url) signing the canonical message M. seed-path
+    # (secret tmpfs) preferred over the inline seed. audience + verifier-id MUST match the bank (app.psu.eddsa.*).
+    eddsa:
+      seed: "${AGENT_PSU_EDDSA_SEED:}"
+      seed-path: "${AGENT_PSU_EDDSA_SEED_PATH:}"
+      audience: "${AGENT_PSU_EDDSA_AUDIENCE:openbanking-bank-as}"
+      verifier-id: "${AGENT_PSU_EDDSA_VERIFIERID:bank}"
+      # Signing backend: SunEC | elisabeth (same signing library as NIPoK) | libsodium (NATIVE FFM).
+      signature-provider: "${AGENT_PSU_EDDSA_SIGNATURE_PROVIDER:elisabeth}"
+    # PSU-ML-DSA-65 (FIPS 204, post-quantum) - PKCS8 private key (base64url ~4060 bytes) signing M. private-key-path
+    # (secret tmpfs) preferred over inline. audience + verifier-id MUST match the bank (app.psu.mldsa.*).
+    mldsa:
+      private-key: "${AGENT_PSU_MLDSA_PRIVATEKEY:}"
+      private-key-path: "${AGENT_PSU_MLDSA_PRIVATEKEY_PATH:}"
+      audience: "${AGENT_PSU_MLDSA_AUDIENCE:openbanking-bank-as}"
+      verifier-id: "${AGENT_PSU_MLDSA_VERIFIERID:bank}"
+      # Signing backend: sunjce (JDK 24 built-in, default) | bc (BouncyCastle 1.79).
+      backend: "${AGENT_PSU_MLDSA_BACKEND:sunjce}"
+    # INTERACTIVE three-pass PSU-Schnorr - scalar x (base64url, 32 bytes). INDEPENDENT of NIPoK (own custody/code).
+    # private-key-path (secret tmpfs) preferred over inline.
+    schnorr:
+      private-key: "${AGENT_PSU_SCHNORR_PRIVATEKEY:}"
+      private-key-path: "${AGENT_PSU_SCHNORR_PRIVATEKEY_PATH:}"
+    # NIPoK (RFC 8235) - scalar x of the PSU (base64url) + verifierId matching the bank (app.psu.nipok.verifier-id).
+    nipok:
+      # x read preferably from a secret-mounted FILE (tmpfs, not in etcd/the deployment spec in plaintext);
+      # inline env fallback (backward compatible). custody-mode: sealed (end-to-end default) | resident (JMH micro-benchmarks).
+      private-key-path: "${AGENT_NIPOK_PRIVATEKEY_PATH:}"
+      private-key: "${AGENT_NIPOK_PRIVATEKEY:}"
+      custody-mode: "${AGENT_NIPOK_CUSTODY_MODE:sealed}"
+      verifier-id: "${AGENT_NIPOK_VERIFIERID:bank}"
+      # Algebra backend: elisabeth (default) | libsodium (NATIVE FFM - agent PROVE 2.8x faster).
+      # Needs libsodium.so + --enable-native-access (set in the Dockerfile). Missing -> automatic elisabeth fallback.
+      group: "${AGENT_NIPOK_GROUP:elisabeth}"
+
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: "ALWAYS"
+  endpoint.health.probes.enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.openbanking.services.agent.customer: INFO

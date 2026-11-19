@@ -1,0 +1,611 @@
+{{- define "common.istio_base" -}}
+# ================================================================================
+# SECTION 1 - PeerAuthentication: STRICT mTLS for the whole namespace
+# ================================================================================
+
+# All traffic in the namespace must use mTLS - plain HTTP is not accepted.
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+spec:
+  mtls:
+    mode: STRICT
+---
+# Spring Cloud Gateway is an internal ClusterIP service - it does NOT receive external traffic.
+# External traffic goes through the Istio IngressGateway (NodePort 30443) -> VirtualService -> services.
+# PERMISSIVE is kept so that the gateway accepts both plain HTTP from internal clients
+# without a sidecar and mTLS from services with a sidecar (outbound calls to the aggregators).
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: gateway-permissive
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gateway
+  mtls:
+    mode: PERMISSIVE
+---
+
+# ================================================================================
+# SECTION 2 - RequestAuthentication: JWT validation at the sidecar (inline JWKS)
+# Istiod does NOT need to fetch the JWKS from the auth-server -> the auth-server can run with STRICT mTLS.
+# ================================================================================
+
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: customer-aggregator-request-authentication
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: customer-aggregator
+  jwtRules:
+  - forwardOriginalToken: true
+    issuer: http://auth-server:80
+    jwks: '{{ required "jwtPublicJwks is not set - run kubernetes/generate-jwk-secret.sh first" .Values.jwtPublicJwks }}'
+---
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: account-aggregator-request-authentication
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: account-aggregator
+  jwtRules:
+  - forwardOriginalToken: true
+    issuer: http://auth-server:80
+    jwks: '{{ required "jwtPublicJwks is not set - run kubernetes/generate-jwk-secret.sh first" .Values.jwtPublicJwks }}'
+---
+
+# ================================================================================
+# SECTION 3 - AuthorizationPolicy: layer 1 - ingress -> auth-server and aggregators
+#
+# Allowed flows:
+#   istio-ingressgateway --> auth-server   (OAuth2 login, token)
+#   istio-ingressgateway --> customer-aggregator  (API + JWT)
+#   istio-ingressgateway --> account-aggregator   (API + JWT)
+#   gateway (Spring GW)  --> auth-server   (JWKS fetch + OAuth2 proxy)
+#   gateway (Spring GW)  --> customer-aggregator  (API + JWT)
+#   gateway (Spring GW)  --> account-aggregator   (API + JWT)
+#   customer-aggregator  --> auth-server   (JWKS fetch for Spring Security)
+#   account-aggregator   --> auth-server   (JWKS fetch for Spring Security)
+#
+# Principals use the SPIFFE format:
+#   cluster.local/ns/<namespace>/sa/<serviceaccount-name>
+# ================================================================================
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-auth-server
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth-server
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        # Istio IngressGateway -> auth-server (OAuth2 authorization code flow, token endpoint)
+        - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+        # Spring Cloud Gateway -> auth-server (JWKS fetch + OAuth2 proxy)
+        - "cluster.local/ns/bank-cluster-nsp/sa/gateway"
+        # Aggregators -> auth-server (JWKS fetch so that Spring Security can validate the JWT)
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer-aggregator"
+        - "cluster.local/ns/bank-cluster-nsp/sa/account-aggregator"
+---
+
+# customer-aggregator: must come from the IngressGW or the Spring GW AND carry a valid JWT
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-customer-aggregator
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: customer-aggregator
+  action: ALLOW
+  rules:
+  # Rule 1: API calls with a JWT - from the IngressGW, with a valid JWT issued by the auth-server
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+        requestPrincipals: ["http://auth-server:80/*"]
+  # Rule 2: API calls with a JWT - from the Spring GW, with a valid JWT issued by the auth-server
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/gateway"
+        requestPrincipals: ["http://auth-server:80/*"]
+  # Rule 3: Swagger UI + health (no JWT needed) - only from the IngressGW or the Spring GW
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+        - "cluster.local/ns/bank-cluster-nsp/sa/gateway"
+    to:
+    - operation:
+        paths: ["/customer-openapi/*", "/webjars/*", "/actuator/health*"]
+---
+
+# account-aggregator: same pattern as customer-aggregator
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-account-aggregator
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: account-aggregator
+  action: ALLOW
+  rules:
+  # Rule 1: API calls with a JWT from the IngressGW
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+        requestPrincipals: ["http://auth-server:80/*"]
+  # Rule 2: API calls with a JWT from the Spring GW
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/gateway"
+        requestPrincipals: ["http://auth-server:80/*"]
+  # Rule 3: Swagger UI + health from the IngressGW or the Spring GW
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+        - "cluster.local/ns/bank-cluster-nsp/sa/gateway"
+    to:
+    - operation:
+        paths: ["/account-openapi/*", "/webjars/*", "/actuator/health*"]
+---
+
+# ================================================================================
+# SECTION 4 - AuthorizationPolicy: layer 2 - core services
+#
+# Allowed flows:
+#   customer-aggregator --> customer, account, product, payment, transaction
+#   account-aggregator  --> customer, account, product, payment, transaction
+#
+# Not allowed:
+#   core service --> core service (lateral movement is blocked)
+#   external/attacker --> core service directly (bypassing the aggregator)
+# ================================================================================
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-customer-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: customer
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer-aggregator"
+        - "cluster.local/ns/bank-cluster-nsp/sa/account-aggregator"
+---
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-account-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: account
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer-aggregator"
+        - "cluster.local/ns/bank-cluster-nsp/sa/account-aggregator"
+---
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-product-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: product
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer-aggregator"
+        - "cluster.local/ns/bank-cluster-nsp/sa/account-aggregator"
+---
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-payment-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: payment
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer-aggregator"
+        - "cluster.local/ns/bank-cluster-nsp/sa/account-aggregator"
+---
+
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-transaction-service
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: transaction
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer-aggregator"
+        - "cluster.local/ns/bank-cluster-nsp/sa/account-aggregator"
+---
+
+# ================================================================================
+# SECTION 5 - AuthorizationPolicy: layer 3 - databases
+#
+# Allowed flows (principle: 1 service = 1 database):
+#   customer-service --> mongodb   (port 27017, customer-db)
+#   product-service  --> mongodb   (port 27017, product-db)
+#   account-service  --> postgres  (port 5432)
+#   payment-service  --> mysql     (port 3306)
+#   transaction-svc  --> sqlserver (port 1433)
+#
+# All other services (aggregators, gateway, auth-server) are blocked at the database layer.
+#
+# Note: the postgresql chart has Chart.Name="postgresql" but fullnameOverride="postgres"
+#   -> the selector uses the label "postgresql", the principal uses the SA name "account" (service SA)
+# ================================================================================
+
+# MongoDB: customer-service AND product-service (same instance, different databases)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-mongodb
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mongodb
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/customer"
+        - "cluster.local/ns/bank-cluster-nsp/sa/product"
+    to:
+    - operation:
+        ports: ["27017"]
+---
+
+# PostgreSQL: account-service only
+# the selector uses Chart.Name "postgresql"; the SA of the service is "account" (from fullnameOverride account)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-postgres
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/account"
+        # auth-server -> postgres (database customer_identity: PSU credentials).
+        - "cluster.local/ns/bank-cluster-nsp/sa/auth-server"
+    to:
+    - operation:
+        ports: ["5432"]
+---
+
+# MySQL: payment-service only
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-mysql
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mysql
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/payment"
+    to:
+    - operation:
+        ports: ["3306"]
+---
+
+# SQL Server: transaction-service only
+# the mssqlserver chart has Chart.Name="sqlserver" and fullnameOverride="sqlserver"
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: authz-sqlserver
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sqlserver
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/bank-cluster-nsp/sa/transaction"
+    to:
+    - operation:
+        ports: ["1433"]
+---
+
+# ================================================================================
+# SECTION 6 - Istio Gateway + VirtualService: TLS termination and routing
+# ================================================================================
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: bank-cluster-gw
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - bank.openbanking.dev
+    - health.bank.openbanking.dev
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: bank-cluster-certificate
+      # OPTIONAL_MUTUAL: requests and verifies a client certificate IF the client presents one (against the CA in
+      #   the secret bank-cluster-certificate-cacert, created by tpp/scripts/03-publish-ca-to-bank.sh),
+      #   but does NOT require it at the TLS layer -> the health host and the older client_secret flow (writer)
+      #   keep working. Per-route certificate enforcement (/oauth2/token, /customer-aggregate) is not done here.
+      mode: OPTIONAL_MUTUAL
+      minProtocolVersion: TLSV1_3   # external traffic (client -> ingress) accepts TLS 1.3 only
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bank-cluster-vs
+spec:
+  gateways:
+  - bank-cluster-gw
+  hosts:
+  - bank.openbanking.dev
+  http:
+  - match:
+    - uri:
+        prefix: /oauth2
+    route:
+    - destination:
+        host: auth-server
+    # STRIP the channel-binding header sent by an EXTERNAL client (prevents a spoofed cb that would defeat the NIPoK anti-relay check).
+    # Only the trusted hop (EnvoyFilter) may set it, never the client. (XFCC is already SANITIZE_SET at the ingress.)
+    headers:
+      request:
+        remove:
+        - x-forwarded-tls-server-cert-hash
+  # JWKS of the JARM signing key (the TPP fetches the verification key by kid).
+  - match:
+    - uri:
+        prefix: /jarm
+    route:
+    - destination:
+        host: auth-server
+  - match:
+    - uri:
+        prefix: /login
+    route:
+    - destination:
+        host: auth-server
+  - match:
+    - uri:
+        prefix: /error
+    route:
+    - destination:
+        host: auth-server
+  # PSU auth/register (Argon2id) -> auth-server (front-channel login and registration).
+  - match:
+    - uri:
+        prefix: /psu
+    route:
+    - destination:
+        host: auth-server
+    # STRIP the client-supplied channel-binding header on the /psu path (NIPoK login).
+    headers:
+      request:
+        remove:
+        - x-forwarded-tls-server-cert-hash
+  - match:
+    - uri:
+        prefix: /customer-aggregate
+    route:
+    - destination:
+        host: customer-aggregator
+        port:
+          number: 80
+  - match:
+    - uri:
+        prefix: /customer-openapi
+    route:
+    - destination:
+        host: customer-aggregator
+        port:
+          number: 80
+  - match:
+    - uri:
+        prefix: /account-aggregate
+    route:
+    - destination:
+        host: account-aggregator
+        port:
+          number: 80
+  - match:
+    - uri:
+        prefix: /account-openapi
+    route:
+    - destination:
+        host: account-aggregator
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: health-vs
+spec:
+  hosts:
+  - "health.bank.openbanking.dev"
+  gateways:
+  - bank-cluster-gw
+  http:
+  - route:
+    - destination:
+        host: customer-aggregator
+        port:
+          number: 80
+---
+# ================================================================================
+# SECTION 7 - EnvoyFilter: keep XFCC through the sidecar (RFC 8705 mTLS client auth)
+#
+# The IngressGW sets XFCC = TPP certificate (with Cert=PEM) through the EnvoyFilter ingress-xfcc-forward.
+# By default, however, the INBOUND sidecar of the auth-server OVERWRITES XFCC with the mesh-peer information
+# (SPIFFE certificate of the ingressgateway) -> the Cert= field is lost -> tls_client_auth sees no certificate.
+#
+# FORWARD_ONLY: the sidecar KEEPS the XFCC received from the ingress unchanged (no sanitize/overwrite).
+# Safe: the only XFCC source that can reach the auth-server is the ingress (SANITIZE_SET already removes
+# external XFCC) + the AuthorizationPolicy authz-auth-server blocks other principals.
+# ================================================================================
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: auth-server-xfcc-preserve
+spec:
+  workloadSelector:
+    labels:
+      app.kubernetes.io/name: auth-server
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          forward_client_cert_details: FORWARD_ONLY
+---
+# customer-aggregator: keep XFCC to verify the certificate-bound token (RFC 8705 §3, cnf.x5t#S256).
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: customer-aggregator-xfcc-preserve
+spec:
+  workloadSelector:
+    labels:
+      app.kubernetes.io/name: customer-aggregator
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          forward_client_cert_details: FORWARD_ONLY
+---
+# account-aggregator: same pattern.
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: account-aggregator-xfcc-preserve
+spec:
+  workloadSelector:
+    labels:
+      app.kubernetes.io/name: account-aggregator
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          forward_client_cert_details: FORWARD_ONLY
+---
+# ================================================================================
+# SECTION 8 - XFCC source trust: only the IngressGW may create an XFCC that the backends trust
+#
+# The Spring GW (app.kubernetes.io/name: gateway) is the ONLY principal other than the IngressGW that the
+# AuthorizationPolicy allows to reach the auth-server/aggregators -> it is the only possible vector for
+# injecting a forged XFCC (which would bypass the binding check at the aggregator). SANITIZE at the Spring GW
+# inbound -> the Spring GW application never sees/forwards XFCC -> the backends receive only the XFCC set by the
+# IngressGW (certificate verified in the real TLS session; the binding is then enforced by the aggregators).
+# ================================================================================
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: spring-gateway-xfcc-sanitize
+spec:
+  workloadSelector:
+    labels:
+      app.kubernetes.io/name: gateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          forward_client_cert_details: SANITIZE
+{{- end -}}

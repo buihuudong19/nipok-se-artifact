@@ -1,20 +1,20 @@
 (* ============================================================================ *)
-(*  custody-boundary.pv — Hình thức hóa RANH GIỚI tin cậy của custody phần mềm  *)
-(*  (Sơ đồ 1: sealedX = AES-GCM(x) trên HEAP; KEK ở OFF-HEAP).                   *)
-(*  Mục tiêu: ProVerif chứng minh CHÍNH XÁC custody-secrecy phụ thuộc giả thiết  *)
-(*  "KEK không lộ ra vùng attacker đọc được" — KHÔNG chứng minh 'an toàn phần   *)
-(*  cứng'; chỉ delimit assumption I1+I2.                                         *)
+(*  custody-boundary.pv - formalisation of the TRUST BOUNDARY of the software custody *)
+(*  (scheme 1: sealedX = AES-GCM(x) on the HEAP; KEK OFF-HEAP).                       *)
+(*  Goal: ProVerif shows EXACTLY that custody secrecy depends on the assumption        *)
+(*  "the KEK does not leak into a region the attacker can read" - it does NOT prove    *)
+(*  'hardware security'; it only delimits assumptions I1+I2.                          *)
 (* ============================================================================ *)
-free x: bitstring [private].      (* private scalar (witness) — tài sản cần giữ *)
-free heap: channel.               (* ON-HEAP: attacker ĐỌC được (heap snapshot) *)
+free x: bitstring [private].      (* private scalar (witness) - the asset to protect *)
+free heap: channel.               (* ON-HEAP: READABLE by the attacker (heap snapshot) *)
 
-(* AEAD lý-tưởng-hoá (giải mã CHỈ khi có đúng KEK) *)
+(* Idealised AEAD (decryption ONLY with the right KEK) *)
 fun senc(bitstring, bitstring): bitstring.
 reduc forall m:bitstring, k:bitstring; sdec(senc(m,k), k) = m.
 
 query attacker(x).
 
-(* SEALED: ciphertext lên heap (attacker thấy); KEK Ở OFF-HEAP (KHÔNG ra kênh public). *)
+(* SEALED: ciphertext on the heap (seen by the attacker); KEK OFF-HEAP (NOT on a public channel). *)
 process
   new kek: bitstring;
-  out(heap, senc(x, kek))         (* attacker có senc(x,kek) nhưng KHÔNG có kek *)
+  out(heap, senc(x, kek))         (* the attacker has senc(x,kek) but NOT kek *)

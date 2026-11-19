@@ -1,0 +1,9 @@
+case,vectors,accept,reject,ids,stages,stateful_scenarios,e2e_rows,same_in
+Proof generation and verification,4,4,0,TV1-TV4,,,"Reference: valid login, one at a time (57/57)",4/4
+Invalid-proof cases,9,0,9,"IV01-IV05, IV14-IV17",decoding ($s \ge \ell$): 4; verification: 5,,Forged response s (one bit flipped) (26/26); Non-canonical s (s plus the group order) (20/20),4/4
+Malformed contexts,8,0,8,"IV12-IV13, IV18-IV23",decoding: 6; verification: 2,,Payload of 95 bytes instead of 96 (20/20); Payload not in base64url (20/20),4/4
+Replayed nonces,1,0,1,IV10,verification: 1,"SC1, SC2, SC3, SC4, SC5, SC6, SC7",Replayed nonce (20/20); Nonce never issued (20/20); Expired nonce (TTL 60 s) (8/8); One proof submitted from 4 sessions at once (20/20 rounds); Nonces issued before the restart: unused; already used (3/3; 3/3),4/4
+Mismatched identities,4,0,4,"IV06, IV11, IV26-IV27",verification: 4,,Another user's valid proof (20/20),4/4
+Altered channel bindings,4,0,4,"IV08-IV09, IV24-IV25",verification: 4,,Proof bound to another TLS channel (wrong cb) (20/20),4/4
+Cross-endpoint forwarding,5,0,5,"IV07, IV28-IV31",verification: 5,,Proof for another verifier (20/20),4/4
+How public keys are registered,10,1,9,KV01-KV10,registration (400): 9,,Register an invalid public key (test vectors KV02 to KV06) (5/5); Register again while the key is active (10/10); Register without an onboarding token; with a wrong token (1/1; 1/1),4/4

@@ -1,0 +1,306 @@
+R1-C6 c6_loadtest_agg: benchmark-R1-C6 (CPU auth-server: cgroup)
+block 1: 166 runs, 8 mechanisms
+block 2: 166 runs, 8 mechanisms
+block 3: 166 runs, 8 mechanisms
+block 4: 166 runs, 8 mechanisms
+block 5: 166 runs, 8 mechanisms
+block 6: 166 runs, 8 mechanisms
+
+## Validity checks per block (reported only; no run is excluded)
+   constant-VU and the 30/60% sweeps are the runs behind Table 8, Table 10 and Figure 8; the 100% sweep and the ladder are not flagged here
+   block 1: 166 runs (constant-VU + sweep 30/60%: 56; flagged: 0) | data_ok < success: 0 | restarts during a run: 0 | agent OOM kills: 0 | k6 connection errors: 0 | noise: 0, re-runs because of noise: 1 | settle: 167 phases, timed out 0, longest 211s (password after kneerefine24) | restartCount increases (332 watch files): 1
+      restart seen in password-kneerefine20-r2.watch0 (between two runs): auth-server-849cfc5485-l54fg/auth-server 0 -> 1 ['Error', 143]
+   block 2: 166 runs (constant-VU + sweep 30/60%: 56; flagged: 0) | data_ok < success: 0 | restarts during a run: 0 | agent OOM kills: 0 | k6 connection errors: 0 | noise: 0, re-runs because of noise: 0 | settle: 166 phases, timed out 0 | restartCount increases (332 watch files): 0
+   block 3: 166 runs (constant-VU + sweep 30/60%: 56; flagged: 0) | data_ok < success: 0 | restarts during a run: 0 | agent OOM kills: 0 | k6 connection errors: 0 | noise: 0, re-runs because of noise: 0 | settle: 166 phases, timed out 0 | restartCount increases (332 watch files): 0
+   block 4: 166 runs (constant-VU + sweep 30/60%: 56; flagged: 0) | data_ok < success: 0 | restarts during a run: 0 | agent OOM kills: 0 | k6 connection errors: 0 | noise: 0, re-runs because of noise: 0 | settle: 166 phases, timed out 0 | restartCount increases (332 watch files): 0
+   block 5: 166 runs (constant-VU + sweep 30/60%: 56; flagged: 0) | data_ok < success: 0 | restarts during a run: 0 | agent OOM kills: 0 | k6 connection errors: 0 | noise: 0, re-runs because of noise: 0 | settle: 166 phases, timed out 0, longest 238s (password after warmup) | restartCount increases (332 watch files): 1
+      restart seen in password-kneestep4-r1.watch0 (between two runs): auth-server-668df69464-zkd5f/auth-server 0 -> 1 ['Error', 143]
+   block 6: 166 runs (constant-VU + sweep 30/60%: 56; flagged: 0) | data_ok < success: 0 | restarts during a run: 0 | agent OOM kills: 0 | k6 connection errors: 1 | noise: 0, re-runs because of noise: 0 | settle: 166 phases, timed out 0, longest 218s (password after sweep_f100-r1) | restartCount increases (332 watch files): 1
+      restart seen in password-sweep_f100-r2.watch0 (between two runs): auth-server-66b967d685-n58mx/auth-server 0 -> 1 ['Error', 143]
+JMH: benchmark-R1-C6/jmh/main/official-final.json (20 benchmarks)
+JMH Argon2id sensitivity: benchmark-R1-C6/jmh/argon2id-sensitivity/argon2id-sensitivity.json (13 benchmarks); verify_server_bc bcConfig=m19456_t2 = 14,255 µs, bcConfig=m65536_t3 = 89,400 µs; Argon2Benchmark.verify_server (Table 8, Password) = 99,397 µs
+
+## Table 8 (mean +- SD over blocks)
+| Mechanism | n | j/s | Cores | j/CPU·s | CPU/j (µs) | CPU/j @nominal (µs) | knee (min–max) | % of knee | Verify (µs) | Share (%) | Prove (µs) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Password | 6 | 11.9 ± 0.5 | 3.97 ± 0.00 | 3.0 ± 0.1 | 336,835 ± 12,513 | 633,292 | 19 (19–20) | 62 | 99,397.5 | 29.51 | - |
+| Password (OWASP parameters) | 6 | 66.9 ± 1.1 | 3.60 ± 0.08 | 18.5 ± 0.6 | 53,956 ± 1,650 | 75,841 | 68 (68–68) | 98 | 14,254.5 | 26.42 | - |
+| mTLS-PSU | 6 | 84.8 ± 1.8 | 0.70 ± 0.01 | 119.8 ± 1.9 | 8,348 ± 135 | 11,863 | 96 (92–96) | 89 | 90.1 | 1.080 | 72.5 |
+| Private-Key-JWT | 6 | 83.0 ± 0.8 | 0.95 ± 0.02 | 87.2 ± 2.7 | 11,484 ± 359 | 16,344 | 94 (88–96) | 89 | 89.8 | 0.782 | 73.6 |
+| Pure-EdDSA | 6 | 83.3 ± 0.7 | 0.94 ± 0.02 | 88.3 ± 1.6 | 11,329 ± 209 | 16,139 | 92 (92–96) | 89 | 68.9 | 0.608 | 73.9 |
+| Schnorr-IZK | 6 | 82.0 ± 0.5 | 1.02 ± 0.04 | 80.4 ± 3.3 | 12,456 ± 505 | 17,727 | 92 (88–96) | 89 | 67.0 | 0.538 | 36.6 |
+| ML-DSA-65 | 6 | 83.0 ± 1.4 | 0.94 ± 0.02 | 87.7 ± 1.3 | 11,405 ± 168 | 16,178 | 92 (92–96) | 90 | 99.4 | 0.872 | 411.0 |
+| NIPoK | 6 | 82.6 ± 0.7 | 0.93 ± 0.03 | 88.6 ± 2.4 | 11,295 ± 315 | 16,089 | 96 (92–96) | 87 | 67.2 | 0.595 | 38.0 |
+   |(j/s)x(CPU/j) - Cores|/Cores per block: 0.1-1.6% (Password 0.5–0.7; Password (OWASP parameters) 0.4–1.1; mTLS-PSU 0.5–0.7; Private-Key-JWT 0.5–0.7; Pure-EdDSA 0.1–1.1; Schnorr-IZK 0.1–1.1; ML-DSA-65 0.2–1.6; NIPoK 0.2–0.9)
+   constant VU relative to the knee of the same mechanism (mean over blocks): 62-98%
+
+## Table 10 (NIPoK against each baseline)
+| Metric | NIPoK vs | n | Ratio NIPoK/base [95% CI] | p Welch (Holm) | p Mann–Whitney (Holm) | p signed-rank | Cliff's δ | TOST p (margin) |
+|---|---|---|---|---|---|---|---|---|
+| Throughput, 16 VU (j/s) | Password | 6/6 | 6.955 [6.685; 7.236] | 1.2e-10 (8.6e-10) | 0.002 (0.015) | 0.031 | +1.00 | 1.000 (±5%) |
+| Throughput, 16 VU (j/s) | Password (OWASP parameters) | 6/6 | 1.235 [1.214; 1.256] | 6.7e-09 (4e-08) | 0.002 (0.015) | 0.031 | +1.00 | 1.000 (±5%) |
+| Throughput, 16 VU (j/s) | mTLS-PSU | 6/6 | 0.974 [0.952; 0.996] | 0.030 (0.149) | 0.065 (0.325) | 0.062 | -0.67 | 0.026 (±5%) |
+| Throughput, 16 VU (j/s) | Private-Key-JWT | 6/6 | 0.995 [0.983; 1.007] | 0.360 (0.719) | 0.589 (1.000) | 0.156 | -0.22 | 5.6e-06 (±5%) |
+| Throughput, 16 VU (j/s) | Pure-EdDSA | 6/6 | 0.992 [0.981; 1.002] | 0.113 (0.354) | 0.132 (0.528) | 0.094 | -0.56 | 3.9e-06 (±5%) |
+| Throughput, 16 VU (j/s) | Schnorr-IZK | 6/6 | 1.008 [0.999; 1.017] | 0.089 (0.354) | 0.132 (0.528) | 0.031 | +0.56 | 2.1e-06 (±5%) |
+| Throughput, 16 VU (j/s) | ML-DSA-65 | 6/6 | 0.996 [0.978; 1.014] | 0.612 (0.719) | 0.699 (1.000) | 0.562 | -0.17 | 0.00035 (±5%) |
+| Auth-server CPU per journey (ms) | Password | 6/6 | 0.0335 [0.0321; 0.0350] | 1.7e-17 (1.2e-16) | 0.002 (0.015) | 0.031 | -1.00 | 1.000 (±10%) |
+| Auth-server CPU per journey (ms) | Password (OWASP parameters) | 6/6 | 0.209 [0.202; 0.217] | 7.7e-16 (4.6e-15) | 0.002 (0.015) | 0.031 | -1.00 | 1.000 (±10%) |
+| Auth-server CPU per journey (ms) | mTLS-PSU | 6/6 | 1.353 [1.313; 1.394] | 1.2e-08 (5.9e-08) | 0.002 (0.015) | 0.031 | +1.00 | 1.000 (±10%) |
+| Auth-server CPU per journey (ms) | Private-Key-JWT | 6/6 | 0.984 [0.947; 1.022] | 0.356 (1.000) | 0.180 (0.539) | 0.219 | -0.50 | 0.00049 (±10%) |
+| Auth-server CPU per journey (ms) | Pure-EdDSA | 6/6 | 0.997 [0.967; 1.028] | 0.820 (1.000) | 0.589 (0.619) | 0.688 | -0.22 | 4.7e-05 (±10%) |
+| Auth-server CPU per journey (ms) | Schnorr-IZK | 6/6 | 0.907 [0.867; 0.949] | 0.00095 (0.004) | 0.002 (0.015) | 0.031 | -1.00 | 0.542 (±10%) |
+| Auth-server CPU per journey (ms) | ML-DSA-65 | 6/6 | 0.990 [0.961; 1.020] | 0.461 (1.000) | 0.310 (0.619) | 0.438 | -0.39 | 9.8e-05 (±10%) |
+| Auth-server CPU per journey @nominal clock (ms) | Password | 6/6 | 0.0254 [0.0243; 0.0266] | 2.1e-17 (1.5e-16) | 0.002 (0.015) | 0.031 | -1.00 | - |
+| Auth-server CPU per journey @nominal clock (ms) | Password (OWASP parameters) | 6/6 | 0.212 [0.205; 0.220] | 4.5e-16 (2.7e-15) | 0.002 (0.015) | 0.031 | -1.00 | - |
+| Auth-server CPU per journey @nominal clock (ms) | mTLS-PSU | 6/6 | 1.356 [1.318; 1.395] | 3.4e-07 (1.7e-06) | 0.002 (0.015) | 0.031 | +1.00 | - |
+| Auth-server CPU per journey @nominal clock (ms) | Private-Key-JWT | 6/6 | 0.984 [0.947; 1.023] | 0.385 (1.000) | 0.180 (0.539) | 0.219 | -0.50 | - |
+| Auth-server CPU per journey @nominal clock (ms) | Pure-EdDSA | 6/6 | 0.997 [0.966; 1.028] | 0.819 (1.000) | 0.699 (0.699) | 0.688 | -0.17 | - |
+| Auth-server CPU per journey @nominal clock (ms) | Schnorr-IZK | 6/6 | 0.908 [0.869; 0.949] | 0.00076 (0.003) | 0.002 (0.015) | 0.031 | -1.00 | - |
+| Auth-server CPU per journey @nominal clock (ms) | ML-DSA-65 | 6/6 | 0.994 [0.965; 1.024] | 0.668 (1.000) | 0.240 (0.539) | 0.844 | -0.44 | - |
+| p99 at 30% of own knee (ms) | Password | 6/6 | 0.361 [0.348; 0.374] | 3e-10 (2.1e-09) | 0.002 (0.015) | 0.031 | -1.00 | - |
+| p99 at 30% of own knee (ms) | Password (OWASP parameters) | 6/6 | 0.772 [0.742; 0.802] | 2.9e-06 (1.7e-05) | 0.002 (0.015) | 0.031 | -1.00 | - |
+| p99 at 30% of own knee (ms) | mTLS-PSU | 6/6 | 1.036 [1.012; 1.061] | 0.009 (0.043) | 0.015 (0.076) | 0.031 | +0.83 | - |
+| p99 at 30% of own knee (ms) | Private-Key-JWT | 6/6 | 0.970 [0.921; 1.022] | 0.205 (0.587) | 0.180 (0.539) | 0.062 | -0.50 | - |
+| p99 at 30% of own knee (ms) | Pure-EdDSA | 6/6 | 1.018 [0.988; 1.049] | 0.196 (0.587) | 0.310 (0.619) | 0.219 | +0.39 | - |
+| p99 at 30% of own knee (ms) | Schnorr-IZK | 6/6 | 0.969 [0.933; 1.007] | 0.092 (0.370) | 0.065 (0.260) | 0.094 | -0.67 | - |
+| p99 at 30% of own knee (ms) | ML-DSA-65 | 6/6 | 1.008 [0.965; 1.052] | 0.685 (0.685) | 0.310 (0.619) | 0.844 | +0.39 | - |
+| p99 at 60% of own knee (ms) | Password | 6/6 | 0.578 [0.551; 0.606] | 5.5e-08 (3.9e-07) | 0.002 (0.015) | 0.031 | -1.00 | - |
+| p99 at 60% of own knee (ms) | Password (OWASP parameters) | 6/6 | 0.818 [0.674; 0.993] | 0.044 (0.266) | 0.004 (0.026) | 0.031 | -0.94 | - |
+| p99 at 60% of own knee (ms) | mTLS-PSU | 6/6 | 1.052 [1.002; 1.106] | 0.045 (0.266) | 0.041 (0.206) | 0.156 | +0.72 | - |
+| p99 at 60% of own knee (ms) | Private-Key-JWT | 6/6 | 0.971 [0.899; 1.048] | 0.402 (0.804) | 0.589 (0.929) | 0.219 | -0.22 | - |
+| p99 at 60% of own knee (ms) | Pure-EdDSA | 6/6 | 1.043 [0.985; 1.105] | 0.132 (0.528) | 0.132 (0.528) | 0.312 | +0.56 | - |
+| p99 at 60% of own knee (ms) | Schnorr-IZK | 6/6 | 0.949 [0.868; 1.037] | 0.210 (0.631) | 0.310 (0.929) | 0.312 | -0.39 | - |
+| p99 at 60% of own knee (ms) | ML-DSA-65 | 6/6 | 1.013 [0.946; 1.085] | 0.687 (0.804) | 0.394 (0.929) | 0.844 | +0.33 | - |
+| Knee (offered j/s) | Password | 6/6 | 4.939 [4.804; 5.077] | 2.1e-17 (1.5e-16) | 0.002 (0.015) | 0.031 | +1.00 | - |
+| Knee (offered j/s) | Password (OWASP parameters) | 6/6 | 1.392 [1.360; 1.424] | 2.8e-07 (1.7e-06) | 0.002 (0.015) | 0.031 | +1.00 | - |
+| Knee (offered j/s) | mTLS-PSU | 6/6 | 0.993 [0.968; 1.019] | 0.550 (0.869) | 1.000 (1.000) | 1.000 | -0.17 | - |
+| Knee (offered j/s) | Private-Key-JWT | 6/6 | 1.015 [0.976; 1.055] | 0.417 (0.869) | 0.697 (1.000) | 1.000 | +0.22 | - |
+| Knee (offered j/s) | Pure-EdDSA | 6/6 | 1.014 [0.986; 1.043] | 0.290 (0.869) | 0.567 (1.000) | 0.625 | +0.33 | - |
+| Knee (offered j/s) | Schnorr-IZK | 6/6 | 1.022 [0.985; 1.060] | 0.213 (0.850) | 0.405 (1.000) | 0.500 | +0.39 | - |
+| Knee (offered j/s) | ML-DSA-65 | 6/6 | 1.022 [0.996; 1.048] | 0.094 (0.470) | 0.242 (1.000) | 0.250 | +0.50 | - |
+| JMH verify (µs/op) | Password | 10/10 | 0.000677 [0.000649; 0.000706] | 2.3e-23 (1.4e-22) | 1.1e-05 (7.6e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH verify (µs/op) | Password (OWASP parameters) | 10/10 | 0.00471 [0.00465; 0.00477] | 2.9e-26 (2e-25) | 1.1e-05 (7.6e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH verify (µs/op) | mTLS-PSU | 10/10 | 0.745 [0.734; 0.757] | 1.1e-18 (5.3e-18) | 1.1e-05 (7.6e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH verify (µs/op) | Private-Key-JWT | 10/10 | 0.748 [0.738; 0.758] | 4.9e-16 (2e-15) | 1.1e-05 (7.6e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH verify (µs/op) | Pure-EdDSA | 10/10 | 0.976 [0.958; 0.994] | 0.012 (0.024) | 0.029 (0.058) | - | -0.58 | 0.007 (±5%) |
+| JMH verify (µs/op) | Schnorr-IZK | 10/10 | 1.002 [0.987; 1.018] | 0.778 (0.778) | 0.739 (0.739) | - | +0.10 | 3.4e-06 (±5%) |
+| JMH verify (µs/op) | ML-DSA-65 | 10/10 | 0.676 [0.667; 0.684] | 1.7e-14 (5.1e-14) | 1.1e-05 (7.6e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH prove/sign (µs/op) | mTLS-PSU | 10/10 | 0.524 [0.516; 0.532] | 9.9e-25 (2e-24) | 1.1e-05 (5.4e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH prove/sign (µs/op) | Private-Key-JWT | 10/10 | 0.516 [0.508; 0.524] | 1.4e-25 (4.1e-25) | 1.1e-05 (5.4e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH prove/sign (µs/op) | Pure-EdDSA | 10/10 | 0.514 [0.506; 0.522] | 1e-25 (4.1e-25) | 1.1e-05 (5.4e-05) | - | -1.00 | 1.000 (±5%) |
+| JMH prove/sign (µs/op) | Schnorr-IZK | 10/10 | 1.038 [1.023; 1.052] | 2.9e-05 (2.9e-05) | 0.00013 (0.00013) | - | +0.92 | 0.044 (±5%) |
+| JMH prove/sign (µs/op) | ML-DSA-65 | 10/10 | 0.0924 [0.0913; 0.0935] | 1.6e-29 (8.1e-29) | 1.1e-05 (5.4e-05) | - | -1.00 | 1.000 (±5%) |
+
+## Compact Table 10 for the paper
+| Baseline | Throughput, 16 VU | Auth-server CPU per journey | p99 at 60% of own knee | JMH verify |
+|---|---|---|---|---|
+| Password | 6.955 [6.685, 7.236]; p_t <0.001, p_U 0.015 | 0.0335 [0.0321, 0.0350]; p_t <0.001, p_U 0.015 | 0.578 [0.551, 0.606]; p_t <0.001, p_U 0.015 | 0.000677 [0.000649, 0.000706]; p_t <0.001, p_U <0.001 |
+| Password (OWASP parameters) | 1.235 [1.214, 1.256]; p_t <0.001, p_U 0.015 | 0.209 [0.202, 0.217]; p_t <0.001, p_U 0.015 | 0.818 [0.674, 0.993]; p_t 0.266, p_U 0.026 | 0.00471 [0.00465, 0.00477]; p_t <0.001, p_U <0.001 |
+| mTLS-PSU | 0.974 [0.952, 0.996]; p_t 0.149, p_U 0.325 | 1.353 [1.313, 1.394]; p_t <0.001, p_U 0.015 | 1.052 [1.002, 1.106]; p_t 0.266, p_U 0.206 | 0.745 [0.734, 0.757]; p_t <0.001, p_U <0.001 |
+| Private-Key-JWT | 0.995 [0.983, 1.007]; p_t 0.719, p_U 1.000 | 0.984 [0.947, 1.022]; p_t 1.000, p_U 0.539 | 0.971 [0.899, 1.048]; p_t 0.804, p_U 0.929 | 0.748 [0.738, 0.758]; p_t <0.001, p_U <0.001 |
+| Pure-EdDSA | 0.992 [0.981, 1.002]; p_t 0.354, p_U 0.528 | 0.997 [0.967, 1.028]; p_t 1.000, p_U 0.619 | 1.043 [0.985, 1.105]; p_t 0.528, p_U 0.528 | 0.976 [0.958, 0.994]; p_t 0.024, p_U 0.058 |
+| Schnorr-IZK | 1.008 [0.999, 1.017]; p_t 0.354, p_U 0.528 | 0.907 [0.867, 0.949]; p_t 0.004, p_U 0.015 | 0.949 [0.868, 1.037]; p_t 0.631, p_U 0.929 | 1.002 [0.987, 1.018]; p_t 0.778, p_U 0.739 |
+| ML-DSA-65 | 0.996 [0.978, 1.014]; p_t 0.719, p_U 1.000 | 0.990 [0.961, 1.020]; p_t 1.000, p_U 0.619 | 1.013 [0.946, 1.085]; p_t 0.804, p_U 0.929 | 0.676 [0.667, 0.684]; p_t <0.001, p_U <0.001 |
+
+## Password (OWASP parameters) (Argon2id m=19456,t=2,p=1) against Password (m=65536,t=3,p=1): pairs by block
+   ratio = Password (OWASP parameters) / Password; paired 95% CI on the log scale (df n-1); paired t p-value (log); exact Wilcoxon signed-rank p-value
+   Throughput, 16 VU (j/s)                          n=6  5.632 [5.448, 5.823]  (blocks: 5.364-5.846)  p_t=4.5e-10  p_signed=0.031
+   Auth-server CPU per journey (ms)                 n=6  0.160 [0.155, 0.166]  (blocks: 0.154-0.167)  p_t=3.3e-10  p_signed=0.031
+   Auth-server CPU per journey @nominal clock (ms)  n=6  0.120 [0.116, 0.124]  (blocks: 0.114-0.125)  p_t=1.8e-10  p_signed=0.031
+   p99 at 30% of own knee (ms)                      n=6  0.468 [0.453, 0.483]  (blocks: 0.450-0.491)  p_t=2.4e-08  p_signed=0.031
+   p99 at 60% of own knee (ms)                      n=6  0.706 [0.571, 0.872]  (blocks: 0.608-1.055)  p_t=0.008  p_signed=0.062
+   Knee (offered j/s)                               n=6  3.548 [3.471, 3.627]  (blocks: 3.400-3.579)  p_t=2.7e-10  p_signed=0.031
+   JMH verify: Password (OWASP parameters)/Password (Argon2Benchmark) = 0.143; within the sensitivity class m19456_t2/m65536_t3 = 0.159
+   difference in auth-server CPU per journey (Password - Password (OWASP parameters), constant VU): 282.88 ms (SD 11.64; blocks 263.03-292.28)
+   JMH verify difference (m65536_t3 - m19456_t2, same class, empty pepper): 75.15 ms, so CPU-per-journey difference / verify difference = 3.764 (about 1: the end-to-end difference comes mainly from the Argon2id verification)
+
+## Figure 7: x marker (first step with median < 90% of offered) against the knee of each block (meta.txt)
+   Password                     x at 20 (n = 6 blocks), step before x = 19 | knee per block: 19 19 19 19 19 20
+   Password (OWASP parameters)  x at 72 (n = 6 blocks), step before x = 68 | knee per block: 68 68 68 68 68 68
+   mTLS-PSU                     x at 100 (n = 5 blocks), step before x = 96 | knee per block: 96 96 96 96 92 96
+   Private-Key-JWT              x at 96 (n = 6 blocks), step before x = 92 | knee per block: 88 96 92 96 92 96
+   Pure-EdDSA                   x at 96 (n = 6 blocks), step before x = 92 | knee per block: 92 92 92 92 96 96
+   Schnorr-IZK                  x at 96 (n = 6 blocks), step before x = 92 | knee per block: 88 92 92 92 96 96
+   ML-DSA-65                    x at 96 (n = 6 blocks), step before x = 92 | knee per block: 92 92 92 92 92 96
+   NIPoK                        x at 100 (n = 4 blocks), step before x = 96 | knee per block: 96 96 92 96 92 96
+   ladder steps missing in some blocks (median over fewer blocks): ML-DSA-65@80, ML-DSA-65@88, ML-DSA-65@92, ML-DSA-65@100, ML-DSA-65@104, ML-DSA-65@112, NIPoK@80, NIPoK@88, NIPoK@92, NIPoK@100, NIPoK@104, NIPoK@112, Password@18, Password@19, Password@21, Password@22, Private-Key-JWT@80, Private-Key-JWT@88, Private-Key-JWT@92, Private-Key-JWT@100, Private-Key-JWT@104, Private-Key-JWT@112, Pure-EdDSA@80, Pure-EdDSA@88, Pure-EdDSA@92, Pure-EdDSA@100, Pure-EdDSA@104, Pure-EdDSA@112, Schnorr-IZK@80, Schnorr-IZK@88, Schnorr-IZK@92, Schnorr-IZK@100, Schnorr-IZK@104, Schnorr-IZK@112, mTLS-PSU@80, mTLS-PSU@88, mTLS-PSU@92, mTLS-PSU@100, mTLS-PSU@104, mTLS-PSU@112
+
+## Figure 8: p99 against % of the knee of each mechanism - median (min-max) over blocks; achieved throughput (median)
+   Figure 8 has two panels: (a) 30%, 60% and 100% (fig8_latency.csv); (b) 100% of the knee: median p99 (min-max) and served/offered ratio (fig8b_knee100.csv)
+   Password                     30%: 165 ms (153–168) @ 5.0 j/s | 60%: 178 ms (171–180) @ 11.0 j/s | 100%: 245 ms (228–25834) @ 18.0 j/s [panels (a) and (b); offered 18-20 j/s; served/offered 0.21–1.00]
+   Password (OWASP parameters)  30%: 76 ms (72–80) @ 20.0 j/s | 60%: 117 ms (109–181) @ 41.0 j/s | 100%: 332 ms (285–555) @ 67.9 j/s [panels (a) and (b); offered 68-68 j/s; served/offered 0.99–1.00]
+   mTLS-PSU                     30%: 56 ms (55–59) @ 29.0 j/s | 60%: 96 ms (95–101) @ 58.0 j/s | 100%: 5674 ms (4293–5807) @ 85.0 j/s [panels (a) and (b); offered 92-97 j/s; served/offered 0.87–0.91]
+   Private-Key-JWT              30%: 60 ms (58–67) @ 28.5 j/s | 60%: 107 ms (95–115) @ 56.5 j/s | 100%: 5867 ms (3232–6712) @ 82.9 j/s [panels (a) and (b); offered 88-97 j/s; served/offered 0.85–0.94]
+   Pure-EdDSA                   30%: 58 ms (56–60) @ 28.0 j/s | 60%: 98 ms (92–104) @ 55.0 j/s | 100%: 5074 ms (4831–6773) @ 82.7 j/s [panels (a) and (b); offered 92-97 j/s; served/offered 0.85–0.90]
+   Schnorr-IZK                  30%: 60 ms (58–65) @ 28.0 j/s | 60%: 108 ms (98–118) @ 55.0 j/s | 100%: 5455 ms (3803–7292) @ 81.6 j/s [panels (a) and (b); offered 88-97 j/s; served/offered 0.84–0.93]
+   ML-DSA-65                    30%: 58 ms (56–63) @ 28.0 j/s | 60%: 99 ms (98–114) @ 55.0 j/s | 100%: 5159 ms (4923–6646) @ 82.2 j/s [panels (a) and (b); offered 92-97 j/s; served/offered 0.85–0.90]
+   NIPoK                        30%: 59 ms (58–60) @ 29.0 j/s | 60%: 102 ms (96–110) @ 58.0 j/s | 100%: 6573 ms (4765–6789) @ 82.8 j/s [panels (a) and (b); offered 92-97 j/s; served/offered 0.85–0.90]
+   p99 at 100% of the knee by offered load (six public-key mechanisms, 36 block-mechanism pairs; median (min-max)): 88 j/s: n=2, p99 3518 ms (3232-3803), served/offered 93.6% | 92 j/s: n=17, p99 5060 ms (4293-5459), served/offered 89.5% | 97 j/s: n=17, p99 6563 ms (5414-7292), served/offered 85.5%
+   Spearman rank correlation between offered load and p99 at 100% of the knee: rho = 0.88 (p = 1.8e-12)
+   NIPoK: highest load among 30/60/100% of the knee with median p99 <= 120 ms: 58.0 j/s (60% of the knee, p99 102 ms) [--healthy-ms: no line in Figure 8]
+   public-key mechanisms with p99 (max over blocks) > 120 ms at 30/60% of the knee: none
+
+## WAN phase (one session, 84 runs): slope of p99 versus RTT (ms p99 / ms RTT, OLS, 95% CI)
+   Password                     26.76 [26.61; 26.90], n = 12
+   mTLS-PSU                     24.13 [23.60; 24.65], n = 12
+   Private-Key-JWT              27.18 [26.60; 27.76], n = 12
+   Pure-EdDSA                   27.12 [26.61; 27.64], n = 12
+   Schnorr-IZK                  28.10 [27.70; 28.49], n = 12
+   ML-DSA-65                    27.13 [26.64; 27.62], n = 12
+   NIPoK                        27.20 [26.62; 27.78], n = 12
+   achieved / offered throughput: 94.4-100.1%
+   offered load: 8 j/s; repetitions per point: 3
+   spread of p99 between repetitions (max - min, largest over the RTTs):
+      Password                     12 ms
+      mTLS-PSU                     5 ms
+      Private-Key-JWT              5 ms
+      Pure-EdDSA                   4 ms
+      Schnorr-IZK                  9 ms
+      ML-DSA-65                    5 ms
+      NIPoK                        8 ms
+   difference of median p99 (baseline - NIPoK, ms) at RTT 0, 20, 50, 100:
+      Password                     +141 +206 +126 +128
+      mTLS-PSU                     -2 -54 -153 -306
+      Private-Key-JWT              -0 +2 -1 -3
+      Pure-EdDSA                   +3 +11 -2 -2
+      Schnorr-IZK                  +2 +47 +52 +101
+      ML-DSA-65                    +1 +12 -1 -1
+   Figure 9.1: p99 difference to NIPoK, bars = min-max of the nine pairwise differences of repetitions (ms):
+      Password                     0: +141 [+139; +152] | 20: +206 [+199; +210] | 50: +126 [+125; +133] | 100: +128 [+122; +129]
+      mTLS-PSU                     0: -2 [-2; +0] | 20: -54 [-62; -49] | 50: -153 [-154; -150] | 100: -306 [-308; -304]
+      Private-Key-JWT              0: -0 [-1; +2] | 20: +2 [-10; +4] | 50: -1 [-3; +1] | 100: -3 [-4; -0]
+      Pure-EdDSA                   0: +3 [-0; +6] | 20: +11 [+5; +13] | 50: -2 [-2; +2] | 100: -2 [-4; +2]
+      Schnorr-IZK                  0: +2 [-0; +3] | 20: +47 [+37; +54] | 50: +52 [+49; +55] | 100: +101 [+100; +102]
+      ML-DSA-65                    0: +1 [-3; +4] | 20: +12 [+6; +17] | 50: -1 [-1; +2] | 100: -1 [-4; +1]
+   slope difference to NIPoK (ms/ms, 95% CI, two independent regressions):
+      Password                     -0.44 [-1.00; +0.11], df 20
+      mTLS-PSU                     -3.07 [-3.80; -2.34], df 20
+      Private-Key-JWT              -0.02 [-0.79; +0.75], df 20
+      Pure-EdDSA                   -0.08 [-0.80; +0.65], df 20
+      Schnorr-IZK                  +0.90 [+0.24; +1.55], df 20
+      ML-DSA-65                    -0.07 [-0.77; +0.64], df 20
+
+## Knee per block (offered j/s)
+   Password                     19 19 19 19 19 20
+   Password (OWASP parameters)  68 68 68 68 68 68
+   mTLS-PSU                     96 96 96 96 92 96
+   Private-Key-JWT              88 96 92 96 92 96
+   Pure-EdDSA                   92 92 92 92 96 96
+   Schnorr-IZK                  88 92 92 92 96 96
+   ML-DSA-65                    92 92 92 92 92 96
+   NIPoK                        96 96 92 96 92 96
+
+## Windows clock at constant VU (% Processor Performance, median per block)
+   Password                     187 191 188 188 186 187
+   Password (OWASP parameters)  140 142 141 140 140 141
+   mTLS-PSU                     141 143 141 143 141 144
+   Private-Key-JWT              142 143 143 142 142 143
+   Pure-EdDSA                   142 143 142 142 143 143
+   Schnorr-IZK                  141 143 143 142 143 143
+   ML-DSA-65                    141 143 143 142 143 142
+   NIPoK                        142 143 143 143 143 142
+
+## Failed journeys (every run except warm-up), % per block: median (min-max); total over blocks
+   Password                     1.798 (1.433–4.295)% | total 1160/55026 (2.1081%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 1081, agent FAIL 2286, 429 0
+   Password (OWASP parameters)  0.000 (0.000–0.000)% | total 0/264705 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+   mTLS-PSU                     0.000 (0.000–0.000)% | total 0/343852 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+   Private-Key-JWT              0.000 (0.000–0.000)% | total 0/334957 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+   Pure-EdDSA                   0.000 (0.000–0.000)% | total 0/334575 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+   Schnorr-IZK                  0.000 (0.000–0.000)% | total 0/331598 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+   ML-DSA-65                    0.000 (0.000–0.000)% | total 0/331813 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+   NIPoK                        0.000 (0.000–0.000)% | total 0/337513 (0.0000%) | constant VU 0.000 (0.000–0.000)% | logs: CME 0, ERROR 0, agent FAIL 0, 429 0
+
+## Resources at constant VU (cores; median over blocks (min-max)), for the description of resource isolation and the testbed ceiling
+   Password                     AS 3.97 (3.97–3.98); agent 0.19 (0.19–0.21); sidecar bank 0.54 (0.53–0.56); gateway 0.07 (0.07–0.07); ns bank 5.21 (5.18–5.29); ns customer 0.19 (0.18–0.20); ns tpp 0.09 (0.09–0.09); istio-system 0.10 (0.09–0.10); all containers 5.79 (5.76–5.90); VM busy 6.39 (6.33–6.50); k6 0.02 (0.02–0.02)
+                                Windows: perf 188 (186–191)%, time 24 (22–27)%; steal 0.0 (0.0–0.0)%, iowait 0.0 (0.0–0.1)%; largest CPU throttling (all runs): AS 99.5%, agent 0.0%, container bank-cluster-nsp/auth-server-66b967d685-n58mx/auth-server 98.9%
+   Password (OWASP parameters)  AS 3.61 (3.50–3.68); agent 1.41 (1.37–1.42); sidecar bank 3.24 (3.17–3.27); gateway 0.42 (0.41–0.43); ns bank 11.90 (11.69–12.04); ns customer 1.37 (1.34–1.39); ns tpp 0.63 (0.59–0.64); istio-system 0.44 (0.43–0.45); all containers 14.64 (14.36–14.81); VM busy 16.12 (15.84–16.40); k6 0.10 (0.10–0.10)
+                                Windows: perf 140 (140–142)%, time 55 (54–56)%; steal 0.0 (0.0–0.0)%, iowait 0.0 (0.0–0.0)%; largest CPU throttling (all runs): AS 97.5%, agent 1.2%, container bank-cluster-nsp/auth-server-849cfc5485-l54fg/auth-server 96.2%
+   mTLS-PSU                     AS 0.70 (0.69–0.72); agent 1.59 (1.56–1.62); sidecar bank 3.68 (3.63–3.73); gateway 0.36 (0.35–0.36); ns bank 10.45 (10.27–10.57); ns customer 1.55 (1.52–1.58); ns tpp 0.70 (0.67–0.72); istio-system 0.38 (0.37–0.39); all containers 13.34 (13.11–13.52); VM busy 14.75 (14.57–15.03); k6 0.11 (0.11–0.11)
+                                Windows: perf 142 (141–144)%, time 52 (52–53)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.0%, agent 2.8%, container customer-cluster-nsp/customer-agent-7f7f9dc7cf-87zzc/customer-agent 2.8%
+   Private-Key-JWT              AS 0.95 (0.92–0.97); agent 1.60 (1.59–1.62); sidecar bank 3.70 (3.68–3.73); gateway 0.46 (0.46–0.46); ns bank 10.56 (10.49–10.67); ns customer 1.56 (1.56–1.58); ns tpp 0.68 (0.67–0.69); istio-system 0.48 (0.48–0.48); all containers 13.54 (13.47–13.69); VM busy 14.98 (14.93–15.17); k6 0.11 (0.11–0.11)
+                                Windows: perf 142 (142–143)%, time 52 (52–53)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.0%, agent 2.8%, container customer-cluster-nsp/customer-agent-8646fc9547-s9jfh/customer-agent 2.7%
+   Pure-EdDSA                   AS 0.94 (0.92–0.96); agent 1.62 (1.60–1.64); sidecar bank 3.70 (3.67–3.73); gateway 0.46 (0.46–0.47); ns bank 10.58 (10.46–10.66); ns customer 1.59 (1.56–1.60); ns tpp 0.69 (0.67–0.71); istio-system 0.48 (0.48–0.49); all containers 13.61 (13.44–13.71); VM busy 15.05 (14.86–15.21); k6 0.11 (0.11–0.11)
+                                Windows: perf 143 (142–143)%, time 52 (51–54)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.0%, agent 2.5%, container customer-cluster-nsp/customer-agent-57b59f684-x74nm/customer-agent 2.5%
+   Schnorr-IZK                  AS 1.02 (0.97–1.06); agent 1.61 (1.60–1.63); sidecar bank 3.69 (3.67–3.72); gateway 0.50 (0.49–0.50); ns bank 10.54 (10.52–10.71); ns customer 1.57 (1.56–1.59); ns tpp 0.67 (0.66–0.69); istio-system 0.52 (0.51–0.52); all containers 13.56 (13.53–13.79); VM busy 15.02 (14.93–15.25); k6 0.11 (0.11–0.11)
+                                Windows: perf 143 (141–143)%, time 52 (52–54)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.2%, agent 2.8%, container customer-cluster-nsp/customer-agent-8f44464f8-p6ld6/customer-agent 2.8%
+   ML-DSA-65                    AS 0.94 (0.91–0.96); agent 1.69 (1.64–1.74); sidecar bank 3.69 (3.65–3.79); gateway 0.46 (0.45–0.47); ns bank 10.56 (10.39–10.84); ns customer 1.65 (1.60–1.69); ns tpp 0.69 (0.66–0.70); istio-system 0.48 (0.47–0.49); all containers 13.64 (13.39–13.99); VM busy 15.16 (14.79–15.49); k6 0.11 (0.11–0.11)
+                                Windows: perf 142 (141–143)%, time 52 (51–53)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.0%, agent 3.5%, container customer-cluster-nsp/customer-agent-5d66f87958-rkzhz/customer-agent 3.5%
+   NIPoK                        AS 0.91 (0.90–0.98); agent 1.60 (1.58–1.63); sidecar bank 3.66 (3.62–3.73); gateway 0.46 (0.45–0.47); ns bank 10.45 (10.28–10.68); ns customer 1.56 (1.54–1.59); ns tpp 0.67 (0.67–0.69); istio-system 0.48 (0.47–0.48); all containers 13.42 (13.24–13.70); VM busy 14.86 (14.59–15.23); k6 0.11 (0.11–0.11)
+                                Windows: perf 143 (142–143)%, time 52 (51–52)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.0%, agent 4.0%, container customer-cluster-nsp/customer-agent-5cf86cb997-4zkvt/customer-agent 4.0%
+
+## Auth-server CPU per journey at the same absolute load (ladder steps of 30 s), ms: median over blocks (min-max); [normalised to the nominal clock]
+   For checking only, not used in the paper: the first ladder steps are not yet stable for the six public-key mechanisms;
+   the CPU metric of the paper is the CPU per journey at constant VU (Table 8).
+   Password                     4 j/s: 122.68 (117.15–155.00) [270.12 (257.63–341.81)] | 8 j/s: 123.43 (114.98–128.10) [266.53 (248.99–278.44)] | 16 j/s: 152.61 (145.28–154.73) [303.11 (277.79–313.50)]
+   Password (OWASP parameters)  4 j/s: 24.88 (23.79–25.35) [53.07 (50.90–54.50)] | 8 j/s: 24.57 (23.22–25.20) [52.56 (49.92–53.81)] | 16 j/s: 23.78 (23.56–24.51) [49.06 (48.66–50.57)]
+   mTLS-PSU                     4 j/s: 9.44 (7.56–11.45) [20.12 (16.06–24.61)] | 8 j/s: 11.46 (10.58–12.08) [24.16 (22.31–25.54)] | 16 j/s: 7.98 (7.26–8.26) [16.30 (14.82–16.95)]
+   Private-Key-JWT              4 j/s: 10.14 (9.23–12.47) [21.63 (19.66–26.74)] | 8 j/s: 13.51 (13.08–14.43) [28.75 (27.84–30.56)] | 16 j/s: 8.87 (8.49–9.43) [18.27 (17.31–19.34)]
+   Pure-EdDSA                   4 j/s: 11.33 (10.33–11.98) [24.11 (22.08–25.79)] | 8 j/s: 13.87 (13.26–15.77) [29.36 (28.08–33.51)] | 16 j/s: 9.21 (8.09–9.68) [18.84 (16.44–19.69)]
+   Schnorr-IZK                  4 j/s: 11.99 (11.00–15.71) [25.62 (23.58–33.49)] | 8 j/s: 13.65 (11.36–16.36) [29.00 (24.07–34.58)] | 16 j/s: 9.61 (9.28–11.03) [19.67 (19.14–22.75)]
+   ML-DSA-65                    4 j/s: 10.79 (10.16–12.11) [23.07 (21.78–25.97)] | 8 j/s: 13.35 (11.98–13.83) [28.23 (25.39–29.43)] | 16 j/s: 9.07 (8.75–9.56) [18.73 (18.09–19.46)]
+   NIPoK                        4 j/s: 10.62 (9.17–11.75) [22.66 (19.72–24.95)] | 8 j/s: 12.90 (12.44–13.76) [27.39 (26.58–28.98)] | 16 j/s: 9.24 (8.91–10.41) [18.85 (18.23–21.52)]
+   ratio baseline/NIPoK at 8 j/s (median over blocks of the per-block ratio):
+      Password                     9.52× (8.89–9.81)
+      Password (OWASP parameters)  1.86× (1.79–2.03)
+      mTLS-PSU                     0.88× (0.82–0.93)
+      Private-Key-JWT              1.04× (0.96–1.16)
+      Pure-EdDSA                   1.06× (1.02–1.25)
+      Schnorr-IZK                  1.06× (0.91–1.19)
+      ML-DSA-65                    0.99× (0.93–1.11)
+   later / earlier measurement at the same load (kneeconfirm / kneestep at the same rate), CPU per journey: median over blocks (min-max)
+      Password                     1.054 (0.928–1.078) (rate 16)
+      Password (OWASP parameters)  1.010 (0.966–1.051) (rate 64)
+      mTLS-PSU                     0.779 (0.765–0.813) (rate 64)
+      Private-Key-JWT              0.885 (0.833–1.026) (rate 64)
+      Pure-EdDSA                   0.890 (0.847–0.904) (rate 64)
+      Schnorr-IZK                  0.845 (0.825–0.896) (rate 64)
+      ML-DSA-65                    0.880 (0.831–0.915) (rate 64)
+      NIPoK                        0.876 (0.807–0.917) (rate 64)
+
+## Regression of auth-server CPU (cores) on achieved throughput, unsaturated ladder steps (achieved >= 90% of offered), per block
+   (slope = marginal ms CPU per journey; intercept = baseline cores)
+   the first ladder steps are not yet stable for the six public-key mechanisms, so the slope includes JVM warm-up effects
+   Password                     slope 173.00 (167.25–179.91) ms/j, intercept -0.307 (-0.399–-0.179) cores, R² 0.99 (0.97–0.99), negative intercept 6/6 blocks | normalised to the nominal clock: slope 312.01 (306.70–333.40), negative intercept 6/6
+   Password (OWASP parameters)  slope 48.59 (45.18–50.57) ms/j, intercept -0.287 (-0.306–-0.242) cores, R² 0.98 (0.98–0.99), negative intercept 6/6 blocks | normalised to the nominal clock: slope 70.77 (65.81–72.12), negative intercept 6/6
+   mTLS-PSU                     slope 8.30 (8.07–8.61) ms/j, intercept 0.003 (-0.004–0.014) cores, R² 0.98 (0.97–0.98), negative intercept 2/6 blocks | normalised to the nominal clock: slope 12.20 (11.36–12.72), negative intercept 0/6
+   Private-Key-JWT              slope 11.18 (10.84–12.50) ms/j, intercept -0.013 (-0.026–-0.002) cores, R² 0.99 (0.98–0.99), negative intercept 6/6 blocks | normalised to the nominal clock: slope 16.06 (15.72–16.44), negative intercept 0/6
+   Pure-EdDSA                   slope 11.01 (10.82–11.09) ms/j, intercept -0.010 (-0.014–0.000) cores, R² 0.99 (0.99–0.99), negative intercept 5/6 blocks | normalised to the nominal clock: slope 15.69 (15.24–16.35), negative intercept 0/6
+   Schnorr-IZK                  slope 12.11 (11.76–12.46) ms/j, intercept -0.018 (-0.024–-0.004) cores, R² 0.98 (0.97–0.99), negative intercept 6/6 blocks | normalised to the nominal clock: slope 17.32 (17.00–17.75), negative intercept 0/6
+   ML-DSA-65                    slope 11.04 (10.92–11.27) ms/j, intercept -0.009 (-0.014–-0.007) cores, R² 0.99 (0.98–1.00), negative intercept 6/6 blocks | normalised to the nominal clock: slope 15.81 (15.65–16.25), negative intercept 0/6
+   NIPoK                        slope 10.93 (10.77–11.50) ms/j, intercept -0.009 (-0.025–-0.005) cores, R² 0.99 (0.98–0.99), negative intercept 6/6 blocks | normalised to the nominal clock: slope 15.94 (15.64–16.94), negative intercept 0/6
+
+## Measurement conditions per block (meta.txt, MANIFEST.txt)
+   block 1: 2026-11-13T19:09:36+07:00 -> 2026-11-13T22:12:01+07:00 (10945s) | swap 0 kB | authcpu=4 sidecar=4 dbpool=50 agentcpu=4 agentcpureq=2 heap=512m | rates=[4,8,16,32,64,128,256] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+   block 2: 2026-11-15T01:40:47+07:00 -> 2026-11-15T04:37:07+07:00 (10580s) | swap 0 kB | authcpu=4 sidecar=4 dbpool=50 agentcpu=4 agentcpureq=2 heap=512m | rates=[4,8,16,32,64,128,256] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+   block 3: 2026-11-14T01:23:31+07:00 -> 2026-11-14T04:19:46+07:00 (10575s) | swap 0 kB | authcpu=4 sidecar=4 dbpool=50 agentcpu=4 agentcpureq=2 heap=512m | rates=[4,8,16,32,64,128,256] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+   block 4: 2026-11-14T04:20:25+07:00 -> 2026-11-14T07:17:07+07:00 (10602s) | swap 0 kB | authcpu=4 sidecar=4 dbpool=50 agentcpu=4 agentcpureq=2 heap=512m | rates=[4,8,16,32,64,128,256] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+   block 5: 2026-11-14T07:17:55+07:00 -> 2026-11-14T10:18:42+07:00 (10847s) | swap 0 kB | authcpu=4 sidecar=4 dbpool=50 agentcpu=4 agentcpureq=2 heap=512m | rates=[4,8,16,32,64,128,256] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+   block 6: 2026-11-14T22:37:40+07:00 -> 2026-11-15T01:39:42+07:00 (10922s) | swap 0 kB | authcpu=4 sidecar=4 dbpool=50 agentcpu=4 agentcpureq=2 heap=512m | rates=[4,8,16,32,64,128,256] dur=30s achieve>=0.90 fail<=0.05 confirm=1
+   limiter: Rate-limit ON: token=10000/s par=100000/s psu=100000/s (per-IP, cap=100000)
+   auth-server JVM: openjdk version "24" 2025-03-18 OpenJDK Runtime Environment Temurin-24+36 (build 24+36)
+   resources auth-server pod: auth-server={"limits":{"cpu":"4","memory":"3Gi"},"requests":{"cpu":"4","memory":"3Gi"}} istio-proxy={"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"10m","memory":"40Mi"}}
+   resources ingress gateway: istio-proxy={"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"10m","memory":"40Mi"}}
+   resources customer-agent: customer-agent={"limits":{"cpu":"4","memory":"2Gi"},"requests":{"cpu":"2","memory":"2Gi"}}
+   authz-store: Authorization store: IndexedInMemoryAuthorizationService (max=10000, thread-safe, indexed lookup)
+   MANIFEST loadtest/block1 2026-11-13T19:09:35+07:00
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=79% PowerOnline=True win_utc_ms=1794571776718 | wsl_mono=207990.652652..207991.029916 wsl_real=1794571776.370946922 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+   MANIFEST loadtest/block2 2026-11-15T01:40:45+07:00   (+2 earlier entries: replaced measurements)
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=78% PowerOnline=True win_utc_ms=1794681646907 | wsl_mono=317869.675556..317870.073372 wsl_real=1794681646.548597182 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+   MANIFEST loadtest/block3 2026-11-14T01:23:30+07:00
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=79% PowerOnline=True win_utc_ms=1794594211117 | wsl_mono=230426.951844..230427.347744 wsl_real=1794594210.750534528 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+   MANIFEST loadtest/block4 2026-11-14T04:20:23+07:00
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=79% PowerOnline=True win_utc_ms=1794604825017 | wsl_mono=241041.532577..241042.071573 wsl_real=1794604824.521440719 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+   MANIFEST loadtest/block5 2026-11-14T07:17:54+07:00
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=79% PowerOnline=True win_utc_ms=1794615475493 | wsl_mono=251692.794780..251693.332626 wsl_real=1794615474.991828773 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+   MANIFEST loadtest/block6 2026-11-14T22:37:39+07:00   (+3 earlier entries: replaced measurements)
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=78% PowerOnline=True win_utc_ms=1794670660883 | wsl_mono=306882.849597..306883.227376 wsl_real=1794670660.537214440 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+   MANIFEST loadtest/wan 2026-11-15T04:52:35+07:00
+      clocksource: hyperv_clocksource_tsc_page
+      windows: BatteryStatus=2 Charge=78% PowerOnline=True win_utc_ms=1794693156839 | wsl_mono=329380.542546..329380.951335 wsl_real=1794693156.463679229 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 

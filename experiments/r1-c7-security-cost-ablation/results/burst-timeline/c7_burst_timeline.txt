@@ -1,0 +1,69 @@
+R1-C7 journey latency under a burst (c7_burst_timeline.py 1.2, 2026-11-19T06:57:07)
+measurement directory: benchmark-R1-C7/e2e/burst
+burst: 8 j/s 60 s → 64 j/s 30 s → 8 j/s 90 s; buckets of 5 s by journey start time; plotted p99
+runs used: Password r1,2,3; mTLS-PSU r1,2,3; Private-Key-JWT r1,2,3; Pure-EdDSA r1,2,3; Schnorr-IZK r1,2,3; ML-DSA-65 r1,2,3; NIPoK r1,2,3
+panel (c), Scheduled line: iterations scheduled per bucket of 5 s, summed over 3 Password runs: pre phase 120, burst phase 960, post phase 120
+runs skipped (invalid in burst.json): none
+
+mechanism           pre p99  burst p99   post p99 max bucket (burst) p99  max after   failed dropped (per run)   recovery p50/p99
+Password                181      55999      52153            56001      52377      540   2031/2025/2029                -/-
+mTLS-PSU                 56         99         56              118         60        0            0/0/0            0 s/0 s
+Private-Key-JWT          57        127         58              144         61        0            0/0/0            0 s/0 s
+Pure-EdDSA               54        117         54              146         53        0            0/0/0            0 s/0 s
+Schnorr-IZK              57        109         56              124         57        0            0/0/0            0 s/0 s
+ML-DSA-65                56        121         57              141         60        0            0/0/0            0 s/0 s
+NIPoK                    56        147         55              150         57        0            0/0/0            0 s/0 s
+
+(pre/burst/post p99 = median over the runs of the p99 of each phase, as in burst.txt; max bucket = largest value of the median
+ line in the phase; failed = failed journeys summed over the runs; dropped = dropped_iterations of each run; recovery = median
+ recovery time by p50 and by p99 computed by c7_burst.py, read unchanged from burst.json; '-' = a run did not recover or no value)
+
+Accounting of k6 iterations per phase and run: scheduled = rate × duration; success/fail/dropped = c7.phases; unfinished =
+scheduled − success − fail − dropped (iterations still running when the phase stopped, not recorded by k6; ±1 because k6 may
+start one more iteration at the end of a phase, so −1 means one iteration more than rate × duration); max = largest latency of a successful journey (ms);
+iter = k6 iterations (completed) must equal success + fail; max VUs = the 'Insufficient VUs' warning in <name>.k6.log.
+  Password         r1 | pre 480: 480/0/0, unfinished 0, max 202 | burst 1920: 136/38/1441, unfinished 305, max 56143 | post 720: 4/127/590, unfinished -1, max 52377 | iter 785 = s+f | max VUs burst=384, post=48
+  Password         r2 | pre 480: 481/0/0, unfinished -1, max 800 | burst 1920: 121/53/1442, unfinished 304, max 57159 | post 720: 0/134/583, unfinished 3, max - | iter 789 = s+f | max VUs burst=384, post=48
+  Password         r3 | pre 480: 480/0/0, unfinished 0, max 210 | burst 1920: 106/50/1453, unfinished 311, max 56565 | post 720: 0/138/576, unfinished 6, max - | iter 774 = s+f | max VUs burst=384, post=48
+  mTLS-PSU         r1 | pre 480: 480/0/0, unfinished 0, max 82 | burst 1920: 1920/0/0, unfinished 0, max 753 | post 720: 720/0/0, unfinished 0, max 73 | iter 3120 = s+f | max VUs -
+  mTLS-PSU         r2 | pre 480: 480/0/0, unfinished 0, max 73 | burst 1920: 1920/0/0, unfinished 0, max 128 | post 720: 720/0/0, unfinished 0, max 67 | iter 3120 = s+f | max VUs -
+  mTLS-PSU         r3 | pre 480: 481/0/0, unfinished -1, max 69 | burst 1920: 1921/0/0, unfinished -1, max 188 | post 720: 721/0/0, unfinished -1, max 67 | iter 3123 = s+f | max VUs -
+  Private-Key-JWT  r1 | pre 480: 481/0/0, unfinished -1, max 80 | burst 1920: 1921/0/0, unfinished -1, max 246 | post 720: 720/0/0, unfinished 0, max 84 | iter 3122 = s+f | max VUs -
+  Private-Key-JWT  r2 | pre 480: 481/0/0, unfinished -1, max 67 | burst 1920: 1921/0/0, unfinished -1, max 144 | post 720: 720/0/0, unfinished 0, max 82 | iter 3122 = s+f | max VUs -
+  Private-Key-JWT  r3 | pre 480: 480/0/0, unfinished 0, max 59 | burst 1920: 1921/0/0, unfinished -1, max 163 | post 720: 721/0/0, unfinished -1, max 79 | iter 3122 = s+f | max VUs -
+  Pure-EdDSA       r1 | pre 480: 480/0/0, unfinished 0, max 69 | burst 1920: 1920/0/0, unfinished 0, max 186 | post 720: 721/0/0, unfinished -1, max 79 | iter 3121 = s+f | max VUs -
+  Pure-EdDSA       r2 | pre 480: 480/0/0, unfinished 0, max 63 | burst 1920: 1921/0/0, unfinished -1, max 414 | post 720: 720/0/0, unfinished 0, max 82 | iter 3121 = s+f | max VUs -
+  Pure-EdDSA       r3 | pre 480: 481/0/0, unfinished -1, max 64 | burst 1920: 1920/0/0, unfinished 0, max 118 | post 720: 720/0/0, unfinished 0, max 57 | iter 3121 = s+f | max VUs -
+  Schnorr-IZK      r1 | pre 480: 481/0/0, unfinished -1, max 106 | burst 1920: 1921/0/0, unfinished -1, max 219 | post 720: 721/0/0, unfinished -1, max 100 | iter 3123 = s+f | max VUs -
+  Schnorr-IZK      r2 | pre 480: 480/0/0, unfinished 0, max 72 | burst 1920: 1921/0/0, unfinished -1, max 146 | post 720: 720/0/0, unfinished 0, max 114 | iter 3121 = s+f | max VUs -
+  Schnorr-IZK      r3 | pre 480: 481/0/0, unfinished -1, max 62 | burst 1920: 1920/0/0, unfinished 0, max 160 | post 720: 721/0/0, unfinished -1, max 71 | iter 3122 = s+f | max VUs -
+  ML-DSA-65        r1 | pre 480: 481/0/0, unfinished -1, max 91 | burst 1920: 1920/0/0, unfinished 0, max 197 | post 720: 720/0/0, unfinished 0, max 75 | iter 3121 = s+f | max VUs -
+  ML-DSA-65        r2 | pre 480: 481/0/0, unfinished -1, max 102 | burst 1920: 1921/0/0, unfinished -1, max 160 | post 720: 720/0/0, unfinished 0, max 77 | iter 3122 = s+f | max VUs -
+  ML-DSA-65        r3 | pre 480: 481/0/0, unfinished -1, max 55 | burst 1920: 1921/0/0, unfinished -1, max 133 | post 720: 721/0/0, unfinished -1, max 69 | iter 3123 = s+f | max VUs -
+  NIPoK            r1 | pre 480: 481/0/0, unfinished -1, max 65 | burst 1920: 1920/0/0, unfinished 0, max 318 | post 720: 721/0/0, unfinished -1, max 93 | iter 3122 = s+f | max VUs -
+  NIPoK            r2 | pre 480: 481/0/0, unfinished -1, max 64 | burst 1920: 1921/0/0, unfinished -1, max 260 | post 720: 720/0/0, unfinished 0, max 67 | iter 3122 = s+f | max VUs -
+  NIPoK            r3 | pre 480: 481/0/0, unfinished -1, max 55 | burst 1920: 1921/0/0, unfinished -1, max 136 | post 720: 720/0/0, unfinished 0, max 81 | iter 3122 = s+f | max VUs -
+
+md5 of the inputs:
+   b1aa1dd6258bf361304aac139f256358  burst.json
+   aafa642c708546e200d379ed9c85f05a  ed25519-rtt0-r1.summary.json
+   338e2efdaeaf028aa47b1848699d4bf3  ed25519-rtt0-r2.summary.json
+   6d52d3cd39e46824be470105060a9614  ed25519-rtt0-r3.summary.json
+   8ffaab95b9410ef09779fa43c675497c  ml_dsa-rtt0-r1.summary.json
+   08b3ebcc3ad6b69bf8a0f730ddfab5cc  ml_dsa-rtt0-r2.summary.json
+   eccab01ee1048b9fefb5cdd9640dca94  ml_dsa-rtt0-r3.summary.json
+   068165e38d7378abe0a2b0ec13bd0269  mtls-rtt0-r1.summary.json
+   db4f7c1dab34233a97e7ece0ebf55ac9  mtls-rtt0-r2.summary.json
+   437aab8413c04bde646cc2cfdf997793  mtls-rtt0-r3.summary.json
+   673960c041d65c7e11bae266acad7bde  nipok-rtt0-r1.summary.json
+   ce81b43c1230ac0f251f9057988692e4  nipok-rtt0-r2.summary.json
+   6ec249ca45bbb0dc35eb810f2bf785d4  nipok-rtt0-r3.summary.json
+   1c6e286e63da0c65edade675bbbb20a3  password-rtt0-r1.summary.json
+   c05155b6f55b7782e0591fddc08b1394  password-rtt0-r2.summary.json
+   f74dbb2eec7a238ec917ec45f0549677  password-rtt0-r3.summary.json
+   631e53511b06443ac05704e1f9fc32eb  private_key_jwt-rtt0-r1.summary.json
+   e30fff5534291ce63c67ca163df64f23  private_key_jwt-rtt0-r2.summary.json
+   f30f04dee73f31c01e0422f5dcfaaaa9  private_key_jwt-rtt0-r3.summary.json
+   b651678867fc7c08a505f767e3700b51  schnorr_interactive-rtt0-r1.summary.json
+   94a9ffa61f758a0369e9ae88882152dd  schnorr_interactive-rtt0-r2.summary.json
+   23d6549681ff6c70506b1f5fccdd7612  schnorr_interactive-rtt0-r3.summary.json

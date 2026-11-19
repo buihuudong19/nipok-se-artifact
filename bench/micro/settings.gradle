@@ -1,2 +1,0 @@
-// Standalone project — KHÔNG thuộc multi-project build của bank/, KHÔNG đụng auth-server.
-rootProject.name = 'crypto-jmh'

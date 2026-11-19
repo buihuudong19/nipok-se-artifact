@@ -1,0 +1,58 @@
+{
+  "name": "NIPoK-SE test vectors v1 (R1-C8)",
+  "encoding": {
+    "group": "edwards25519; points: 32-byte compressed (RFC 8032 §5.1.2), canonical; scalars: 32-byte little-endian, 0 <= s < l",
+    "hash": "H(c1,...,cn) = SHA-512(len(c1)||c1||...||len(cn)||cn) mod l, len = 4-byte big-endian byte length, digest read little-endian (64 bytes)",
+    "challenge": "e = H(B, V, X, utf8(id_P), N, cb, utf8(id_V)); B = basepoint encoding; cb = empty byte string when channel binding is off",
+    "nonce": "kappa_v = H(utf8('NIPoK-nonce-key-v1'), x); v = H(utf8('NIPoK-nonce-v1'), kappa_v, X, utf8(id_P), N, cb, utf8(id_V)); V = vB; s = v - e*x mod l",
+    "verify": "decode: |blob| = 96, s canonical; then accept iff compress(s*B + e*X) == V",
+    "wire": "blob = base64url-nopad(N || V || s)",
+    "enrollment_key": "X canonical encoding, [8]X != O (RFC 8235 §3.2), X in the prime-order subgroup ([l]X == O)"
+  },
+  "basepoint": "5866666666666666666666666666666666666666666666666666666666666666",
+  "valid": [
+    {"id": "TV1", "x": "7f7f6ae1fc3f31f91102121937db596f4eebed770aaeffd052adbd14f600c908", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "id_P": "alice", "id_P_utf8": "616c696365", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank",
+     "kappa_v": "eeb47ae4f3fcf1368ee6fdb15c70e8ff02857ec55a0f2c347a5753159996b208", "v": "3f9efa6259a5a95fc7f80e1e4e030417bf4733468796274b35b7393d0754e702", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "e": "71558d67a56ab54f8ebb742117ca64058f0b4c34dc5bfb297a55f97dfbab8103", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2QM", "expected": "accept"},
+    {"id": "TV2", "x": "b349741eda1d30472abf326f94150d31ada77d3c35647827d71eb10f83b37801", "X": "adfda51ae98b71093a60bac75c2cbc2da899bb91da6172925ca4511165611412", "id_P": "bob", "id_P_utf8": "626f62", "N": "3b8a2d7c597c296d8ac52b372fa58d19bf6e6c3ddb8cf41121278deecfae5904", "cb": "", "id_V": "bank",
+     "kappa_v": "68bdb557ba796fc899b2aaec1265f51af06d86f3c0bde6ff4146a4e19194fc05", "v": "8f50e863b68c280a9a72c690e81fd6b3e1d870092562a778b071cf0d484ef807", "V": "ee40e5337c0457c9856b6d74b4a5f6bae74d37c18c4d0dbb1e0557d35e6f6486", "e": "158d77d5ce2b022f8b89ef2935c1e71ae1f22eb8470be697c070c975c1d2f70c", "s": "ca8ebcd47cc98c45836a0c57cc2839a8a2a15ea9ca21aea7cf737537eeb7910d",
+     "blob": "O4otfFl8KW2KxSs3L6WNGb9ubD3bjPQRISeN7s-uWQTuQOUzfARXyYVrbXS0pfa65003wYxNDbseBVfTXm9khsqOvNR8yYxFg2oMV8woOaiioV6pyiGup89zdTfut5EN", "expected": "accept"},
+    {"id": "TV3", "x": "3a3478710bb0aefcb86b2382cdaf5906c5ef25f2ac615d93e187fe9ee813fd01", "X": "dc41d3bdb8346d8a0d7d3b8833fb874df4251811426fc0f0247710f63f58bfcf", "id_P": "người-dùng-01", "id_P_utf8": "6e67c6b0e1bb9d692d64c3b96e672d3031", "N": "be8c20c79e5c5ae3c7c19770e1a091143a0023d2ac32703e5569fd0af74ac65f", "cb": "36be9f98c3dcf07acc7acbfe7b81181c6f6384daa75c0ca77fd3dfacc1340ae6", "id_V": "https://bank.example/as",
+     "kappa_v": "4d8993f1871829d4ff1dd20e0131af3e7e96cecb2db04570d3cfb640490fe209", "v": "af35cb6ec1736ddfceff3ff8c17e4c04eb9e414ee89f8672995e50a93e24fb07", "V": "1b9ac9953e453f517b2aa434caa76b0c5e87645a81a1a1bd99a4c45d0289be2f", "e": "57f6fa0d54292715940998295d1c0f2dc96bab42008795035cda35dccc6a2c01", "s": "4d32b04ccc77c5d7c8f191d0d39d2d4532f6885aa3bf9e6ab56868aec0a6a902",
+     "blob": "vowgx55cWuPHwZdw4aCRFDoAI9KsMnA-VWn9CvdKxl8bmsmVPkU_UXsqpDTKp2sMXodkWoGhob2ZpMRdAom-L00ysEzMd8XXyPGR0NOdLUUy9ohao7-earVoaK7ApqkC", "expected": "accept"}
+  ],
+  "invalid": [
+    {"id": "IV01", "base": "TV1", "case": "s replaced by s + l (non-canonical encoding of the same residue)", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "cdeb14d91b8efc2f32ff51b958eb04347e7784c36109360e213eeeee197f641c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "noncanonical_s", "equation_alone": "holds"},
+    {"id": "IV02", "base": "TV1", "case": "s = l", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "edd3f55c1a631258d69cf7a2def9de1400000000000000000000000000000010",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "noncanonical_s", "equation_alone": "fails"},
+    {"id": "IV03", "base": "TV1", "case": "one bit of s flipped (byte 0, bit 0)", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e1171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV04", "base": "TV1", "case": "one bit of V flipped (byte 0, bit 0)", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8918a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV05", "base": "TV1", "case": "V and s swapped", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c", "s": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV06", "base": "TV1", "case": "mismatched identity: id_P = bob", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "bob", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV07", "base": "TV1", "case": "cross-endpoint forwarding: verifier id_V = bank-b", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank-b", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV08", "base": "TV1", "case": "altered channel binding: cb of another certificate", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "c8ce96b45640860ba5b5fb3bd7f69817f43a85f06cf82439aa8b883b5c44a07f", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV09", "base": "TV1", "case": "channel binding removed: cb empty", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV10", "base": "TV1", "case": "proof replayed under another server nonce N", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "2f5a1750dc48f354ec10756d8cdc672e9f693a1b7b44af2ded3d65e70f8d67e1", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV11", "base": "TV1", "case": "wrong public key: X of TV2", "X": "adfda51ae98b71093a60bac75c2cbc2da899bb91da6172925ca4511165611412", "V": "8818a07bb87f02dd761828724e00421a0a3cc2c1cc9e6fcf547cbff419298a8b", "s": "e0171f7c012bead75b625a167af1251f7e7784c36109360e213eeeee197f640c",
+     "id_P": "alice", "N": "33c2861e89a8fd667a02304f23845966b8adca0ed847d1e150aac95b8a2287ba", "cb": "7e1ae90d7ccbf16c16e673a559c053e98815e89266caa39fb525736a7c926d41", "id_V": "bank", "expected": "reject", "rejected_by": "equation", "equation_alone": "fails"},
+    {"id": "IV12", "base": "TV1", "case": "malformed blob: 95 bytes", "blob": "M8KGHomo_WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL_0GSmKi-AXH3wBK-rXW2JaFnrxJR9-d4TDYQk2DiE-7u4Zf2Q", "expected": "reject", "rejected_by": "length"},
+    {"id": "IV13", "base": "TV1", "case": "malformed blob: standard base64 alphabet instead of base64url", "blob": "M8KGHomo/WZ6AjBPI4RZZrityg7YR9HhUKrJW4oih7qIGKB7uH8C3XYYKHJOAEIaCjzCwcyeb89UfL/0GSmKi+AXH3wBK+rXW2JaFnrxJR9+d4TDYQk2DiE+7u4Zf2QM", "expected": "reject", "rejected_by": "encoding (only when the string contains + or /)"}
+  ],
+  "enrollment_keys": [
+    {"id": "KV01", "case": "X of TV1", "X": "91c005f97121e4050d9f7877aa3f2621bd48ff5b3a93e274475c8d63396d9e58", "expected": "accept"},
+    {"id": "KV02", "case": "identity point", "X": "0100000000000000000000000000000000000000000000000000000000000000", "expected": "reject"},
+    {"id": "KV03", "case": "point of order 8", "X": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05", "expected": "reject"},
+    {"id": "KV04", "case": "mixed-order point: X(TV1) + T, T of order 8", "X": "d086be7013b9505645b99bf257119e4eef77975891e27d04036746ab0dcd4f39", "expected": "reject"},
+    {"id": "KV05", "case": "non-canonical encoding: y = 3 + p", "X": "f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f", "expected": "reject"},
+    {"id": "KV06", "case": "y with no point on the curve", "X": "0200000000000000000000000000000000000000000000000000000000000000", "expected": "reject"}
+  ]
+}

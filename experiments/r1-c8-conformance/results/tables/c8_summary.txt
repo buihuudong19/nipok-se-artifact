@@ -1,0 +1,42 @@
+R1-C8 conformance summary (c8_tables.py 1.1)
+
+Vectors: NIPoK-SE test vectors v2 (R1-C8), 4 valid proofs, 31 invalid proofs, 10 public keys, 8 stateful scenarios, 5 deployment rules
+Implementations that ran: 4
+  java_elisabeth  Java, elisabeth backend (prototype verifier): 45/45 match (NipokC8VectorsTest (R1C8-v1.1, JUnit on psu-auth-spi) 24 OpenJDK 64-Bit Server VM)
+  java_libsodium  Java, libsodium backend (prototype, optional): 45/45 match (NipokC8VectorsTest (R1C8-v1.1, JUnit on psu-auth-spi) 24 OpenJDK 64-Bit Server VM)
+  python_ref      nipok_ref.py (pure Python, independent): 45/45 match (nipok_ref.py 1.1 (pure Python, standard library only))
+  pynacl          libsodium via PyNaCl (independent, optional): 45/45 match (nipok_nacl_check.py 1.1)
+
+Per case of comment 8 (Table 13 candidate):
+  Generation and verification  vectors  4 (accept 4, reject 0) [TV1-TV4]; stages: -; stateful: -; same in 4/4
+                               end-to-end: Reference: valid login, one at a time (57/57)
+  Invalid proofs               vectors  9 (accept 0, reject 9) [IV01-IV05, IV14-IV17]; stages: decoding ($s \ge \ell$): 4; verification: 5; stateful: -; same in 4/4
+                               end-to-end: Forged response s (one bit flipped) (26/26); Non-canonical s (s plus the group order) (20/20)
+  Malformed contexts           vectors  8 (accept 0, reject 8) [IV12-IV13, IV18-IV23]; stages: decoding: 6; verification: 2; stateful: -; same in 4/4
+                               end-to-end: Payload of 95 bytes instead of 96 (20/20); Payload not in base64url (20/20)
+  Replayed nonces              vectors  1 (accept 0, reject 1) [IV10]; stages: verification: 1; stateful: SC1, SC2, SC3, SC4, SC5, SC6, SC7; same in 4/4
+                               end-to-end: Replayed nonce (20/20); Nonce never issued (20/20); Expired nonce (TTL 60 s) (8/8); One proof submitted from 4 sessions at once (20/20 rounds); Nonces issued before the restart: unused; already used (3/3; 3/3)
+  Mismatched identities        vectors  4 (accept 0, reject 4) [IV06, IV11, IV26-IV27]; stages: verification: 4; stateful: -; same in 4/4
+                               end-to-end: Another user's valid proof (20/20)
+  Altered channel bindings     vectors  4 (accept 0, reject 4) [IV08-IV09, IV24-IV25]; stages: verification: 4; stateful: -; same in 4/4
+                               end-to-end: Proof bound to another TLS channel (wrong cb) (20/20)
+  Cross-endpoint forwarding    vectors  5 (accept 0, reject 5) [IV07, IV28-IV31]; stages: verification: 5; stateful: -; same in 4/4
+                               end-to-end: Proof for another verifier (20/20)
+  Public-key registration      vectors 10 (accept 1, reject 9) [KV01-KV10]; stages: registration (400): 9; stateful: -; same in 4/4
+                               end-to-end: Register an invalid public key (test vectors KV02 to KV06) (5/5); Register again while the key is active (10/10); Register without an onboarding token; with a wrong token (1/1; 1/1)
+
+Parameters (Table 14 candidate); sources: code defaults in testbed, probe.json of R1-C7
+  Suite         edwards25519 prime-order subgroup; SHA-512 over 4-byte length-prefixed fields; untagged challenge; nonce tags NIPoK-nonce-key-v1, NIPoK-nonce-v1 | set by: protocol version | if they differ: verification
+  Wire format   base64url, no padding, of N || V || s (96 bytes), form field password of POST /psu/auth | set by: protocol version | if they differ: decoding
+  N             32 random bytes, hidden field nipokNonce of GET /psu/login-page; single use; TTL 60 s; at most 100000 live | set by: authorization server | if they differ: nonce store
+  id_V          testbed 'bank' (code default); deployment: the issuer identifier of the bank's authorization server | set by: bank; configured in each agent at enrollment | if they differ: verification
+  cb            SHA-256 of the DER leaf certificate of the bank gateway; agent: from its TLS handshake; server: configured value (forwarded header trusted: false by default) | set by: bank certificate; update at rotation | if they differ: verification
+  id_P          UTF-8 bytes of the username registered at the bank, no normalization | set by: bank account | if they differ: verification
+  X             32-byte canonical point of order l, one per PSU and method at each bank | set by: customer agent (wallet) | if they differ: registration (400)
+  Registration  POST /psu/register (username, method=NIPOK, publicKey), header X-Onboarding-Token; 201 / 400 / 403 / 409; testbed mode enforce (code default off) | set by: bank onboarding | if they differ: 403 / 400 / 409
+  Lockout       5 consecutive failures, then 60 s, doubling per further failure, at most 900 s | set by: bank policy | if they differ: refused while locked
+  TPP           none: PAR, JARM, certificate-bound tokens and client authentication are unchanged | set by: - | if they differ: -
+
+Testbed values verified by the R1-C7 probe: verifier_id=bank, nonce TTL=60 s, lockout=5 failures / 60 s (unlocked after 60.19 s), onboarding mode=enforce, cb of the gateway certificate = configured cb: True
+
+RESULT: PASS (45 vectors, 4 implementations agree)

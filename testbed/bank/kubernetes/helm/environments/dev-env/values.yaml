@@ -1,0 +1,88 @@
+# Passwords are empty here: they are generated at deployment by testbed/secrets/generate-secrets.sh and
+# passed with -f secrets/helm-secrets.yaml (03-deploy-bank.sh, 100-redeploy-bank-cluster.sh). See docs/secrets.md.
+
+# -- Database containers ------------------------------------------------------
+mongodb:
+  env:
+    MONGO_INITDB_ROOT_USERNAME: "root"
+    MONGO_INITDB_ROOT_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    MONGO_CUSTOMER_DATABASE: "customer-db"
+    MONGO_CUSTOMER_USERNAME: "customer_user"
+    MONGO_CUSTOMER_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    MONGO_PRODUCT_DATABASE: "product-db"
+    MONGO_PRODUCT_USERNAME: "product_user"
+    MONGO_PRODUCT_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+
+postgresql:
+  env:
+    POSTGRES_USER: "user"
+    POSTGRES_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    POSTGRES_DB: "account-db"
+    POSTGRES_ACCOUNT_DATABASE: "account-db"
+
+mysql:
+  env:
+    MYSQL_ROOT_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    MYSQL_DATABASE: "payment-db"
+    MYSQL_USER: "payment_user"
+    MYSQL_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+
+sqlserver:
+  env:
+    ACCEPT_EULA: "Y"
+    MSSQL_SA_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    MSSQL_PID: "Express"
+
+account:
+  env:
+    POSTGRES_USERNAME: "user"
+    POSTGRES_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    POSTGRES_ACCOUNT_DATABASE: "account-db"
+
+customer:
+  env:
+    MONGO_DATABASE: "customer-db"
+    MONGO_USERNAME: "customer_user"
+    MONGO_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+
+product:
+  env:
+    MONGO_DATABASE: "product-db"
+    MONGO_USERNAME: "product_user"
+    MONGO_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+
+payment:
+  env:
+    MYSQL_PAYMENT_DATABASE: "payment-db"
+    MYSQL_PAYMENT_USERNAME: "payment_user"
+    MYSQL_PAYMENT_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+
+transaction:
+  env:
+    MSSQL_SA_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+    MSSQL_TRANSACTION_DATABASE: "transaction-db"
+
+gateway:
+  env:
+    SPRING_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_LOCATION: "file:/keystore/edge-test.p12"
+    SPRING_SSL_BUNDLE_JKS_GATEWAY_KEYSTORE_PASSWORD: ""   # set from secrets/helm-secrets.yaml
+
+# -- Secrets (managed separately) ---------------------------------------------
+secrets:
+
+# -- JWT Public Key (inline JWKS for Istio RequestAuthentication) --------------
+# Fill in this value by running: kubernetes/generate-jwk-secret.sh
+# The script prints the JSON string "Inline public JWKS" - copy and paste it here.
+# Example: jwtPublicJwks: '{"keys":[{"kty":"OKP","crv":"Ed25519","kid":"...","use":"sig","x":"..."}]}'
+# NOTE: this is only the PUBLIC key - it contains no private key and is safe to keep in values.yaml.
+jwtPublicJwks: '{"keys":[{"kty":"OKP","crv":"Ed25519","kid":"auth-server-key-202605","use":"sig","x":"j6BYjFu_Xk73sEIGKXOqbPqgcc79TSg1hCzZ5iNb5ME"}]}'
+
+destinationRules:
+  - name: customer-aggregator
+  - name: account-aggregator
+  - name: auth-server
+  - name: product
+  - name: customer
+  - name: account
+  - name: payment
+  - name: transaction

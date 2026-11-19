@@ -1,0 +1,140 @@
+R1-C6 (JNCA-D-26-03325) - JMH numbers of the paper computed from the measurements
+main campaign: benchmark-R1-C6/jmh
+   [final] benchmark-R1-C6/jmh/main/official-final.json  md5 38cfa32159bb46e0b78d0cb251cee836
+   [final] benchmark-R1-C6/jmh/fbc-ab/fbc_ab_avgt.json  md5 c8927eec9e6cc11bb45f92a9ba28ce0a
+   [final] benchmark-R1-C6/jmh/fbc-ab/fbc_ab_thrpt.json  md5 79b15f0bd2bb8d691e5dc5460895857c
+   [final] benchmark-R1-C6/jmh/fbc-ab/fbc_ab_sample.json  md5 d4f6f33817050b1ec45bcae04d436f46
+   [final] benchmark-R1-C6/jmh/argon2id-sensitivity/argon2id-sensitivity.json  md5 230a9b4c68060d2a4da5a9e2998cb2f2
+configuration (from the JSON): f10 wi8 it10 | JVM 24+36 | unit of replication = fork
+
+======================================================================================================================
+1. JMH macros: computed value (main campaign) | 95% CI | comparison campaign | submitted
+======================================================================================================================
+-- A. used in the body of the paper (18)
+   macro                          computed        value                   95% CI |   comparison |    submitted | source
+   FairNipokKeygen                    36.2       36.230         [35.849; 36.610] |            - |            - | SchnorrBenchmark.gen_R; JMH ±0.252 (99.9%); EC keygen = [x]B
+   FairNipokProve                     38.0       37.978         [37.567; 38.388] |            - |            - | NipokBenchmark.prove_client; JMH ±0.257 (99.9%)
+   FairNipokVerify                    67.2       67.191         [66.344; 68.038] |            - |            - | NipokBenchmark.verify_server_prepared; JMH ±0.505 (99.9%)
+   FairEdDsaSign                      73.9       73.896         [73.050; 74.743] |            - |            - | EdDsaAuthBenchmark.sign_client; JMH ±0.665 (99.9%)
+   FairEdDsaVerify                    68.9       68.867         [67.806; 69.927] |            - |            - | EdDsaAuthBenchmark.verify_server_prepared; JMH ±0.723 (99.9%)
+   FairMtlsVerify                     90.1       90.131         [89.155; 91.108] |            - |            - | MtlsCertBenchmark.verify_only; JMH ±0.516 (99.9%)
+   FairJwtSign                        73.6       73.626         [72.767; 74.485] |            - |            - | PrivateKeyJwtBenchmark.sign_client; JMH ±0.526 (99.9%)
+   FairJwtVerify                      89.8       89.808         [89.241; 90.375] |            - |            - | PrivateKeyJwtBenchmark.verify_only; JMH ±0.430 (99.9%)
+   FairMlDsaSign                     411.0      411.007       [408.693; 413.322] |            - |            - | MlDsaAuthBenchmark.sign_client; JMH ±2.212 (99.9%)
+   FairMlDsaVerify                    99.4       99.409         [99.139; 99.679] |            - |            - | MlDsaAuthBenchmark.verify_server; JMH ±0.252 (99.9%)
+   FairPasswordVerifyMs                 99       99.397        [95.317; 103.477] |            - |            - | Argon2Benchmark.verify_server (µs → ms)
+   FsProveDeltaUs                      1.4        1.373           [0.853; 1.893] |            - |            - | prove_client - (gen_R + compute_s); difference of two large numbers: varies between sessions
+   FsVerifyDeltaUs                     0.1        0.145          [-0.902; 1.192] |            - |            - | NIPoK FBC - Schnorr FBC; CI contains 0
+   PasswordVsNipokX                1{,}480     1479.329     [1416.031; 1541.250] |            - |            - | Argon2Benchmark / NIPoK FBC (3 significant digits)
+   VerifyLatStraus                   97.77       97.769         [96.706; 98.832] |            - |            - | fbc-ab avgt verify_server; JMH ±0.601 (99.9%)
+   VerifyLatFBC                      68.17       68.170         [67.205; 69.135] |            - |            - | fbc-ab avgt verify_server_prepared; JMH ±0.548 (99.9%)
+   VerifyLatGainPct                   30.3       30.274         [29.115; 31.424] |            - |            - | 1 − FBC/Straus (fbc-ab avgt)
+   VerifyThrptGainPct                 46.5       46.502         [45.117; 47.912] |            - |            - | FBC/Straus − 1 (fbc-ab thrpt)
+-- B. defined in results.tex, not used in the body
+   macro                          computed        value                   95% CI |   comparison |    submitted | source
+   FairNipokVerifyCold                95.6       95.643         [94.862; 96.423] |            - |            - | NipokBenchmark.verify_server; JMH ±0.446 (99.9%)
+   FairSchnorrProve                   36.6       36.604         [36.224; 36.985] |            - |            - | gen_R + compute_s
+   FairSchnorrVerify                  67.0       67.046         [66.304; 67.788] |            - |            - | SchnorrBenchmark.verify_server_prepared; JMH ±0.466 (99.9%)
+   FairMtlsSign                       72.5       72.488         [71.580; 73.396] |            - |            - | MtlsCertBenchmark.sign_client; JMH ±0.535 (99.9%)
+   FairNipokCapacityClient        26{,}331    26331.356                        - |            - |            - | 1e6 / prove_client; suy ra
+   FairNipokCapacityServer        14{,}883    14882.971                        - |            - |            - | 1e6 / verify_server_prepared; suy ra
+   VerifyLatStrausCI                  1.06        1.063                        - |            - |            - | fbc-ab avgt half-width of the 95% CI over forks verify_server; JMH scoreError ±0.601 (99.9%)
+   VerifyLatFBCCI                     0.96        0.965                        - |            - |            - | fbc-ab avgt half-width of the 95% CI over forks verify_server_prepared; JMH scoreError ±0.548 (99.9%)
+   FbcErrReductionPct                  9.2        9.210                        - |            - |            - | 1 - hFBC/hStraus (half-width of the 95% CI over forks)
+   VerifyThrptStraus              10{,}048    10048.360    [9963.519; 10133.201] |            - |            - | fbc-ab thrpt verify_server (ops/s)
+   VerifyThrptFBC                 14{,}721    14721.095   [14637.595; 14804.595] |            - |            - | fbc-ab thrpt verify_server_prepared (ops/s)
+   VerifyPFiftyStraus                94.85       94.848                        - |            - |            - | fbc-ab sample p50.0 verify_server; pooled JMH percentile
+   VerifyPFiftyFBC                   64.26       64.256                        - |            - |            - | fbc-ab sample p50.0 verify_server_prepared; pooled JMH percentile
+   VerifyPNinetyStraus              105.47      105.472                        - |            - |            - | fbc-ab sample p90.0 verify_server; pooled JMH percentile
+   VerifyPNinetyFBC                  72.19       72.192                        - |            - |            - | fbc-ab sample p90.0 verify_server_prepared; pooled JMH percentile
+   VerifyPNineNineStraus            157.95      157.952                        - |            - |            - | fbc-ab sample p99.0 verify_server; pooled JMH percentile
+   VerifyPNineNineFBC               114.69      114.688                        - |            - |            - | fbc-ab sample p99.0 verify_server_prepared; pooled JMH percentile
+   VerifyPThreeNinesStraus          576.76      576.762                        - |            - |            - | fbc-ab sample p99.9 verify_server; pooled JMH percentile
+   VerifyPThreeNinesFBC             512.50      512.504                        - |            - |            - | fbc-ab sample p99.9 verify_server_prepared; pooled JMH percentile
+   VerifyMaxLatStraus           5{,}185.54     5185.536                        - |            - |            - | fbc-ab sample p100.0 verify_server; pooled JMH percentile
+   VerifyMaxLatFBC              3{,}604.48     3604.480                        - |            - |            - | fbc-ab sample p100.0 verify_server_prepared; pooled JMH percentile
+   FbcMemOverheadPct                  11.8       11.798                        - |            - |            - | alloc B/op FBC/Straus − 1
+   FbcAllocRateOverheadPct            60.4       60.391                        - |            - |            - | alloc rate FBC/Straus − 1
+   FbcGcCountOverheadPct              52.7       52.741                        - |            - |            - | GC count FBC/Straus − 1
+   FbcGcTimeOverheadPct               44.0       43.964                        - |            - |            - | GC time FBC/Straus − 1
+   FbcPThreeNinesGainPct              11.1       11.141                        - |            - |            - | 1 − p99.9 FBC/Straus
+   FbcMaxLatOverheadPct              -30.5      -30.490                        - |            - |            - | max FBC/Straus − 1
+   CapacityPerCoreStraus          10{,}228    10228.198                        - |            - |            - | 1e6 / mean Straus; suy ra
+   CapacityPerCoreFBC             14{,}669    14669.202                        - |            - |            - | 1e6 / mean FBC; suy ra
+   CapacityGainPct                    43.4       43.419                        - |            - |            - | (1e6/FBC)/(1e6/Straus) − 1
+   CpuPctAtOneKStraus                 9.78        9.777                        - |            - |            - | mean µs/10 (verify_server); suy ra
+   CpuPctAtOneKFBC                    6.82        6.817                        - |            - |            - | mean µs/10 (verify_server_prepared); suy ra
+
+======================================================================================================================
+2. Table 9 (FBC A/B, main campaign): computed values; Delta = FBC relative to Straus; 95% CI of Delta over forks where available
+======================================================================================================================
+   metric                             |                 Straus |                        FBC |            Delta | 95% CI of Delta (forks) | comparison: Straus / FBC / Delta
+   Mean latency (\textmu s/op)        |       $97.77 \pm 1.06$ |  $\mathbf{68.17 \pm 0.96}$ |        $-30.3\%$ | -30.3% [-31.4; -29.1]
+   Throughput (ops/s)                 |               10{,}048 |          \textbf{14{,}721} |        $+46.5\%$ | +46.5% [+45.1; +47.9]
+   Capacity/core$^{\dagger}$ (ops/s)  |               10{,}228 |                   14{,}669 |        $+43.4\%$ | derived from the means
+   p50 / p90 (\textmu s)              |           94.8 / 105.5 |                64.3 / 72.2 | $-32.3$/$-31.6\%$ | p50 -32.0% [-32.8; -31.2]; p90 -31.6% [-32.8; -30.4]
+   p99 / p99.9 (\textmu s)            |          158.0 / 576.8 |              114.7 / 512.5 | $-27.4$/$-11.1\%$ | p99 -27.7% [-29.8; -25.5]; p99.9 -4.2% [-30.0; +31.0]
+   Max (\textmu s)                    |                5{,}186 |                    3{,}604 |        $-30.5\%$ | a single sample; no CI
+   Allocation (B/op)                  |              401{,}016 |                  448{,}328 |        $+11.8\%$ | 
+   Allocation rate (MB/s)             |                3{,}911 |                    6{,}273 |        $+60.4\%$ | 
+   GC count / time (ms)               |              912 / 878 |          1{,}393 / 1{,}264 | $+52.7$/$+44.0\%$ | total over 10 forks x 10 measurements of 1 s (proportional to the number of forks); per measured second: Straus 9.12 collections, 8.78 ms; FBC 13.93 collections, 12.64 ms
+   CPU\% at 1k ops/s$^{\dagger}$      |                   9.78 |                       6.82 |        $-30.3\%$ | suy ra
+   Note: p99.9 and max are tail metrics, sensitive to background noise; max is a single sample (no CI); GC count/time are totals, proportional to the number of forks.
+
+======================================================================================================================
+3. Argon2id sensitivity (verify, ms/op, 10 forks per configuration) and multiple of the NIPoK FBC verify of the main step of the same campaign
+======================================================================================================================
+   library    config          m MiB  t  p |     ms/op               95% CI   CV% | x NIPoK FBC         95% CI | role
+   BC (main)  m65536_t3          64  3  1 |    99.397 [  95.317;  103.477]  5.74 |      1479× [ 1416;  1541] | testbed (Argon2Params.financialDefault, p=1) - main step (Argon2Benchmark)
+   libsodium  m65536_t3          64  3  1 |    55.656 [  53.648;   57.663]  5.04 |       828× [  798;   858] | testbed (Argon2Params.financialDefault, p=1)
+   libsodium  m47104_t1          46  1  1 |    16.494 [  16.270;   16.718]  1.90 |       245× [  241;   250] | OWASP 1
+   libsodium  m19456_t2          19  2  1 |     8.050 [   7.997;    8.103]  0.92 |       120× [  118;   121] | OWASP 2 (password_owasp)
+   libsodium  m12288_t3          12  3  1 |     6.499 [   6.457;    6.541]  0.90 |        97× [   95;    98] | OWASP 3
+   libsodium  m9216_t4            9  4  1 |     5.957 [   5.942;    5.973]  0.37 |        89× [   88;    90] | OWASP 4
+   libsodium  m7168_t5            7  5  1 |     5.465 [   5.447;    5.483]  0.45 |        81× [   80;    82] | OWASP 5
+   BC         m65536_t3          64  3  1 |    89.400 [  86.292;   92.508]  4.86 |      1331× [ 1284;  1377] | testbed (Argon2Params.financialDefault, p=1)
+   BC         m65536_t3_p4       64  3  4 |    92.079 [  88.065;   96.093]  6.09 |      1370× [ 1311;  1428] | RFC 9106 Section 4, second recommended option (p=4)
+   BC         m47104_t1          46  1  1 |    21.520 [  21.328;   21.711]  1.24 |       320× [  316;   325] | OWASP 1
+   BC         m19456_t2          19  2  1 |    14.255 [  14.210;   14.299]  0.44 |       212× [  209;   215] | OWASP 2 (password_owasp)
+   BC         m12288_t3          12  3  1 |    12.267 [  12.238;   12.295]  0.32 |       183× [  180;   185] | OWASP 3
+   BC         m9216_t4            9  4  1 |    11.767 [  11.731;   11.804]  0.43 |       175× [  173;   177] | OWASP 4
+   BC         m7168_t5            7  5  1 |    11.113 [  11.026;   11.200]  1.09 |       165× [  163;   168] | OWASP 5
+   BC/libsodium, same configuration: m65536_t3 1.61×; m47104_t1 1.30×; m19456_t2 1.77×; m12288_t3 1.89×; m9216_t4 1.98×; m7168_t5 2.03×
+   Password/Password-OWASP from JMH: same sensitivity step m65536_t3/m19456_t2 = 6.265 [6.057; 6.481]; across steps (main/sensitivity) = 6.973
+   same BC operation m65536_t3, two steps: sensitivity/main = 0.8999 [0.8561; 0.9458]
+
+======================================================================================================================
+4. Numbers quoted in Section 6.2.2 (and the graphical abstract), from the main campaign; last column = comparison campaign
+======================================================================================================================
+   curve_verify_range           67.0–68.9 µs
+                                  -> sentence/macro: "53--55~µs for the curve schemes"
+   three_ops_sum                141.4 [140.5; 142.3] µs
+                                  -> sentence/macro: "three protocol operations together stay below 120~µs"
+   nipok_vs_eddsa_verify        0.9757 [0.9579; 0.9939] p=0.01; TOST ±1% p=0.9409, ±2% p=0.6873, ±3% p=0.2620, ±5% p=0.0045
+                                  -> sentence/macro: "indistinguishable from a plain Ed25519 check … within the confidence intervals"
+   jwt_over_nipok               1.337x (geometric CI [1.319; 1.355])
+                                  -> sentence/macro: "about 1.4× cheaper than private-key-JWT"
+   mtls_over_nipok              1.341x (geometric CI [1.321; 1.362])
+                                  -> sentence/macro: "… or mTLS" (1.4×)
+   mldsa_over_nipok             1.480x (geometric CI [1.461; 1.499])
+                                  -> sentence/macro: "1.9× cheaper than ML-DSA-65"
+   sign_range                   72.5 (mTLS) – 73.9 (EdDSA) µs; prove 38.0 µs
+                                  -> sentence/macro: "\FairNipokProve µs against \FairEdDsaSign--\FairJwtSign µs" (range starts with EdDSA and JWT)
+   mldsa_sign_over_prove        10.82x [10.70; 10.95]
+                                  -> sentence/macro: note of macro FairMlDsaSign ("12.8x NIPoK prove")
+   straus_nipok_over_eddsa      1.0422 [1.0324; 1.0522]
+                                  -> sentence/macro: NIPoK Straus / EdDSA Straus (same-library control)
+   schnorr_cheaper_both_axes    verify Schnorr/NIPoK 0.9979 [0.9824; 1.0136]; prove (gen_R+compute_s)/prove 0.9638
+                                  -> sentence/macro: "Schnorr-IZK … cheaper on both CPU axes"
+   ga_numbers                   prove 38 µs · verify 67 µs
+                                  -> sentence/macro: ga.tex: "prove 33 µs · verify 55 µs"
+   fbc_vs_main_same_op          1.0145 [0.9969; 1.0325]
+                                  -> sentence/macro: \VerifyLatFBC (fbc-ab) versus \FairNipokVerify (main): "two separate campaigns ... not directly comparable"
+   err_ratio_fbc_straus         95% CI over forks ±0.96 / ±1.06 = 0.91; JMH 99.9% ±0.55 / ±0.60 = 0.91
+                                  -> sentence/macro: "run-to-run error half that of Straus" (sentence removed from the revised paper)
+   pctl_fbc_faster              p50: FBC faster, p90: FBC faster, p99: FBC faster, p99.9: FBC faster
+                                  -> sentence/macro: "faster at every reported percentile up to p99.9"
+   max                          Straus 5186 µs, FBC 3604 µs
+                                  -> sentence/macro: "a single 3.51~ms maximum"
+
+Note: these values are computed from the measurements; the paper reports them with the precision of results.tex.

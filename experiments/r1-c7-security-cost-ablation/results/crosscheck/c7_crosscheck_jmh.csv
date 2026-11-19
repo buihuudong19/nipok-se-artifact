@@ -1,0 +1,7 @@
+operation,c6_run,c6_mean_us,c6_ci95_half_us,c6_forks,c7_mean_us,c7_ci95_half_us,c7_forks,c7_vs_c6_pct
+"verify, precomputed key (FBC)",C6 main,67.1909,0.8470,10,64.2242,0.3568,5,-4.42
+"verify, precomputed key (FBC)",C6 fbc-ab,68.1700,0.9649,10,64.2242,0.3568,5,-5.79
+"verify, key not precomputed (Straus)",C6 main,95.6426,0.7808,10,91.8109,0.7131,5,-4.01
+"verify, key not precomputed (Straus)",C6 fbc-ab,97.7689,1.0628,10,91.8109,0.7131,5,-6.09
+"generate proof, resident wallet",C6 main,37.9775,0.4107,10,36.4989,0.1099,5,-3.89
+"base-point multiplication vB",C6 main,36.2299,0.3805,10,34.6562,0.2490,5,-4.34

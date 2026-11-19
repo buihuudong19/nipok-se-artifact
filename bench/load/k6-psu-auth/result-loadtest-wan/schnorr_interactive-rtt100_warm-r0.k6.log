@@ -1,3 +1,0 @@
-time="2026-08-12T13:16:10+07:00" level=warning msg="Insufficient VUs, reached 64 active VUs and cannot initialize more" executor=constant-arrival-rate scenario=cold_start
-
-  schnorr_interactive/cold_start rep0: rps=8.97 p99=8402ms ok=872 fail=undefined data_ok=100%

@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: tpp-service
+  codec:
+    max-in-memory-size: 8MB   # customer payload ~334KB > default 256KB
+
+# The TPP serves HTTPS + mutual TLS. client-auth=WANT (probes/no certificate still pass TLS); the client
+# certificate CN=customer-agent is enforced in the application layer for /tpp/* (TppMtlsFilter). Disable: TPP_TLS_ENABLED=false.
+server:
+  port: 8080
+  ssl:
+    enabled: "${TPP_TLS_ENABLED:true}"
+    key-store: "file:${TPP_TLS_KEYSTORE:/etc/tpp-tls/tpp-server.p12}"
+    key-store-password: "${TPP_TLS_KEYSTORE_PASS:changeit}"
+    key-store-type: PKCS12
+    client-auth: want
+    trust-store: "file:${TPP_TLS_TRUSTSTORE:/etc/tpp-tls/tpp-truststore.p12}"
+    trust-store-password: "${TPP_TLS_TRUSTSTORE_PASS:changeit}"
+    trust-store-type: PKCS12
+
+# Client certificate enforced at /tpp/* (mode off|log|enforce). off when TPP_TLS_ENABLED=false.
+g4:
+  tpp-mtls-mode: "${TPP_G4_MTLS_MODE:log}"
+  agent-cn: "${TPP_G4_AGENT_CN:customer-agent}"
+
+# TPP configuration (override through env: TPP_BANK_BASEURL, TPP_VAULT_ADDRESS, ...)
+tpp:
+  bank:
+    base-url: "${TPP_BANK_BASEURL:https://bank.openbanking.dev}"
+    ca-cert-path: "${TPP_BANK_CACERTPATH:/etc/tpp/bank-server-ca.crt}"
+  client:
+    id: "${TPP_CLIENT_ID:tpp-fintech-app}"
+    scope: "${TPP_CLIENT_SCOPE:customer:read customer:write account:read account:write}"
+    subject-dn: "${TPP_CLIENT_SUBJECTDN:CN=tpp-fintech-app,O=Example TPP Ltd}"
+    # Authorization Code: callback of the TPP - must match EXACTLY the redirect_uri registered at the auth-server.
+    # The TPP serves HTTPS => redirect_uri = https (MUST match the redirect_uri registered at the auth-server).
+    redirect-uri: "${TPP_CLIENT_REDIRECTURI:https://tpp.openbanking.dev:30081/tpp/callback}"
+  vault:
+    address: "${TPP_VAULT_ADDRESS:http://vault.vault:8200}"
+    role: "${TPP_VAULT_ROLE:tpp-service}"
+    transit-key: "${TPP_VAULT_TRANSITKEY:tpp-key}"
+    pki-role: "${TPP_VAULT_PKIROLE:tpp-client}"
+  # JARM: K6 X25519 private key (decryption, secret mount) + K5 Ed25519 public key (verification, static registration).
+  # Expected iss = issuer of the auth-server (APP_ISSUER_URI). Key generation: bank/kubernetes/generate-jarm-keys.sh
+  jarm:
+    enc-jwk-path: "${TPP_JARM_ENCJWKPATH:/etc/tpp-jarm/tpp-enc.jwk}"
+    sig-pub-jwk-path: "${TPP_JARM_SIGPUBJWKPATH:/etc/tpp-jarm/jarm-sig-pub.jwk}"
+    issuer: "${TPP_JARM_ISSUER:http://auth-server:80}"

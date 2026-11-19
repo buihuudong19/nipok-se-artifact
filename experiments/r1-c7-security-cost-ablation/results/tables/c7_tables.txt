@@ -1,0 +1,98 @@
+R1-C7 Table 11, Table 12 (c7_tables.py 1.1, 2026-11-19T06:57:07)
+data: benchmark-R1-C7
+gateway certificate (e2e/probe/gateway.pem): ECDSA P-256; probe: C7Probe (R1-C7 v1.2) run 1794864157, https://bank.openbanking.dev:30443, verifier bank, cb matches: True
+
+Table 11 (µs; JMH: mean ± half 95% CI over forks, t(n − 1); with the raw JMH value: score ± 99.9% error):
+  column 'per journey' = executions within one NIPoK journey of the testbed; '-' = alternative configuration or reference;
+  marks † AS, ‡ agent, § RS: rows summed in the final group (count × time)
+  Proof verification         Verify the proof, public key precomputed (path of the journey)           AS           1     65.07 ± 0.37  [nipok-as.json as_verify_prepared shaProvider=Conscrypt] | forks: 65.341, 64.571, 65.264, 65.062, 65.098 | JMH 65.067 ± 0.214 (99.9%), 1 threads
+  Proof verification         Verify the proof, public key not precomputed (reference)                 AS           -     93.09 ± 0.91  [nipok-as.json as_verify_cold shaProvider=Conscrypt] | forks: 92.462, 92.505, 94.164, 92.783, 93.520 | JMH 93.087 ± 0.382 (99.9%), 1 threads
+  Proof verification         Precompute the public key after a cache miss                             AS           -    1,509.8 ± 5.9  [nipok-as.json as_prepare_cache_miss shaProvider=Conscrypt] | forks: 1514.512, 1514.937, 1504.337, 1506.962, 1508.170 | JMH 1509.784 ± 3.457 (99.9%), 1 threads
+  Proof verification         authenticate(): nonce, decoding, verification; no database, no audit†    AS           1     66.65 ± 0.30  [nipok-as.json as_auth_total shaProvider=Conscrypt] | forks: 66.993, 66.739, 66.640, 66.561, 66.338 | JMH 66.654 ± 0.222 (99.9%), 1 threads
+  Wallet decryption          Unseal the secret (AES-256-GCM)                                          Agent        1      1.06 ± 0.02  [nipok-agent.json agent_step_unseal ] | forks: 1.047, 1.069, 1.048, 1.065, 1.076 | JMH 1.061 ± 0.007 (99.9%), 1 threads
+  Wallet decryption          Generate the proof with the sealed wallet (includes unsealing)‡          Agent        1     37.79 ± 0.16  [nipok-agent.json agent_prove_sealed ] | forks: 37.723, 37.611, 37.793, 37.879, 37.945 | JMH 37.790 ± 0.100 (99.9%), 1 threads
+  Wallet decryption          Proof generation, sealed minus resident wallet                           Agent        -      1.29 ± 0.17  [(nipok-agent.json agent_prove_sealed ) − (nipok-agent.json agent_prove_resident ), CI Welch df 7.0]
+  Nonce storage              Issue and consume a nonce, 1 thread                                      AS           1    0.304 ± 0.003  [nipok-as.json as_step_nonce_issue_consume shaProvider=Conscrypt] | forks: 0.305, 0.307, 0.302, 0.303, 0.301 | JMH 0.304 ± 0.001 (99.9%), 1 threads
+  Nonce storage              Issue and consume a nonce, 8 threads sharing the store                   AS           -      3.83 ± 0.12  [nipok-as.json as_step_nonce_issue_consume_t8 shaProvider=Conscrypt] | forks: 3.939, 3.880, 3.822, 3.671, 3.849 | JMH 3.832 ± 0.046 (99.9%), 8 threads
+  TLS and channel binding    Channel binding: SHA-256 of the gateway certificate‡                     Agent        1    0.285 ± 0.002  [nipok-agent.json agent_step_cb ] | forks: 0.284, 0.286, 0.284, 0.282, 0.286 | JMH 0.285 ± 0.001 (99.9%), 1 threads
+  TLS and channel binding    Full TLS 1.3 handshake, ECDSA P-256 certificate (testbed gateway)        Gateway   1.02            561.9  [e2e/tls/handshake-load.txt ECDSA P-256: 1357.8 handshakes/s, 8 s, 24 workers]
+  TLS and channel binding    Full TLS 1.3 handshake, Ed25519 certificate                              Gateway      -            552.8  [e2e/tls/handshake-load.txt Ed25519: 1354.5 handshakes/s, 8 s, 24 workers]
+  TLS and channel binding    Full TLS 1.3 handshake, RSA-3072 certificate                             Gateway      -          1,903.3  [e2e/tls/handshake-load.txt RSA-3072: 1017.3 handshakes/s, 8 s, 24 workers]
+  Token processing           Build and sign the access token, EdDSA via SunEC (testbed setting)†      AS           1      393.2 ± 6.4  [envelope-token-sunec.json as_token_encode tokenProvider=SunEC] | forks: 396.337, 389.551, 391.267, 388.244, 400.587 | JMH 393.197 ± 3.472 (99.9%), 1 threads
+  Token processing             of which: of which the signature                                       AS                  379.7 ± 7.1  [envelope-token-sunec.json as_token_sign tokenProvider=SunEC] | forks: 389.802, 377.353, 376.207, 376.579, 378.456 | JMH 379.680 ± 3.555 (99.9%), 1 threads
+  Token processing           Build and sign the access token, EdDSA via Conscrypt                     AS           -     16.38 ± 0.07  [envelope.json as_token_encode tokenProvider=Conscrypt] | forks: 16.394, 16.412, 16.455, 16.335, 16.310 | JMH 16.381 ± 0.076 (99.9%), 1 threads
+  Token processing             of which: of which the signature                                       AS                 10.68 ± 0.04  [envelope.json as_token_sign tokenProvider=Conscrypt] | forks: 10.681, 10.698, 10.672, 10.644, 10.726 | JMH 10.684 ± 0.286 (99.9%), 1 threads
+  Token processing           Signing time inside the running authorization server, mean               AS                        438.0  [e2e/hops/hops.json nipok.sign_metric.mean_us (jca-sunec, 2884 signatures, since_pod_start); six public-key mechanisms: 419.4 to 438.0]
+  Token processing           Certificate thumbprint for the cnf claim†                                AS           1    0.258 ± 0.003  [envelope.json as_token_cnf_x5t tokenProvider=Conscrypt] | forks: 0.262, 0.256, 0.257, 0.257, 0.257 | JMH 0.258 ± 0.001 (99.9%), 1 threads
+  Token processing           Verify the access token (SunEC)§                                         RS           1      375.0 ± 5.0  [envelope.json rs_token_verify tokenProvider=Conscrypt] | forks: 378.247, 367.988, 376.199, 376.737, 375.881 | JMH 375.011 ± 2.048 (99.9%), 1 threads
+  Token processing           Check the cnf binding§                                                   RS           1     12.59 ± 0.14  [envelope.json rs_cnf_binding tokenProvider=Conscrypt] | forks: 12.741, 12.556, 12.447, 12.654, 12.539 | JMH 12.587 ± 0.059 (99.9%), 1 threads
+  Broader security envelope  JARM response: sign and encrypt†                                         AS           1      292.1 ± 1.6  [envelope.json as_jarm_wrap tokenProvider=Conscrypt] | forks: 291.346, 291.268, 292.288, 294.207, 291.296 | JMH 292.081 ± 0.954 (99.9%), 1 threads
+  Broader security envelope  JARM response: decrypt and verify                                        TPP          1      220.9 ± 1.3  [envelope.json tpp_jarm_parse tokenProvider=Conscrypt] | forks: 221.540, 219.468, 220.517, 222.125, 220.914 | JMH 220.913 ± 0.751 (99.9%), 1 threads
+  Broader security envelope  Client certificate chain from the XFCC header, thumbprint†               AS           2     37.71 ± 0.30  [envelope.json as_xfcc_chain tokenProvider=Conscrypt] | forks: 37.795, 37.990, 37.347, 37.801, 37.640 | JMH 37.714 ± 0.167 (99.9%), 1 threads
+  Broader security envelope  Audit record: hash chain and Ed25519 signature†                          AS           1      371.0 ± 2.0  [envelope.json as_audit_record tokenProvider=Conscrypt] | forks: 372.564, 371.703, 371.935, 368.750, 369.801 | JMH 370.951 ± 1.550 (99.9%), 1 threads
+  Broader security envelope    of which: of which the signature (SunEC)                               AS                  366.7 ± 1.3  [envelope.json as_audit_sign_only tokenProvider=Conscrypt] | forks: 367.548, 367.209, 367.115, 366.801, 364.817 | JMH 366.698 ± 0.917 (99.9%), 1 threads
+  Registration               Validate a public key (once, at registration)                            AS           -      119.3 ± 0.2  [nipok-as.json reg_validate_key shaProvider=Conscrypt] | forks: 119.492, 119.309, 119.066, 119.423, 119.314 | JMH 119.321 ± 0.362 (99.9%), 1 threads
+  Per NIPoK journey: sum of  Authorization server, rows marked †                                      AS                      1,198.6  [1 × 66.65 + 1 × 393.20 + 1 × 0.26 + 1 × 292.08 + 2 × 37.71 + 1 × 370.95]
+  Per NIPoK journey: sum of  Ingress gateway, TLS handshakes (1.02 per journey)                       Gateway                   574.8  [1.02 × 561.9 (ECDSA P-256)]
+  Per NIPoK journey: sum of  Resource server, rows marked §                                           RS                        387.6  [1 × 375.01 + 1 × 12.59]
+  Per NIPoK journey: sum of  Customer agent, rows marked ‡                                            Agent                      38.1  [1 × 37.79 + 1 × 0.28]
+  Per NIPoK journey: sum of  TPP, JARM response                                                       TPP                       220.9  [220.91]
+
+Total per NIPoK journey against the CPU measured per journey in the three hops runs (median; each run):
+  auth-server        1198.6 µs /   9.58 ms =  12.5%   (CPU per run 12.44, 8.37, 9.58 ms, i.e. 9.6% to 14.3%)
+  gateway (Envoy)     574.8 µs /   4.00 ms =  14.4%   (CPU per run 4.04, 4.00, 3.96 ms, i.e. 14.2% to 14.5%)
+  customer-agent       38.1 µs /  13.45 ms =   0.3%   (CPU per run 16.50, 13.30, 13.45 ms, i.e. 0.2% to 0.3%)
+  resource server     387.6 µs (the CPU per journey of the RS is not in summary.json; no ratio)
+  TLS connections per journey (hops.json, 7 mechanisms): 1.003 to 1.023; NIPoK 1.023
+  requests per journey at the gateway match the counts assumed in the table: POST /psu/auth 1, GET /psu/login-page 1, POST /oauth2/par 1, GET /oauth2/authorize 2, POST /oauth2/token 1, GET /customer-aggregate/{id} 1
+
+Table 12 (time: client-side median (p95), ms):
+  Registration (20 per mechanism)    Register a public key: NIPoK                                   accepted (201)                     20/20        9.56 (11.22)     [probe.json stats.register.NIPOK]
+  Registration (20 per mechanism)    Register a public key: Private-Key-JWT                         accepted (201)                     20/20        8.59 (9.98)      [probe.json stats.register.PRIVATE_KEY_JWT]
+  Registration (20 per mechanism)    Register a public key: Pure-EdDSA                              accepted (201)                     20/20        8.93 (10.08)     [probe.json stats.register.ED25519]
+  Registration (20 per mechanism)    Register a public key: Schnorr-IZK                             accepted (201)                     20/20        9.21 (10.60)     [probe.json stats.register.SCHNORR_INTERACTIVE]
+  Registration (20 per mechanism)    Register a public key: ML-DSA-65                               accepted (201)                     20/20        9.20 (10.13)     [probe.json stats.register.ML_DSA]
+  Registration (20 per mechanism)    Register a public key: mTLS-PSU                                accepted (201)                     20/20        7.88 (9.52)      [probe.json stats.register.MTLS]
+  Registration (20 per mechanism)    Register a password: Password                                  accepted (201)                     20/20        112.4 (132.6)    [probe.json stats.register.PASSWORD]
+  Registration (20 per mechanism)    Register without an onboarding token; with a wrong token       rejected (403)                     1/1; 1/1     8.87; 1.52       [probe.json stats.life.gate_token_none, life.gate_token_wrong (onboarding mode enforce)]
+  Registration (20 per mechanism)    Register an invalid public key (test vectors KV02 to KV06)     rejected (400)                     5/5          7.83 (10.12)     [probe.json stats.life.bad_key]
+  Key rotation and credential recove Register again while the key is active                         rejected (409)                     10/10        4.86 (9.25)      [probe.json stats.life.register_while_active]
+  Key rotation and credential recove After revocation: answer a challenge issued before it          rejected                           10/10        4.89 (5.13)      [probe.json stats.life.earlier_challenge_after_revoke]
+  Key rotation and credential recove After revocation: log in with the revoked key                  rejected                           10/10        3.38 (4.17)      [probe.json stats.life.login_X_after_revoke]
+  Key rotation and credential recove Register a new key while the revoked record remains            rejected (302)                     10/10        7.14 (23.90)     [probe.json stats.life.register_over_revoked_row]
+  Key rotation and credential recove Register the new key after the record is deleted               accepted (201)                     10/10        7.41 (14.88)     [probe.json stats.life.register_X_new]
+  Key rotation and credential recove Log in with the new key                                        accepted                           20/20        8.03 (9.12)      [probe.json stats.life.login_X_new]
+  Key rotation and credential recove Log in with the old key                                        rejected                           10/10        6.90 (7.75)      [probe.json stats.life.login_X_old_after_rotation]
+  Restart of the authorization serve Time until the new pod is ready                                -                                  3            21.0, 21.2, 21.2 s [restart/probe.json extra.restart_runs[].new_pod_ready_s]
+  Restart of the authorization serve First valid login, 21.2, 21.5, 21.4 s after the deletion       accepted at the first attempt      3/3          60.42 (61.85)    [restart/probe.json extra.restart_runs[].first_valid_login_s; stats.restart.first_valid_login]
+  Restart of the authorization serve Nonces issued before the restart: unused; already used         rejected                           3/3; 3/3     13.18; 4.99      [restart/probe.json stats.restart.outstanding_N2_after, consumed_N1_replay_after]
+  Failure handling, NIPoK (stage of  Forged response s (one bit flipped)                            rejected at verification           26/26        9.34 (11.30)     [probe.json stats.fail.forged_s; probe-reasons.txt c7probe-forged-s, c7probe-lockout: verify_fail 26]
+  Failure handling, NIPoK (stage of  Non-canonical s (s plus the group order)                       rejected at decoding               20/20        2.87 (3.40)      [probe.json stats.fail.noncanonical_s; probe-reasons.txt (rejected before the NIPOK_AUTH row: decoding stage)]
+  Failure handling, NIPoK (stage of  Payload of 95 bytes instead of 96                              rejected at decoding               20/20        2.62 (3.28)      [probe.json stats.fail.bad_length; probe-reasons.txt (rejected before the NIPOK_AUTH row: decoding stage)]
+  Failure handling, NIPoK (stage of  Payload not in base64url                                       rejected at decoding               20/20        2.60 (3.15)      [probe.json stats.fail.bad_encoding; probe-reasons.txt (rejected before the NIPOK_AUTH row: decoding stage)]
+  Failure handling, NIPoK (stage of  Replayed nonce                                                 rejected at the nonce store        20/20        2.85 (3.89)      [probe.json stats.fail.replayed_nonce; probe-reasons.txt c7probe-replayed-nonce: stale_or_replay_nonce 20]
+  Failure handling, NIPoK (stage of  Nonce never issued                                             rejected at the nonce store        20/20        2.42 (3.10)      [probe.json stats.fail.unknown_nonce; probe-reasons.txt c7probe-unknown-nonce: stale_or_replay_nonce 20]
+  Failure handling, NIPoK (stage of  Expired nonce (TTL 60 s)                                       rejected at the nonce store        8/8          5.63 (6.18)      [probe.json stats.fail.expired_nonce; probe-reasons.txt c7probe-expired-nonce: stale_or_replay_nonce 8]
+  Failure handling, NIPoK (stage of  Proof bound to another TLS channel (wrong cb)                  rejected at verification           20/20        8.32 (9.48)      [probe.json stats.fail.wrong_cb; probe-reasons.txt c7probe-wrong-cb: verify_fail 20]
+  Failure handling, NIPoK (stage of  Proof for another verifier                                     rejected at verification           20/20        7.76 (8.26)      [probe.json stats.fail.wrong_verifier; probe-reasons.txt c7probe-wrong-verifier: verify_fail 20]
+  Failure handling, NIPoK (stage of  Another user's valid proof                                     rejected at verification           20/20        7.57 (8.46)      [probe.json stats.fail.other_user_proof; probe-reasons.txt c7probe-other-user-proof: verify_fail 20]
+  Failure handling, NIPoK (stage of  Valid login during lockout (after 5 failures; 60 s)            rejected; unlocked after 60.19 s   12/12        7.37 (13.77)     [probe.json stats.lockout.valid_while_locked; extra.lockout_unlock_after_s]
+  Concurrent authentication          One proof submitted from 4 sessions at once                    exactly one accepted               20/20 rounds 7.06 (8.45)      [probe.json stats.race.one_nonce_k_submissions; extra.race_winners_histogram]
+  Concurrent authentication          32 users on 16 threads: first login of each                    accepted                           32/32        43.41 (82.15)    [probe.json stats.conc.login_first]
+  Concurrent authentication          32 users on 16 threads: second login of each                   accepted                           32/32        36.81 (75.62)    [probe.json stats.conc.login_second]
+  Concurrent authentication          Reference: valid login, one at a time                          accepted                           57/57        8.88 (11.63)     [probe.json stats.login.valid]
+
+md5 of the inputs:
+   b2abc63b59ad05fa7d417adf21a5aafc  e2e/hops/hops.json
+   9acc27eaf8992f29a2a1f8a0bf215146  e2e/hops/nipok/nipok-rtt0-r1.summary.json
+   d35d2054ac0c33c6af15f1ed26bc312f  e2e/hops/nipok/nipok-rtt0-r2.summary.json
+   cd567c8f3376fa7ed6a83f2096c8d0ca  e2e/hops/nipok/nipok-rtt0-r3.summary.json
+   686335fed276abb728c9affd2fc8dc75  e2e/probe/gateway.pem
+   0b42cf089600c43cfbf9620244da4fac  e2e/probe/probe-reasons.txt
+   84ae54a7876760eb399d3347fba00c7e  e2e/probe/probe.json
+   22265ab2847a7d0a798261d3d30093bb  e2e/probe/restart/probe.json
+   18c9b022807bfcd5f2fd4efcc674d391  e2e/tls/handshake-load.txt
+   8d710ea6d0a52e3e2f7d8935a28760b4  jmh/ablation/envelope-token-sunec.json
+   d16ae51e7db9eb6abdc812f95452c337  jmh/ablation/envelope.json
+   e97692feb28ac3f310cbc1244af272dc  jmh/ablation/nipok-agent.json
+   547aa7579b5e0fb0166679e619640040  jmh/ablation/nipok-as.json

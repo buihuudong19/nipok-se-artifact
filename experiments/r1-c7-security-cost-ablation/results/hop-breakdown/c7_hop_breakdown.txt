@@ -1,0 +1,69 @@
+R1-C7 journey breakdown by stage (c7_hop_breakdown.py 1.1, 2026-11-19T06:57:05)
+input: benchmark-R1-C7/e2e/hops/hops.json (md5 b2abc63b59ad05fa7d417adf21a5aafc)
+
+mechanism             PAR    authz PSU auth    token     data  outside        GW   journey journeys
+NIPoK                1.02     2.37     4.10     2.76    17.04    20.62     27.28     47.90     1441
+Private-Key-JWT      1.03     2.37     4.17     2.74    15.83    20.78     26.13     46.91     1442
+Pure-EdDSA           1.03     2.32     3.97     2.72    16.47    20.71     26.51     47.22     1442
+Schnorr-IZK          1.03     2.24     4.14     2.73    17.49    21.73     27.63     49.36     1441
+ML-DSA-65            1.03     2.35     4.09     2.72    15.52    21.30     25.70     47.00     1442
+mTLS-PSU             1.05     5.06     0.00     3.07    15.74    18.65     24.92     43.57     1441
+Password             1.38     4.71   100.68     5.12    18.14    25.32    130.04    155.36     1440
+
+(ms per journey, mean; GW = gateway_ms_per_journey of hops.json = sum of the five gateway stages; journey = mean
+ k6 journey latency, runs pooled by number of journeys; outside = journey - GW. Envoy writes duration in whole
+ milliseconds, so each request has a resolution of 1 ms and the stage means carry this rounding error.)
+
+Numeric labels in the figure (PSU authentication, ms per journey; only when the segment is >= 6% of the axis): (a) NIPoK 4.10; (a) Private-Key-JWT 4.17; (a) Pure-EdDSA 3.97; (a) Schnorr-IZK 4.14; (a) ML-DSA-65 4.09; (b) Password 100.68
+
+Per run (tag, journeys, mean journey ms):
+  NIPoK            nipok-rtt0-r1 481 49.35; nipok-rtt0-r2 480 47.32; nipok-rtt0-r3 480 47.03
+  Private-Key-JWT  private_key_jwt-rtt0-r1 481 47.73; private_key_jwt-rtt0-r2 480 47.02; private_key_jwt-rtt0-r3 481 45.98
+  Pure-EdDSA       ed25519-rtt0-r1 481 48.09; ed25519-rtt0-r2 480 47.17; ed25519-rtt0-r3 481 46.40
+  Schnorr-IZK      schnorr_interactive-rtt0-r1 480 50.01; schnorr_interactive-rtt0-r2 481 49.15; schnorr_interactive-rtt0-r3 480 48.91
+  ML-DSA-65        ml_dsa-rtt0-r1 480 47.66; ml_dsa-rtt0-r2 481 46.79; ml_dsa-rtt0-r3 481 46.54
+  mTLS-PSU         mtls-rtt0-r1 481 44.58; mtls-rtt0-r2 480 43.52; mtls-rtt0-r3 480 42.61
+  Password         password-rtt0-r1 480 161.48; password-rtt0-r2 480 153.95; password-rtt0-r3 480 150.66
+
+Requests by stage (method, path, requests per journey, mean duration):
+  NIPoK
+    PAR                  POST /oauth2/par ×1.000, 1.019 ms
+    Authorization        GET /oauth2/authorize ×2.000, 1.041 ms; GET /psu/login-page ×1.000, 0.288 ms; GET /jarm/jwks ×0.002, 1.333 ms
+    PSU authentication   POST /psu/auth ×1.000, 4.096 ms
+    Token                POST /oauth2/token ×1.000, 2.756 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 17.036 ms
+  Private-Key-JWT
+    PAR                  POST /oauth2/par ×1.000, 1.030 ms
+    Authorization        GET /oauth2/authorize ×2.000, 1.030 ms; GET /psu/login-page ×1.000, 0.308 ms; GET /jarm/jwks ×0.002, 1.000 ms
+    PSU authentication   POST /psu/auth ×1.000, 4.166 ms
+    Token                POST /oauth2/token ×1.000, 2.738 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 15.827 ms
+  Pure-EdDSA
+    PAR                  POST /oauth2/par ×1.000, 1.033 ms
+    Authorization        GET /oauth2/authorize ×2.000, 1.047 ms; GET /psu/login-page ×1.000, 0.223 ms; GET /jarm/jwks ×0.002, 1.667 ms
+    PSU authentication   POST /psu/auth ×1.000, 3.972 ms
+    Token                POST /oauth2/token ×1.000, 2.721 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 16.465 ms
+  Schnorr-IZK
+    PAR                  POST /oauth2/par ×1.000, 1.030 ms
+    Authorization        GET /oauth2/authorize ×2.000, 1.034 ms; GET /psu/login-page ×1.000, 0.167 ms; GET /jarm/jwks ×0.002, 1.667 ms
+    PSU authentication   POST /psu/schnorr/commit ×1.000, 1.169 ms; POST /psu/schnorr/respond ×1.000, 2.974 ms
+    Token                POST /oauth2/token ×1.000, 2.731 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 17.486 ms
+  ML-DSA-65
+    PAR                  POST /oauth2/par ×1.000, 1.026 ms
+    Authorization        GET /oauth2/authorize ×2.000, 1.052 ms; GET /psu/login-page ×1.000, 0.241 ms; GET /jarm/jwks ×0.002, 1.333 ms
+    PSU authentication   POST /psu/auth ×1.000, 4.088 ms
+    Token                POST /oauth2/token ×1.000, 2.716 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 15.524 ms
+  mTLS-PSU
+    PAR                  POST /oauth2/par ×1.000, 1.051 ms
+    Authorization        GET /oauth2/authorize ×1.000, 5.062 ms; GET /jarm/jwks ×0.002, 1.333 ms
+    Token                POST /oauth2/token ×1.000, 3.065 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 15.738 ms
+  Password
+    PAR                  POST /oauth2/par ×1.000, 1.380 ms
+    Authorization        GET /oauth2/authorize ×2.000, 1.711 ms; GET /psu/login-page ×1.000, 1.285 ms; GET /jarm/jwks ×0.002, 3.000 ms
+    PSU authentication   POST /psu/auth ×1.000, 100.683 ms
+    Token                POST /oauth2/token ×1.000, 5.122 ms
+    Data request         GET /customer-aggregate/{id} ×1.000, 18.142 ms

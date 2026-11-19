@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.openbanking.psu.auth.spi.crypto.ec.LibsodiumEd25519GroupTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T15:30:22.012Z" hostname="MyLaptop" time="0.118">
+  <properties/>
+  <testcase name="libsodium_reduce_matches_elisabeth()" classname="com.openbanking.psu.auth.spi.crypto.ec.LibsodiumEd25519GroupTest" time="0.098"/>
+  <testcase name="interop_elisabeth_libsodium_both_directions()" classname="com.openbanking.psu.auth.spi.crypto.ec.LibsodiumEd25519GroupTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

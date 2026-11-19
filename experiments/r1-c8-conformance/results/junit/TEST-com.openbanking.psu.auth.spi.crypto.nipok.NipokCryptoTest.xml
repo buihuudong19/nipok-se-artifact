@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-18T15:30:25.252Z" hostname="MyLaptop" time="0.006">
+  <properties/>
+  <testcase name="reusing_ephemeral_v_LEAKS_private_key()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" time="0.002"/>
+  <testcase name="deterministic_nonce_is_context_bound()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" time="0.001"/>
+  <testcase name="wrong_nonce_fails()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" time="0.001"/>
+  <testcase name="round_trip_valid_proof_verifies()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" time="0.001"/>
+  <testcase name="invalid_public_point_rejected()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" time="0.0"/>
+  <testcase name="tampered_response_fails()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokCryptoTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

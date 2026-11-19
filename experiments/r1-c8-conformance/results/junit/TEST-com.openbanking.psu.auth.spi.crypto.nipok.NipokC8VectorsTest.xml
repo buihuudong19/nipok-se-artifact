@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8VectorsTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T15:30:25.174Z" hostname="MyLaptop" time="0.077">
+  <properties/>
+  <testcase name="vectors_v2_libsodium_if_available()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8VectorsTest" time="0.024"/>
+  <testcase name="vectors_v2_elisabeth()" classname="com.openbanking.psu.auth.spi.crypto.nipok.NipokC8VectorsTest" time="0.051"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

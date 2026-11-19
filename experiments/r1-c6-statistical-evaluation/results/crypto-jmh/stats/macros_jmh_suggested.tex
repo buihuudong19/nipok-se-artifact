@@ -1,0 +1,57 @@
+% JMH macros computed by c6_jmh_agg.py from the measurements (reference values for results.tex).
+% main campaign: benchmark-R1-C6/jmh
+
+% ---- A. used in the body of the paper (18)
+\newcommand{\FairNipokKeygen}{36.2}               % SchnorrBenchmark.gen_R: 36.230 [35.849; 36.610]; JMH ±0.252 (99.9%)
+\newcommand{\FairNipokProve}{38.0}                % NipokBenchmark.prove_client: 37.978 [37.567; 38.388]; JMH ±0.257 (99.9%)
+\newcommand{\FairNipokVerify}{67.2}               % NipokBenchmark.verify_server_prepared: 67.191 [66.344; 68.038]; JMH ±0.505 (99.9%)
+\newcommand{\FairEdDsaSign}{73.9}                 % EdDsaAuthBenchmark.sign_client: 73.896 [73.050; 74.743]; JMH ±0.665 (99.9%)
+\newcommand{\FairEdDsaVerify}{68.9}               % EdDsaAuthBenchmark.verify_server_prepared: 68.867 [67.806; 69.927]; JMH ±0.723 (99.9%)
+\newcommand{\FairMtlsVerify}{90.1}                % MtlsCertBenchmark.verify_only: 90.131 [89.155; 91.108]; JMH ±0.516 (99.9%)
+\newcommand{\FairJwtSign}{73.6}                   % PrivateKeyJwtBenchmark.sign_client: 73.626 [72.767; 74.485]; JMH ±0.526 (99.9%)
+\newcommand{\FairJwtVerify}{89.8}                 % PrivateKeyJwtBenchmark.verify_only: 89.808 [89.241; 90.375]; JMH ±0.430 (99.9%)
+\newcommand{\FairMlDsaSign}{411.0}                % MlDsaAuthBenchmark.sign_client: 411.007 [408.693; 413.322]; JMH ±2.212 (99.9%)
+\newcommand{\FairMlDsaVerify}{99.4}               % MlDsaAuthBenchmark.verify_server: 99.409 [99.139; 99.679]; JMH ±0.252 (99.9%)
+\newcommand{\FairPasswordVerifyMs}{99}            % Argon2Benchmark.verify_server (µs → ms): 99.397 [95.317; 103.477]
+\newcommand{\FsProveDeltaUs}{1.4}                 % prove_client - (gen_R + compute_s): 1.373 [0.853; 1.893]
+\newcommand{\FsVerifyDeltaUs}{0.1}                % NIPoK FBC - Schnorr FBC: 0.145 [-0.902; 1.192]
+\newcommand{\PasswordVsNipokX}{1{,}480}           % Argon2Benchmark / NIPoK FBC (3 significant digits): 1479.329 [1416.031; 1541.250]
+\newcommand{\VerifyLatStraus}{97.77}              % fbc-ab avgt verify_server: 97.769 [96.706; 98.832]; JMH ±0.601 (99.9%)
+\newcommand{\VerifyLatFBC}{68.17}                 % fbc-ab avgt verify_server_prepared: 68.170 [67.205; 69.135]; JMH ±0.548 (99.9%)
+\newcommand{\VerifyLatGainPct}{30.3}              % 1 − FBC/Straus (fbc-ab avgt): 30.274 [29.115; 31.424]
+\newcommand{\VerifyThrptGainPct}{46.5}            % FBC/Straus − 1 (fbc-ab thrpt): 46.502 [45.117; 47.912]
+
+% ---- B. defined in results.tex, not used in the body
+\newcommand{\FairNipokVerifyCold}{95.6}           % NipokBenchmark.verify_server: 95.643 [94.862; 96.423]; JMH ±0.446 (99.9%)
+\newcommand{\FairSchnorrProve}{36.6}              % gen_R + compute_s: 36.604 [36.224; 36.985]
+\newcommand{\FairSchnorrVerify}{67.0}             % SchnorrBenchmark.verify_server_prepared: 67.046 [66.304; 67.788]; JMH ±0.466 (99.9%)
+\newcommand{\FairMtlsSign}{72.5}                  % MtlsCertBenchmark.sign_client: 72.488 [71.580; 73.396]; JMH ±0.535 (99.9%)
+\newcommand{\FairNipokCapacityClient}{26{,}331}   % 1e6 / prove_client: 26331.356
+\newcommand{\FairNipokCapacityServer}{14{,}883}   % 1e6 / verify_server_prepared: 14882.971
+\newcommand{\VerifyLatStrausCI}{1.06}             % fbc-ab avgt half-width of the 95% CI over forks verify_server: 1.063; JMH scoreError ±0.601 (99.9%)
+\newcommand{\VerifyLatFBCCI}{0.96}                % fbc-ab avgt half-width of the 95% CI over forks verify_server_prepared: 0.965; JMH scoreError ±0.548 (99.9%)
+\newcommand{\FbcErrReductionPct}{9.2}             % 1 - hFBC/hStraus (half-width of the 95% CI over forks): 9.210
+\newcommand{\VerifyThrptStraus}{10{,}048}         % fbc-ab thrpt verify_server (ops/s): 10048.360 [9963.519; 10133.201]
+\newcommand{\VerifyThrptFBC}{14{,}721}            % fbc-ab thrpt verify_server_prepared (ops/s): 14721.095 [14637.595; 14804.595]
+\newcommand{\VerifyPFiftyStraus}{94.85}           % fbc-ab sample p50.0 verify_server: 94.848
+\newcommand{\VerifyPFiftyFBC}{64.26}              % fbc-ab sample p50.0 verify_server_prepared: 64.256
+\newcommand{\VerifyPNinetyStraus}{105.47}         % fbc-ab sample p90.0 verify_server: 105.472
+\newcommand{\VerifyPNinetyFBC}{72.19}             % fbc-ab sample p90.0 verify_server_prepared: 72.192
+\newcommand{\VerifyPNineNineStraus}{157.95}       % fbc-ab sample p99.0 verify_server: 157.952
+\newcommand{\VerifyPNineNineFBC}{114.69}          % fbc-ab sample p99.0 verify_server_prepared: 114.688
+\newcommand{\VerifyPThreeNinesStraus}{576.76}     % fbc-ab sample p99.9 verify_server: 576.762
+\newcommand{\VerifyPThreeNinesFBC}{512.50}        % fbc-ab sample p99.9 verify_server_prepared: 512.504
+\newcommand{\VerifyMaxLatStraus}{5{,}185.54}      % fbc-ab sample p100.0 verify_server: 5185.536
+\newcommand{\VerifyMaxLatFBC}{3{,}604.48}         % fbc-ab sample p100.0 verify_server_prepared: 3604.480
+\newcommand{\FbcMemOverheadPct}{11.8}             % alloc B/op FBC/Straus − 1: 11.798
+\newcommand{\FbcAllocRateOverheadPct}{60.4}       % alloc rate FBC/Straus − 1: 60.391
+\newcommand{\FbcGcCountOverheadPct}{52.7}         % GC count FBC/Straus − 1: 52.741
+\newcommand{\FbcGcTimeOverheadPct}{44.0}          % GC time FBC/Straus − 1: 43.964
+\newcommand{\FbcPThreeNinesGainPct}{11.1}         % 1 − p99.9 FBC/Straus: 11.141
+\newcommand{\FbcMaxLatOverheadPct}{-30.5}         % max FBC/Straus − 1: -30.490
+\newcommand{\CapacityPerCoreStraus}{10{,}228}     % 1e6 / mean Straus: 10228.198
+\newcommand{\CapacityPerCoreFBC}{14{,}669}        % 1e6 / mean FBC: 14669.202
+\newcommand{\CapacityGainPct}{43.4}               % (1e6/FBC)/(1e6/Straus) − 1: 43.419
+\newcommand{\CpuPctAtOneKStraus}{9.78}            % mean µs/10 (verify_server): 9.777
+\newcommand{\CpuPctAtOneKFBC}{6.82}               % mean µs/10 (verify_server_prepared): 6.817
+

@@ -1,0 +1,13 @@
+# Normalise line endings in the repository; shell and Python scripts keep LF in every checkout,
+# because the testbed scripts run under Linux (WSL2) even when the repository is checked out on Windows.
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.png binary
+*.pdf binary
+# Derived results and recorded data are stored byte for byte, so that md5sums.txt and sources.md5 stay valid.
+experiments/*/results/** -text
+testbed/tpp/data/customer_payload.json -text

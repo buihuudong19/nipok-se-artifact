@@ -1,0 +1,6 @@
+# V3 - "slow" baseline that gives the measurement resolution: RSA-3072
+# helm upgrade --install istio-bank-cluster-addons environments/istio-system \
+#   -f environments/istio-system/values-v3-rsa.yaml -n istio-system
+pki:
+  algorithm: RSA
+  size: 3072

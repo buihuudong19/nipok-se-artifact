@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: customer-cluster-nsp }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: customer-agent, namespace: customer-cluster-nsp, labels: { app: customer-agent } }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: customer-agent } }
+  template:
+    metadata: { labels: { app: customer-agent } }
+    spec:
+      # The PSU (customer-agent) calls the bank (front channel) and the TPP (initiate/callback) across clusters.
+      # The placeholders __BANK_IP__/__TPP_IP__ are replaced with the minikube IPs by 02-deploy-customer-agent.sh.
+      hostAliases:
+      - ip: "__BANK_IP__"           # bank-cluster-profile IP (Istio ingress NodePort 30443)
+        hostnames: [ "bank.openbanking.dev" ]
+      - ip: "__TPP_IP__"            # IP of tpp-cluster-profile (NodePort 30081 of tpp-service)
+        hostnames: [ "tpp.openbanking.dev" ]
+      containers:
+      - name: customer-agent
+        image: customer-agent:latest
+        imagePullPolicy: Never
+        ports: [{ containerPort: 8080 }]
+        env:
+        # Bank front channel = Istio ingress NodePort 30443 (as used by the TPP).
+        - { name: AGENT_BANK_BASEURL, value: "https://bank.openbanking.dev:30443" }
+        # TPP over HTTPS NodePort 30081 (mutual TLS). Matches the https redirect_uri registered at the auth-server.
+        - { name: AGENT_TPP_BASEURL,  value: "https://tpp.openbanking.dev:30081" }
+        - { name: AGENT_TPP_CA_PATH,  value: "/etc/tpp-ca/ca.crt" }
+        # TLS hardening: the chain is validated against the bank root CA (gateway certificate SAN=bank.openbanking.dev).
+        # Set true ONLY for debugging. The bank-ca ConfigMap is created by 02-deploy-customer-agent.sh from the ca.crt of the certificate secret.
+        - { name: AGENT_INSECURE_TLS, value: "false" }
+        - { name: AGENT_BANK_CA_PATH, value: "/etc/bank-ca/ca.crt" }
+        # Workload certificate PRESENTED by the agent to the bank (mutual TLS). Secret agent-workload-mtls (signed by Vault).
+        - { name: AGENT_WORKLOAD_CERT_PATH, value: "/etc/agent-mtls/agent.p12" }
+        - { name: AGENT_WORKLOAD_CERT_PASS, value: "changeit" }
+        # Real PSU in PostgreSQL (registered through /psu/register), no hard-coded user/password.
+        - { name: AGENT_PSU_USERNAME, value: "alice" }
+        - { name: AGENT_PSU_PASSWORD, value: "Wonderland#2026" }
+        # NIPoK scalar x read from a secret-mounted FILE (tmpfs); custody SEALED (encrypted in memory + off-heap).
+        # Secret 'agent-nipok-key' created by register-nipok-user.sh (key x = base64url). Optional -> password
+        # mode does NOT need this secret. The inline env fallback AGENT_NIPOK_PRIVATEKEY still works if set.
+        - { name: AGENT_NIPOK_PRIVATEKEY_PATH, value: "/etc/psu-nipok/x" }
+        - { name: AGENT_NIPOK_CUSTODY_MODE,    value: "sealed" }
+        volumeMounts:
+        - { name: bank-ca, mountPath: /etc/bank-ca, readOnly: true }
+        - { name: tpp-ca, mountPath: /etc/tpp-ca, readOnly: true }           # trust for the TPP server certificate
+        - { name: agent-mtls, mountPath: /etc/agent-mtls, readOnly: true }   # workload certificate
+        - { name: psu-nipok, mountPath: /etc/psu-nipok, readOnly: true }     # scalar x (tmpfs Secret)
+      volumes:
+      - name: bank-ca
+        configMap: { name: bank-ca }      # ca.crt = Root-CA Bank (bank-cluster-ca)
+      - name: tpp-ca
+        configMap: { name: tpp-ca }       # ca.crt = tpp-onboarding-ca (signs the TPP server certificate)
+      - name: agent-mtls
+        secret: { secretName: agent-workload-mtls }   # agent.p12 (Vault-signed, CN=customer-agent)
+      - name: psu-nipok
+        secret: { secretName: agent-nipok-key, optional: true }   # key x; optional (not needed in password mode)
+---
+apiVersion: v1
+kind: Service
+metadata: { name: customer-agent, namespace: customer-cluster-nsp }
+spec:
+  type: NodePort                    # so that the host (k6/curl) can call POST /agent/run
+  selector: { app: customer-agent }
+  ports:
+  - { port: 80, targetPort: 8080, nodePort: 30090, protocol: TCP, name: http }

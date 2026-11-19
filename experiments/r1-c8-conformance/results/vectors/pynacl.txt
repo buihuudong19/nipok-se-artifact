@@ -1,0 +1,1 @@
+nipok_nacl_check.py 1.1 (PyNaCl 1.6.2): 45 vectors, 45 matching, 0 mismatching

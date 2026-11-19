@@ -1,28 +1,32 @@
 (* ============================================================================ *)
-(*  nipok.pv — NIPoK (RFC 8235) + Channel-Binding (tls-server-end-point, RFC 5929) *)
-(*  Vá G1: chứng minh tấn công Relay/MitM/Mafia-fraud liên-cluster bị TRIỆT TIÊU.   *)
-(*  CHẠY:  proverif nipok.pv                                                        *)
+(*  nipok.pv - NIPoK (RFC 8235) + channel binding (tls-server-end-point, RFC 5929)    *)
+(*  Shows that inter-cluster relay/MitM/mafia-fraud attacks are DEFEATED.            *)
+(*  RUN:  proverif nipok.pv                                                         *)
 (*                                                                                 *)
-(*  CHỨNG MINH:                                                                     *)
-(*    (1) secrecy(x)              — private scalar không lộ.                        *)
-(*    (2) INJECTIVE-AGREEMENT-on-cb — Server accept với cb ⟹ ĐÚNG client đã prove   *)
-(*        với CHÍNH cb đó. Vì verifier dùng cb = hash(cert THẬT của mình) còn pf  *)
-(*        bind cb = hash(cert client NHẬN, do MitM quyết định) ⟹ relay làm lệch cb   *)
-(*        ⟹ verify fail ⟹ không có server_accepts ⟹ correspondence giữ.            *)
+(*  PROPERTIES:                                                                     *)
+(*    (1) secrecy(x)              - the private scalar does not leak.              *)
+(*    (2) INJECTIVE AGREEMENT on cb - the server accepts with cb => EXACTLY the      *)
+(*        client proved with THAT cb. The verifier uses cb = hash(its OWN           *)
+(*        certificate), the proof binds cb = hash(certificate RECEIVED by the client,*)
+(*        chosen by the MitM) => a relay changes cb => verification fails.          *)
 (*                                                                                 *)
-(*  GIỚI HẠN: FS/ROM-soundness là computational → cần CryptoVerif (ngoài symbolic). *)
+(*  LIMIT: FS/ROM soundness is computational -> CryptoVerif (outside the symbolic model). *)
 (*                                                                                 *)
-(*  G11 — KEY CUSTODY (wallet PA1, SEALED+off-heap+K8s-Secret):                     *)
-(*    Ranh giới custody của Wallet ĐÃ được mô hình hóa ở đây: scalar `xA` khai       *)
-(*    `[private]`, do principal PSU (Wallet) giữ, KHÔNG BAO GIỜ ra kênh net ⟹ kết    *)
-(*    quả `not attacker(xA) is true` CHÍNH là chứng minh Key-Secrecy của custody     *)
-(*    boundary, áp dụng cho MỌI backend (sim/Vault/TEE) — vì cả ba HIỆN THỰC HÓA      *)
-(*    cùng ranh giới "x không qua interface".                                       *)
-(*    NGOÀI PHẠM VI symbolic (Dolev-Yao GIẢ ĐỊNH host/RAM tin cậy): tấn công         *)
-(*    dump-Pod/đọc-Secret-at-rest. Đó là threat host-security, được HIỆN THỰC HÓA     *)
-(*    bởi SEALED (mã hoá in-mem) + off-heap + K8s-Secret(tmpfs, không etcd-plaintext)*)
-(*    + zeroize — KHÔNG đổi mô hình này (chỉ làm giả định "custody tin cậy" thành sự  *)
-(*    thật). [[stride-proverif-gap-backlog]]                                         *)
+(*  COUNTERFACTUAL (see the note at the end of this file): if cb is dropped from    *)
+(*    ctx on both sides, a proof made in one session can be relayed into another    *)
+(*    session, so the anti-relay guarantee is lost.                                 *)
+(*                                                                                 *)
+(*  KEY CUSTODY (wallet: SEALED + off-heap + Kubernetes Secret):                   *)
+(*    The custody boundary of the wallet IS modelled here: the scalar `xA` is       *)
+(*    declared `[private]`, held by the PSU principal (wallet) and NEVER sent on    *)
+(*    the net channel => the result `not attacker(xA) is true` IS the key-secrecy   *)
+(*    proof of the custody boundary, for EVERY backend (simulator/Vault/TEE), since *)
+(*    all three implement the same boundary "x does not cross the interface".      *)
+(*    OUTSIDE the symbolic scope (Dolev-Yao ASSUMES a trusted host/RAM): pod dumps  *)
+(*    and reading the Secret at rest. That host-security threat is ADDRESSED by     *)
+(*    SEALED (in-memory encryption) + off-heap + Kubernetes Secret (tmpfs mount)    *)
+(*    + zeroisation; this model does NOT change (they only turn the "trusted        *)
+(*    custody" assumption into a fact).                                            *)
 (* ============================================================================ *)
 
 free net: channel.
@@ -32,38 +36,38 @@ type point.
 type cb_t.                                   (* channel-binding = SHA-256(DER server cert) *)
 
 fun pk(scalar): point.                       (* X = x·B *)
-fun nizk(scalar, bitstring): bitstring.      (* pf π=(V,s) ràng buộc context *)
+fun nizk(scalar, bitstring): bitstring.      (* proof π=(V,s) bound to the context *)
 reduc forall x: scalar, ctx: bitstring;
       verify(pk(x), nizk(x, ctx), ctx) = true.
 
 free verifierId: bitstring.
-free certS: cb_t.                            (* hash cert THẬT gateway — Bank dùng (public) *)
-free certM: cb_t.                            (* hash cert MitM/attacker (public, ≠ certS) *)
-free xA: scalar [private].                   (* private scalar của PSU *)
+free certS: cb_t.                            (* hash of the REAL gateway certificate, used by the bank (public) *)
+free certM: cb_t.                            (* hash of the MitM/attacker certificate (public, ≠ certS) *)
+free xA: scalar [private].                   (* private scalar of the PSU *)
 
-event client_authenticates(point, bitstring, cb_t).   (* (X, nonce, cb mà CLIENT thấy) *)
-event server_accepts(point, bitstring, cb_t).          (* (X, nonce, cb mà SERVER kỳ vọng) *)
+event client_authenticates(point, bitstring, cb_t).   (* (X, nonce, cb seen by the CLIENT) *)
+event server_accepts(point, bitstring, cb_t).          (* (X, nonce, cb expected by the SERVER) *)
 
-(* (1) Bí mật khóa riêng *)
+(* (1) Secrecy of the private key *)
 query attacker(xA).
 
-(* (2) Injective-agreement TRÊN cb: server accept(X,n,cb) ⟹ client đã prove(X,n,cb) cùng cb.   *)
-(*     MitM relay ⟹ cb_client(certM) ≠ cb_server(certS) ⟹ correspondence KHÔNG thể thỏa qua relay. *)
-(* Ràng X = pk(xA) (Alice): Bank accept proof CỦA ALICE ⟹ ĐÚNG Alice đã prove cùng cb.
-   (X tự do sẽ false vì attacker có thể tự đăng ký KHÓA RIÊNG của nó — hợp lệ, không phải lỗ hổng.) *)
+(* (2) Injective agreement ON cb: server accept(X,n,cb) => the client proved(X,n,cb) with the same cb.   *)
+(*     MitM relay => cb_client(certM) ≠ cb_server(certS) => the correspondence CANNOT hold through a relay. *)
+(* X bound to pk(xA) (Alice): the bank accepts a proof OF ALICE => EXACTLY Alice proved with the same cb.
+   (A free X would be false because the attacker can register ITS OWN key - legitimate, not a flaw.) *)
 query n: bitstring, cb: cb_t;
       inj-event(server_accepts(pk(xA), n, cb)) ==> inj-event(client_authenticates(pk(xA), n, cb)).
 
-(* PSU: cb = hash(cert SERVER mà PSU THỰC SỰ kết nối) — KHÔNG để attacker tự gửi cb (đó là kịch bản
-   insecure-tls). realCb cố định theo phiên: certS (nối thẳng Bank) HOẶC certM (bị MitM dẫn tới attacker).
-   Attacker KHÔNG thể trình certS cho PSU (thiếu private key gateway) ⟹ proof relay luôn bind certM. *)
+(* PSU: cb = hash(certificate of the SERVER the PSU is REALLY connected to) - the attacker does NOT supply cb
+   (that would be the insecure-tls scenario). realCb is fixed per session: certS (direct connection to the bank)
+   OR certM (MitM leads to the attacker). The attacker CANNOT present certS to the PSU (no gateway private key) => a relayed proof always binds certM. *)
 let PSU(x: scalar, realCb: cb_t) =
   in(net, n: bitstring);
   let ctx = (pk(x), n, realCb, verifierId) in
   event client_authenticates(pk(x), n, realCb);
   out(net, (pk(x), nizk(x, ctx))).
 
-(* Bank: phát nonce TƯƠI; verify với cb = certS (cert THẬT của chính mình, KHÔNG lấy từ client) *)
+(* Bank: issues a FRESH nonce; verifies with cb = certS (its OWN real certificate, NOT taken from the client) *)
 let Bank() =
   new n: bitstring;
   out(net, n);
@@ -74,14 +78,14 @@ let Bank() =
 
 process
   out(net, pk(xA));        (* X public *)
-  out(net, certS);  out(net, certM);   (* attacker biết cả 2 cert-hash; KHÔNG có key gateway *)
+  out(net, certS);  out(net, certM);   (* the attacker knows both certificate hashes; NO gateway key *)
   ( (! PSU(xA, certS)) | (! PSU(xA, certM)) | (! Bank()) )
-  (* PSU(certS) = phiên nối THẲNG Bank (honest);  PSU(certM) = phiên bị MitM (cb=cert attacker). *)
+  (* PSU(certS) = DIRECT session with the bank (honest);  PSU(certM) = session under MitM (cb = attacker certificate). *)
 
-(* ──────────────────────────────────────────────────────────────────────────── *)
-(*  ĐỐI CHỨNG (phiên bản LỖI — bỏ comment để thấy ProVerif tìm ra relay):          *)
-(*    Nếu PSU dùng  ctx = (pk(x), n, verifierId)  [KHÔNG có cb] và Bank verify cùng  *)
-(*    ctx không cb, thì query injective-on-cb KHÔNG áp được (không có cb), và một    *)
-(*    query trên KÊNH sẽ FAIL: attacker relay pf (hợp lệ, unforgeable) từ phiên   *)
-(*    client sang phiên của nó ⟹ server_accepts mà client không hề prove cho kênh đó.*)
-(* ──────────────────────────────────────────────────────────────────────────── *)
+(* ---------------------------------------------------------------------------- *)
+(*  COUNTERFACTUAL (FLAWED version - uncomment to see ProVerif find the relay):    *)
+(*    If the PSU uses  ctx = (pk(x), n, verifierId)  [WITHOUT cb] and the bank      *)
+(*    verifies the same ctx without cb, the injective-on-cb query does not apply    *)
+(*    (there is no cb), and a query on the CHANNEL FAILS: the attacker relays pf    *)
+(*    (valid, unforgeable) from the client session into its own session => server_accepts without a client proof for that channel. *)
+(* ---------------------------------------------------------------------------- *)

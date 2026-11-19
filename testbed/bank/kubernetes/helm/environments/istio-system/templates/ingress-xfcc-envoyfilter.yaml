@@ -1,0 +1,44 @@
+# ================================================================================
+# EnvoyFilter - forwards X-Forwarded-Client-Cert (XFCC) at the IngressGateway
+#
+# Purpose (RFC 8705 certificate binding): TLS terminates at the Envoy edge and the backends run HTTP behind the mesh,
+# so they do NOT see the TPP certificate themselves. This EnvoyFilter makes Envoy insert the verified certificate into
+# the XFCC header, so that the auth-server (maps cert -> client, computes cnf.x5t#S256) and the aggregators (verify
+# the binding) can read it.
+#
+# Safety (against spoofing): SANITIZE_SET = REMOVES any XFCC sent by an external client, then
+# OVERWRITES it with the value verified by Envoy. The applications trust XFCC because it always comes from the internal ingress.
+#
+# set_current_client_cert_details:
+#   subject:true -> enough to log the CN in the access log
+#   cert/chain:true -> needed for the binding (Cert=/Chain= carry the PEM used to compute the SHA-256 thumbprint)
+# ================================================================================
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ingress-xfcc-forward
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+    patch:
+      operation: MERGE
+      value:
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          forward_client_cert_details: SANITIZE_SET
+          set_current_client_cert_details:
+            subject: true
+            cert: true
+            chain: true
+            dns: true
+            uri: true

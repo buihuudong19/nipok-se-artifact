@@ -1,0 +1,18 @@
+% Table 14 body (R1-C8), written by c8_table_layout.py 1.1 from c8_parameters.csv (code defaults of the
+% prototype, testbed values checked against probe.json by c8_tables.py 1.1). Do not edit by hand.
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.5\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}@{}}
+\toprule
+Parameter & Value in the prototype & Set by; reaches the other side & Rejected at if they differ \\
+\midrule
+Suite & edwards25519 subgroup $\mathbb{G}$; SHA-512 over 4-byte length-prefixed fields in a fixed order; untagged challenge & protocol version & verification \\
+Wire format & base64url without padding of $N \| V \| s$ (96~bytes), as the password field of \texttt{POST /psu/auth} & protocol version & decoding \\
+$N$ & 32 random bytes in the login page (\texttt{nipokNonce}); single use; TTL 60~s; at most 100{,}000 live nonces & authorization server; returned by the agent & nonce store \\
+$\mathrm{id}_V$ & \texttt{bank} in the testbed; in a deployment, the issuer identifier of the authorization server & bank; set in the agent at enrollment & verification \\
+$\mathit{cb}$ & SHA-256 of the DER leaf certificate of the bank's gateway; the agent hashes the certificate it receives; the server ignores a forwarded hash header unless configured to trust it & bank certificate; set in the server, updated at rotation & verification \\
+$\mathrm{id}_P$ & UTF-8 bytes of the username registered at the bank, not normalized & bank account; fixed at enrollment & verification \\
+$X$ & 32-byte canonical encoding of a point of order $\ell$; one per PSU and method at each bank & wallet; registered once per bank & registration (400) \\
+Registration & \texttt{POST /psu/register} (username, method, public key) behind the onboarding gate (enforced in the testbed); 201, 400, 403, 409 & bank onboarding & 400, 403, 409 \\
+Lockout & 5 consecutive failures, then 60~s, doubling per further failure, at most 900~s & bank policy & - \\
+TPP & no NIPoK parameter; PAR, JARM, client authentication and certificate-bound tokens unchanged & - & - \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,16 @@
+% Table 13 body (R1-C8), written by c8_table_layout.py 1.1 from nipok-test-vectors-v2.json, the reports of
+% 4 implementations (java-vectors-elisabeth, java-vectors-libsodium, python-ref, pynacl) and table12_c7-lifecycle.csv. Do not edit by hand.
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}@{}}
+\toprule
+Case & Vectors & Rejected at & Same case through the gateway \\
+\midrule
+Proof generation and verification & 4 valid proofs (TV1-TV4) & accepted & valid login \\
+Invalid proofs & 9 (IV01-IV05, IV14-IV17) & decoding ($s \ge \ell$): 4; verification: 5 & forged $s$; non-canonical $s$ \\
+Malformed contexts & 8 (IV12, IV13, IV18-IV23) & decoding: 6; verification: 2 & 95-byte payload; payload not in base64url \\
+Replayed nonces & 1 (IV10); 7 stateful scenarios (SC1-SC7) & verification: 1; nonce store: SC1-SC7 & replayed nonce; nonce never issued; expired nonce; one proof from 4 sessions; restart \\
+Mismatched identities & 4 (IV06, IV11, IV26, IV27) & verification: 4 & another user's proof \\
+Altered channel bindings & 4 (IV08, IV09, IV24, IV25) & verification: 4 & proof for another channel \\
+Cross-endpoint forwarding & 5 (IV07, IV28-IV31) & verification: 5 & proof for another verifier \\
+Public-key registration & 10 keys, 1 valid (KV01-KV10) & registration (400): 9 & invalid keys; second key (409); no or wrong onboarding token (403) \\
+\bottomrule
+\end{tabular}

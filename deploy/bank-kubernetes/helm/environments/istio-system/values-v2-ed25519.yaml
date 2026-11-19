@@ -1,5 +1,0 @@
-# V2 — thử nghiệm: EdDSA / Ed25519 (KHÔNG có field size)
-# helm upgrade --install istio-bank-cluster-addons environments/istio-system \
-#   -f environments/istio-system/values-v2-ed25519.yaml -n istio-system
-pki:
-  algorithm: Ed25519

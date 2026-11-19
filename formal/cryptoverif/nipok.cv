@@ -1,27 +1,27 @@
 (* ============================================================================ *)
-(*  nipok.cv — CryptoVerif: xác thực NIPoK + channel-binding trong MÔ HÌNH       *)
-(*             TÍNH TOÁN (game-based). Chứng minh INJECTIVE-AGREEMENT + CHẶN      *)
-(*             advantage, GIẢ ĐỊNH NIPoK là chữ ký UF-CMA trên context.          *)
+(*  nipok.cv - CryptoVerif: NIPoK authentication + channel binding in the         *)
+(*             COMPUTATIONAL (game-based) MODEL. Proves INJECTIVE AGREEMENT with a *)
+(*             BOUNDED advantage, ASSUMING NIPoK is a UF-CMA signature on the context. *)
 (*                                                                               *)
-(*  Ý tưởng mô hình: NIPoK proof ≈ chữ ký UF-CMA của PSU trên                     *)
-(*       context = (X, nonce_Bank, channel-binding, verifierId).                 *)
-(*    - "secret key" = scalar x ;  "verify key" = X = xB.                         *)
-(*    - Bank verify bằng cb = certS (cert THẬT của mình); PSU ký bằng cb nó THẤY. *)
-(*  ⟹ Relay (cb lệch) ⟹ phải GIẢ MẠO chữ ký trên (X,n,certS) ⟹ phá UF-CMA.        *)
+(*  Modelling idea: NIPoK proof ≈ UF-CMA signature of the PSU on                   *)
+(*       context = (X, nonce_Bank, channel binding, verifierId).                  *)
+(*    - "secret key" = scalar x ;  "verification key" = X = xB.                   *)
+(*    - The bank verifies with cb = certS (its REAL certificate); the PSU signs with the cb it SEES. *)
+(*  => Relay (different cb) => a signature on (X,n,certS) must be FORGED => breaks UF-CMA. *)
 (*                                                                               *)
-(*  KẾT QUẢ: Adv_auth ≤ N · Adv_UF-CMA(PSU-key) + thống kê nonce-collision.       *)
-(*  (Tầng PRIMITIVE — UF-CMA của Schnorr-FS từ DL — để EasyCrypt; xem SchnorrFS.ec) *)
-(*  CHẠY: cryptoverif nipok.cv                                                    *)
+(*  RESULT: Adv_auth ≤ N · Adv_UF-CMA(PSU key) + nonce-collision statistics.       *)
+(*  (PRIMITIVE layer - UF-CMA of Schnorr-FS from DL - in EasyCrypt; see SchnorrFS.ec) *)
+(*  RUN: cryptoverif nipok.cv                                                     *)
 (*                                                                               *)
-(*  G11 — KEY CUSTODY: khóa PSU (skP) là giá trị bí mật do principal Wallet giữ,   *)
-(*    sinh trong KeyGen, KHÔNG ra kênh ⟹ bound/secrecy độc lập với BACKEND lưu trữ  *)
-(*    (sim SEALED/off-heap, K8s-Secret, Vault, TEE). Mô hình computational GIẢ ĐỊNH *)
-(*    custody tin cậy; SEALED+Secret+off-heap là phần HIỆN THỰC HÓA giả định đó     *)
-(*    (at-rest/host-dump nằm ngoài phạm vi PPT-trên-kênh).                          *)
+(*  KEY CUSTODY: the PSU key (skP) is a secret value held by the wallet principal, *)
+(*    generated in KeyGen and NEVER sent on a channel => the bound/secrecy does not depend on the storage BACKEND *)
+(*    (simulator SEALED/off-heap, Kubernetes Secret, Vault, TEE). The computational model ASSUMES *)
+(*    trusted custody; SEALED + Secret + off-heap IMPLEMENT that assumption       *)
+(*    (at-rest/host dumps are outside the PPT-on-the-channel scope).              *)
 (* ============================================================================ *)
 
 proof {
-  crypto uf_cma(sign);   (* áp giả định UF-CMA cho khóa PSU *)
+  crypto uf_cma(sign);   (* applies the UF-CMA assumption to the PSU key *)
   success
 }
 
@@ -35,40 +35,40 @@ type skey   [bounded].
 type signinput [bounded].
 type signature [bounded].
 
-(* Chữ ký UF-CMA (det.) mô hình hoá NIPoK; khóa = scalar/X. (Macro lib: check, Pkeycoll) *)
-proba Psign.       (* advantage UF-CMA *)
-proba Pkeycoll.    (* xác suất key-collision *)
+(* UF-CMA (deterministic) signature modelling NIPoK; key = scalar/X. (Library macro: check, Pkeycoll) *)
+proba Psign.       (* UF-CMA advantage *)
+proba Pkeycoll.    (* key-collision probability *)
 expand UF_CMA_det_signature(keyseed, pkey, skey, signinput, signature,
                             skgen, pkgen, sign, check, Psign, Pkeycoll).
 
-(* Đóng gói context (X, nonce, cb, verifierId) thành 1 thông điệp ký *)
+(* The context (X, nonce, cb, verifierId) is packed into one signed message *)
 type host [bounded].
 fun ctx(pkey, nonce, cb_t, host): signinput [data].
 
 const bankId: host.
-const certS:  cb_t.        (* channel-binding = hash(cert gateway THẬT) — Bank dùng *)
+const certS:  cb_t.        (* channel binding = hash(REAL gateway certificate), used by the bank *)
 
-(* Sự kiện cho injective-agreement *)
+(* Events for the injective agreement *)
 event psu_proves(pkey, nonce, cb_t).
 event bank_accepts(pkey, nonce, cb_t).
 
-(* ★ Mục tiêu: Bank accept (X,n,cb) ⟹ ĐÚNG một PSU đã prove (X,n,cb) — chống relay *)
+(* Goal: the bank accepts (X,n,cb) => EXACTLY one PSU proved (X,n,cb) - against relay *)
 query X:pkey, n:nonce, cb:cb_t;
   inj-event(bank_accepts(X,n,cb)) ==> inj-event(psu_proves(X,n,cb)).
 
-(* Kênh *)
+(* Channels *)
 channel cKey, cP1, cP2, cB1, cB2.
 
-(* ── PSU: nhận (n, cb-nó-thấy), ký context, gửi proof ─────────────────────── *)
+(* -- PSU: receives (n, the cb it sees), signs the context, sends the proof ------------- *)
 let processPSU(skP: skey, pkP: pkey) =
   ! N
   in(cP1, (n: nonce, seenCb: cb_t));
   event psu_proves(pkP, n, seenCb);
   out(cP2, sign(ctx(pkP, n, seenCb, bankId), skP)).
 
-(* ── Bank: phát nonce tươi, verify proof với KHÓA ĐÃ ĐĂNG KÝ pkP + cb=certS (THẬT) ─ *)
-(*    Bank tra khóa của Alice (pkP) — KHÔNG nhận X tùy ý (attacker tự đăng ký khóa khác *)
-(*    là hợp lệ, không phải lỗ hổng) ⟹ chỉ chứng nhận xác thực CHO ĐÚNG Alice.          *)
+(* -- Bank: issues a fresh nonce, verifies the proof with the REGISTERED key pkP + cb = certS (REAL) - *)
+(*    The bank looks up the key of Alice (pkP) and does NOT accept an arbitrary X (an attacker registering *)
+(*    its own key is legitimate, not a flaw) => authentication is certified FOR Alice only.          *)
 let processBank(pkP: pkey) =
   ! N2
   in(cB1, ());
@@ -78,7 +78,7 @@ let processBank(pkP: pkey) =
   if check(ctx(pkP, n, certS, bankId), pkP, s) then
     event bank_accepts(pkP, n, certS).
 
-(* ── Hệ thống ─────────────────────────────────────────────────────────────── *)
+(* -- System ------------------------------------------------------------------ *)
 process
   in(cKey, ());
   new ks: keyseed;
@@ -87,6 +87,6 @@ process
   out(cKey, pkP);          (* X = pk public *)
   ( processPSU(skP, pkP) | processBank(pkP) )
 
-(* Diễn giải kết quả: CryptoVerif xuất "RESULT ... is true" + một probability bound
-   tham số hoá theo Psign (advantage UF-CMA). Đó chính là CHẶN advantage của thuộc
-   tính xác thực — phần "composition + bound" của khung kiểm chứng. *)
+(* Reading the result: CryptoVerif prints "RESULT ... is true" + a probability bound
+   parameterised by Psign (UF-CMA advantage). That is the BOUND on the advantage of the
+   authentication property - the "composition + bound" part of the verification framework. *)

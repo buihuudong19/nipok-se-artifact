@@ -1,0 +1,46 @@
+id,category,case,expected,expected_stage,java_elisabeth,java_libsodium,python_ref,pynacl
+TV1,generation_verification,,accept,,accept,accept,accept,accept
+TV2,generation_verification,,accept,,accept,accept,accept,accept
+TV3,generation_verification,,accept,,accept,accept,accept,accept
+TV4,generation_verification,"bank A of the two-bank vectors: issuer URL as id_V, 32-byte cb, own key",accept,,accept,accept,accept,accept
+IV01,invalid_proof,s replaced by s + l (non-canonical encoding of the same residue),reject,noncanonical_s,reject,reject,reject,reject
+IV02,invalid_proof,s = l,reject,noncanonical_s,reject,reject,reject,reject
+IV03,invalid_proof,"one bit of s flipped (byte 0, bit 0)",reject,equation,reject,reject,reject,reject
+IV04,invalid_proof,"one bit of V flipped (byte 0, bit 0)",reject,equation,reject,reject,reject,reject
+IV05,invalid_proof,V and s swapped,reject,noncanonical_s,reject,reject,reject,reject
+IV06,mismatched_identity,mismatched identity: id_P = bob,reject,equation,reject,reject,reject,reject
+IV07,cross_endpoint_forwarding,cross-endpoint forwarding: verifier id_V = bank-b,reject,equation,reject,reject,reject,reject
+IV08,altered_channel_binding,altered channel binding: cb of another certificate,reject,equation,reject,reject,reject,reject
+IV09,altered_channel_binding,channel binding removed: cb empty,reject,equation,reject,reject,reject,reject
+IV10,replayed_nonce,proof replayed under another server nonce N,reject,equation,reject,reject,reject,reject
+IV11,mismatched_identity,wrong public key: X of TV2,reject,equation,reject,reject,reject,reject
+IV12,malformed_context,malformed blob: 95 bytes,reject,decode_length,reject,reject,reject,reject
+IV13,malformed_context,malformed blob: standard base64 alphabet instead of base64url,reject,decode_encoding,reject,reject,reject,reject
+IV14,invalid_proof,"s replaced by l - s (canonical, wrong value)",reject,equation,reject,reject,reject,reject
+IV15,invalid_proof,s replaced by s + 15l (largest multiple that fits in 32 bytes; bit 255 set),reject,noncanonical_s,reject,reject,reject,reject
+IV16,invalid_proof,V = identity encoding and s = 0,reject,equation,reject,reject,reject,reject
+IV17,invalid_proof,sign bit of V flipped (the point -V),reject,equation,reject,reject,reject,reject
+IV18,malformed_context,malformed blob: 97 bytes (one zero byte appended),reject,decode_length,reject,reject,reject,reject
+IV19,malformed_context,malformed blob: empty string,reject,decode_length,reject,reject,reject,reject
+IV20,malformed_context,malformed blob: valid blob followed by '==',reject,decode_encoding,reject,reject,reject,reject
+IV21,malformed_context,malformed blob: line feed inserted after 64 characters,reject,decode_encoding,reject,reject,reject,reject
+IV22,malformed_context,"id_P in Unicode NFD at the verifier, the proof used NFC (TV3)",reject,equation,reject,reject,reject,reject
+IV23,malformed_context,"field boundary moved: cb' = cb || 'b' (33 bytes), id_V' = 'ank'; plain concatenation would be identical",reject,equation,reject,reject,reject,reject
+IV24,altered_channel_binding,verifier cb truncated to 16 bytes,reject,equation,reject,reject,reject,reject
+IV25,altered_channel_binding,"proof made with channel binding off (TV2), verifier expects cb",reject,equation,reject,reject,reject,reject
+IV26,mismatched_identity,"id_P = 'ALICE' at the verifier, the proof used 'alice'",reject,equation,reject,reject,reject,reject
+IV27,mismatched_identity,prover hashed another public key (X of TV2) in place of its own X,reject,equation,reject,reject,reject,reject
+IV28,cross_endpoint_forwarding,TV4 proof (bank A) forwarded to bank B: id_V and cb of bank B,reject,equation,reject,reject,reject,reject
+IV29,cross_endpoint_forwarding,TV4 proof checked with the id_V of bank B only (same gateway certificate),reject,equation,reject,reject,reject,reject
+IV30,cross_endpoint_forwarding,TV4 proof checked with the cb of bank B only (same id_V),reject,equation,reject,reject,reject,reject
+IV31,cross_endpoint_forwarding,relay: agent answers a nonce of bank B while connected to bank A (cb and id_V of A); checked at bank B,reject,equation,reject,reject,reject,reject
+KV01,key_registration,X of TV1,accept,,accept,accept,accept,accept
+KV02,key_registration,identity point,reject,registration,reject,reject,reject,reject
+KV03,key_registration,point of order 8,reject,registration,reject,reject,reject,reject
+KV04,key_registration,"mixed-order point: X(TV1) + T, T of order 8",reject,registration,reject,reject,reject,reject
+KV05,key_registration,non-canonical encoding: y = 3 + p,reject,registration,reject,reject,reject,reject
+KV06,key_registration,y with no point on the curve,reject,registration,reject,reject,reject,reject
+KV07,key_registration,point of order 2 (y = p - 1),reject,registration,reject,reject,reject,reject
+KV08,key_registration,point of order 4 (y = 0),reject,registration,reject,reject,reject,reject
+KV09,key_registration,31 bytes,reject,registration,reject,reject,reject,reject
+KV10,key_registration,x = 0 with the sign bit set (non-canonical encoding of the identity),reject,registration,reject,reject,reject,reject

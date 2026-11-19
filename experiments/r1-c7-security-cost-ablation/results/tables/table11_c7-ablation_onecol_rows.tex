@@ -1,0 +1,55 @@
+% Table 11 body, one-column layout (R1-C7), written by c7_table_layout.py 1.3 from table11_c7-ablation_rows.tex
+% (c7_tables.py 1.1): shorter labels, footnote marks a-d dropped (content in the text of
+% Sec. 6.2.3), key values in bold; left out: the Conscrypt signature alone, the in-server
+% signing timer, the TPP sum.
+% Every value shown is the generated one. n: executions per NIPoK journey. Do not edit by hand.
+\begin{tabular}{@{}lccr@{}}
+\toprule
+Operation & Side & $n$ & \textmu s \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Proof verification}} \\
+\quad Verify, precomputed key & AS & 1 & $\mathbf{65.07} \pm 0.37$ \\
+\quad Verify, plain key & AS & - & $93.09 \pm 0.91$ \\
+\quad Precompute key (cache miss) & AS & - & $1{,}509.8 \pm 5.9$ \\
+\quad \texttt{authenticate()}$^{\dagger}$ & AS & 1 & $66.65 \pm 0.30$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{Wallet decryption}} \\
+\quad Unseal (AES-256-GCM) & Agent & 1 & $1.06 \pm 0.02$ \\
+\quad Prove, sealed wallet$^{\ddagger}$ & Agent & 1 & $\mathbf{37.79} \pm 0.16$ \\
+\quad Sealed minus resident & Agent & - & $1.29 \pm 0.17$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{Nonce storage}} \\
+\quad Issue and consume, 1 thread & AS & 1 & $0.304 \pm 0.003$ \\
+\quad Issue and consume, 8 threads & AS & - & $3.83 \pm 0.12$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{TLS and channel binding}} \\
+\quad Channel binding (SHA-256)$^{\ddagger}$ & Agent & 1 & $0.285 \pm 0.002$ \\
+\quad TLS handshake, ECDSA P-256 & Gateway & 1.02 & $561.9$ \\
+\quad TLS handshake, Ed25519 & Gateway & - & $552.8$ \\
+\quad TLS handshake, RSA-3072 & Gateway & - & $1{,}903.3$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{Token processing}} \\
+\quad Build and sign, SunEC$^{\dagger}$ & AS & 1 & $\mathbf{393.2} \pm 6.4$ \\
+\qquad of which the signature & & & $379.7 \pm 7.1$ \\
+\quad Build and sign, Conscrypt & AS & - & $16.38 \pm 0.07$ \\
+\quad Thumbprint for \texttt{cnf}$^{\dagger}$ & AS & 1 & $0.258 \pm 0.003$ \\
+\quad Verify token (SunEC)$^{\S}$ & RS & 1 & $375.0 \pm 5.0$ \\
+\quad Check \texttt{cnf} binding$^{\S}$ & RS & 1 & $12.59 \pm 0.14$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{Broader security envelope}} \\
+\quad JARM: sign and encrypt$^{\dagger}$ & AS & 1 & $\mathbf{292.1} \pm 1.6$ \\
+\quad JARM: decrypt and verify & TPP & 1 & $220.9 \pm 1.3$ \\
+\quad XFCC chain, thumbprint$^{\dagger}$ & AS & 2 & $37.71 \pm 0.30$ \\
+\quad Audit record$^{\dagger}$ & AS & 1 & $\mathbf{371.0} \pm 2.0$ \\
+\qquad of which the signature & & & $366.7 \pm 1.3$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{Registration}} \\
+\quad Validate a public key & AS & - & $119.3 \pm 0.2$ \\
+\addlinespace[2pt]
+\multicolumn{4}{@{}l}{\textit{Sum per NIPoK journey}} \\
+\quad AS, rows $\dagger$ &  &  & $\mathbf{1{,}198.6}$ \\
+\quad Gateway, TLS &  &  & $574.8$ \\
+\quad RS, rows \S &  &  & $387.6$ \\
+\quad Agent, rows $\ddagger$ &  &  & $38.1$ \\
+\bottomrule
+\end{tabular}

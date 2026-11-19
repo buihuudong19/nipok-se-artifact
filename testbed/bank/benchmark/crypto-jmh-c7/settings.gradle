@@ -1,0 +1,3 @@
+// Security-cost ablation (Reviewer 1, Comment 7): separate Gradle project for the cost-breakdown benchmarks. NOT part
+// of the multi-project build of bank/, and independent of crypto-jmh (its jar, build.gradle and measurements unchanged).
+rootProject.name = 'crypto-jmh-c7'

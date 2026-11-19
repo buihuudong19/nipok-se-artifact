@@ -1,0 +1,4 @@
+# For plot.py (throughput/latency/memory charts from the JMH result JSON).
+# Install: pip install -r requirements.txt   (or apt: sudo apt install python3-matplotlib python3-numpy)
+matplotlib>=3.7
+numpy>=1.24

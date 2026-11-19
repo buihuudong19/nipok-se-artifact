@@ -1,0 +1,23 @@
+  TV1   generation_verification    expected accept got accept stage -                    ok
+  TV2   generation_verification    expected accept got accept stage -                    ok
+  TV3   generation_verification    expected accept got accept stage -                    ok
+  IV01  None                       expected reject got reject stage noncanonical_s       ok
+  IV02  None                       expected reject got reject stage noncanonical_s       ok
+  IV03  None                       expected reject got reject stage equation             ok
+  IV04  None                       expected reject got reject stage equation             ok
+  IV05  None                       expected reject got reject stage noncanonical_s       ok
+  IV06  None                       expected reject got reject stage equation             ok
+  IV07  None                       expected reject got reject stage equation             ok
+  IV08  None                       expected reject got reject stage equation             ok
+  IV09  None                       expected reject got reject stage equation             ok
+  IV10  None                       expected reject got reject stage equation             ok
+  IV11  None                       expected reject got reject stage equation             ok
+  IV12  None                       expected reject got reject stage decode_length        ok
+  IV13  None                       expected reject got reject stage decode_encoding      ok
+  KV01  key_registration           expected accept got accept stage -                    ok
+  KV02  key_registration           expected reject got reject stage key_small_order      ok
+  KV03  key_registration           expected reject got reject stage key_small_order      ok
+  KV04  key_registration           expected reject got reject stage key_not_in_subgroup  ok
+  KV05  key_registration           expected reject got reject stage key_noncanonical     ok
+  KV06  key_registration           expected reject got reject stage key_not_on_curve     ok
+nipok_ref.py 1.1 (pure Python, standard library only): 22 vectors, 22 matching, 0 mismatching
