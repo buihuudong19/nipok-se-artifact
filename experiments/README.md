@@ -10,5 +10,6 @@ One directory per set of results. The `r1-c*` names refer to the comments of Rev
 | `r1-c8-conformance/` | Section 6.2.4: Tables 13-14 | Test vectors, independent implementations, shared parameters |
 
 Each `r1-c*` directory holds the analysis scripts (`analysis/`) and the derived results (`results/`, with a `README.md`
-and a `MAPPING.md` from paper item to file). The raw data are in the Zenodo record; `requirements.txt` lists the Python
-packages of the analysis scripts, and `docs/reproduce.md` explains how to regenerate the results.
+and a `MAPPING.md` from paper item to file). The raw data are in a separate Zenodo dataset record; `requirements.txt`
+lists the Python packages of the analysis scripts, and `docs/reproduce.md` gives the record and explains how to
+regenerate the results.

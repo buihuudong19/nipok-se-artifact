@@ -28,8 +28,9 @@ The names `r1-c6`, `r1-c7` and `r1-c8` refer to Comments 6, 7 and 8 of Reviewer 
 
 The repository contains the code and the derived results: the figures, tables, data files and reports that hold the
 numbers of the paper. The raw measurement data of every campaign (JMH result files, k6 summaries and logs, metrics
-extracted from Prometheus and Istio, campaign manifests) are archived in the Zenodo record of this version, together
-with a copy of the repository. The analysis scripts regenerate every derived result from the raw data.
+extracted from Prometheus and Istio, campaign manifests) are archived on Zenodo in a separate dataset record,
+https://doi.org/10.5281/zenodo.24370110. Zenodo also archives each release of this repository. The analysis
+scripts regenerate every derived result from the raw data.
 
 ## Getting started
 

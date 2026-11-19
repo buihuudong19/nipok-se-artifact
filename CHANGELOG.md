@@ -9,7 +9,8 @@
   now find their paths from their own location.
 - Results are grouped by experiment under `experiments/`: `submission/` (the results of version 2.0),
   `r1-c6-statistical-evaluation/`, `r1-c7-security-cost-ablation/` and `r1-c8-conformance/`.
-- The repository keeps the code and the derived results; the raw measurement data are in the Zenodo record.
+- The repository keeps the code and the derived results; the raw measurement data are in a separate Zenodo dataset
+  record (`docs/reproduce.md`).
 - Documentation in `docs/`: `reproduce.md`, `paper-map.md` (replaces `plots/README.md`), `environment.md` (replaces
   `ENVIRONMENT.md`), `secrets.md` and `provenance.md`; a README for the testbed and for every experiment;
   `CITATION.cff`.
@@ -71,8 +72,8 @@ These changes were deployed before the final campaigns, so the published measure
 
 ### Removed
 
-- Console logs and node CPU traces of the submitted campaigns (moved to the Zenodo record), backup files, build output
-  and development helpers not used for the paper (`docs/provenance.md`).
+- Console logs and node CPU traces of the submitted campaigns (moved to the raw-data archive on Zenodo), backup files,
+  build output and development helpers not used for the paper (`docs/provenance.md`).
 
 ## 2.0 (submitted manuscript)
 

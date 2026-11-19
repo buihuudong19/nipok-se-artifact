@@ -6,8 +6,8 @@ version: "3.0"
 abstract: >-
   Formal models (ProVerif, CryptoVerif, EasyCrypt), the source code of the NIPoK-SE prototype and of six baseline
   PSU-authentication mechanisms, a three-cluster Kubernetes testbed, JMH and k6 benchmark harnesses, analysis scripts
-  and derived results of the revised manuscript. The raw measurement data are archived with the Zenodo record of this
-  version.
+  and derived results of the revised manuscript. The raw measurement data are archived on Zenodo as a separate dataset,
+  https://doi.org/10.5281/zenodo.24370110.
 license: MIT
 repository-code: "https://github.com/buihuudong19/nipok-se-artifact"
 keywords:

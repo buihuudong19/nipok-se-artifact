@@ -15,7 +15,7 @@
 #   FORCE=1 experiments/r1-c7-security-cost-ablation/analysis/generate-results.sh    # replace a previous output
 # Variables:
 #   C7_DATA  raw data of this campaign (default: testbed/bank/benchmark-R1-C7, where testbed/bank/run-R1C7.sh writes;
-#            or the extracted raw-data archive of the Zenodo record)
+#            or the extracted raw-data archive on Zenodo)
 #   C6_DATA  raw data of the statistical evaluation, read by the cross-checks (default: testbed/bank/benchmark-R1-C6);
 #            without it the cross-checks are skipped
 #   OUT      output directory (default: experiments/r1-c7-security-cost-ablation/results)

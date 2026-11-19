@@ -17,7 +17,7 @@ revision reads `results/micro-jmh/six-mechanisms/official-final.json`.
 | `results/load-k6/result-loadtest-wan/` | Injected round-trip-time sweep: k6 summaries, `meta.txt`, figure | same |
 
 The per-run console logs (`*.log`) and node CPU traces (`*.nodecpu`) of these campaigns, and the JMH console log, are
-in the raw-data archive of the Zenodo record (directory `submission`).
+in the raw-data archive on Zenodo (directory `submission`; see `docs/reproduce.md`).
 
 The recorded files (`meta.txt`, `env.txt`, `tables_manuscript*.md`) are kept as the harness wrote them at measurement
 time; some of their free-text notes are in Vietnamese. The analysis tools of the revision read them in this form.

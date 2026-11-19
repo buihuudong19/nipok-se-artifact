@@ -17,7 +17,7 @@
 #   OUT       output directory (default: experiments/r1-c8-conformance/results)
 #   C7_T12    Table 12 data of Comment 7 (default: experiments/r1-c7-security-cost-ablation/results/tables/table12_c7-lifecycle.csv)
 #   C7_PROBE  probe.json of Comment 7 (raw data; default: testbed/bank/benchmark-R1-C7/e2e/probe/probe.json, or the
-#             extracted raw-data archive of the Zenodo record)
+#             extracted raw-data archive on Zenodo)
 #   PYTHON=python3   ALLOW_RUNNING=1 skips the check that no load test is running
 # =====================================================================================================================
 set -uo pipefail

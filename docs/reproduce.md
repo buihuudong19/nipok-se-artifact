@@ -14,10 +14,11 @@ published measurements.
 
 ### Raw data
 
-The raw data are in the Zenodo record of version 3.0, in the archive `nipok-se-raw-data-v3.0.tar.gz`. Its top
-directory `nipok-se-raw-data-v3.0`, called `<raw>` below, contains one directory per campaign (`benchmark-R1-C6`,
-`benchmark-R1-C7`, `benchmark-R1-C8`), the logs of the submitted version (`submission`), a `README.md` that describes
-the contents, and `md5sums.txt` with the checksum of every file:
+The raw data are archived on Zenodo in a separate dataset record, https://doi.org/10.5281/zenodo.24370110, as
+`nipok-se-raw-data-v3.0.tar.gz`. The top directory of the archive, `nipok-se-raw-data-v3.0`, called `<raw>` below,
+contains one directory per campaign (`benchmark-R1-C6`, `benchmark-R1-C7`, `benchmark-R1-C8`), the logs of the
+submitted version (`submission`), a `README.md` that describes the contents, and `md5sums.txt` with the checksum of
+every file:
 
 ```bash
 tar -xzf nipok-se-raw-data-v3.0.tar.gz

@@ -19,7 +19,7 @@
 #   FORCE=1 experiments/r1-c6-statistical-evaluation/analysis/generate-results.sh    # replace a previous output
 # Variables:
 #   C6_DATA  raw data (default: testbed/bank/benchmark-R1-C6, where testbed/bank/run-R1C6.sh writes; or the extracted
-#            raw-data archive of the Zenodo record)
+#            raw-data archive on Zenodo)
 #   OUT      output directory (default: experiments/r1-c6-statistical-evaluation/results)
 #   BLOCKS=1-6   PYTHON=python3   HEALTHY_MS=120 (p99 threshold for \LtHealthyRate; empty = not computed)
 #   RESULTS_TEX  optional results.tex of the paper source; adds a "submitted" column to the JMH macro table

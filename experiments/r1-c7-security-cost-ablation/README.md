@@ -7,7 +7,7 @@ restart. The experiment answers Comment 7 of Reviewer 1.
 | Part | Location |
 |---|---|
 | Measurement driver | `testbed/bank/run-R1C7.sh` with the JMH project `testbed/bank/benchmark/crypto-jmh-c7` (cost breakdown) and the k6 scenarios and probe in `testbed/bank/kubernetes/loadtest/k6-psu-c7` |
-| Raw data | directory `benchmark-R1-C7` of the raw-data archive in the Zenodo record (`jmh/`, `e2e/`, `logs/`, `MANIFEST.txt`) |
+| Raw data | directory `benchmark-R1-C7` of the raw-data archive on Zenodo (`jmh/`, `e2e/`, `logs/`, `MANIFEST.txt`; see `docs/reproduce.md`) |
 | Analysis | `analysis/generate-results.sh` with `c7_tables.py`, `c7_table_layout.py`, `c7_hop_breakdown.py`, `c7_burst_timeline.py` and `c7_crosscheck.py`; `analysis/templates/` holds the `README.md` and `MAPPING.md` written into the results |
 | Derived results | `results/`: Tables 11 and 12, Figures 10 and 11, cross-checks against Section 6.2.2; `results/MAPPING.md` gives the file of every paper item and macro |
 
