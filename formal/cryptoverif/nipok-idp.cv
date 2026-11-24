@@ -1,0 +1,106 @@
+(* ---------------------------------------------------------------------------- *)
+(*  VERSION 3.1, PREPARED AND NOT YET RUN. See ../UNVERIFIED-3.1.md.            *)
+(*  Copy of nipok.cv with the prover identifier id_P as a field of the signed      *)
+(*  context: ctx(X, id_P, N, cb, id_V), the deployed context of the paper. The      *)
+(*  four changed lines are marked [id_P]. Events, query, proof script and all       *)
+(*  other lines are those of nipok.cv.                                              *)
+(* ---------------------------------------------------------------------------- *)
+(* ============================================================================ *)
+(*  nipok.cv - CryptoVerif: NIPoK authentication + channel binding in the         *)
+(*             COMPUTATIONAL (game-based) MODEL. Proves INJECTIVE AGREEMENT with a *)
+(*             BOUNDED advantage, ASSUMING NIPoK is a UF-CMA signature on the context. *)
+(*                                                                               *)
+(*  Modelling idea: NIPoK proof ≈ UF-CMA signature of the PSU on                   *)
+(*       context = (X, proverId, nonce_Bank, channel binding, verifierId).  [id_P] *)
+(*    - "secret key" = scalar x ;  "verification key" = X = xB.                   *)
+(*    - The bank verifies with cb = certS (its REAL certificate); the PSU signs with the cb it SEES. *)
+(*  => Relay (different cb) => a signature on (X,n,certS) must be FORGED => breaks UF-CMA. *)
+(*                                                                               *)
+(*  RESULT (CryptoVerif output, see ../README.md, "Expected results"):              *)
+(*    Adv_auth ≤ Psign(time_1, N) + 0.5 * N2^2 / |nonce|                            *)
+(*    N = prover (PSU) sessions = q_P, N2 = verifier (bank) sessions = q_V. This is  *)
+(*    the bound of the paper (Section 5.4, Theorem 5):                              *)
+(*    Adv^inj-auth(A) ≤ P_sign(t, q_P) + q_V^2 / (2 |N|).                            *)
+(*    The UF-CMA term is NOT multiplied by the number of sessions: there is one     *)
+(*    PSU key, and q_P enters as the number of signing queries.                     *)
+(*  (PRIMITIVE layer - UF-CMA of Schnorr-FS from DL - in EasyCrypt; see SchnorrFS.ec) *)
+(*  RUN: cryptoverif nipok.cv                                                     *)
+(*                                                                               *)
+(*  KEY CUSTODY: the PSU key (skP) is a secret value held by the wallet principal, *)
+(*    generated in KeyGen and NEVER sent on a channel => the bound/secrecy does not depend on the storage BACKEND *)
+(*    (simulator SEALED/off-heap, Kubernetes Secret, Vault, TEE). The computational model ASSUMES *)
+(*    trusted custody; SEALED + Secret + off-heap IMPLEMENT that assumption       *)
+(*    (at-rest/host dumps are outside the PPT-on-the-channel scope).              *)
+(* ============================================================================ *)
+
+proof {
+  crypto uf_cma(sign);   (* applies the UF-CMA assumption to the PSU key *)
+  success
+}
+
+param N, N2.
+
+type nonce  [large, fixed].
+type cb_t   [large, fixed].
+type keyseed [large, fixed].
+type pkey   [bounded].
+type skey   [bounded].
+type signinput [bounded].
+type signature [bounded].
+
+(* UF-CMA (deterministic) signature modelling NIPoK; key = scalar/X. (Library macro: check, Pkeycoll) *)
+proba Psign.       (* UF-CMA advantage *)
+proba Pkeycoll.    (* key-collision probability *)
+expand UF_CMA_det_signature(keyseed, pkey, skey, signinput, signature,
+                            skgen, pkgen, sign, check, Psign, Pkeycoll).
+
+(* The context (X, nonce, cb, verifierId) is packed into one signed message *)
+type host [bounded].
+fun ctx(pkey, host, nonce, cb_t, host): signinput [data].   (* [id_P] second argument = prover identifier *)
+
+const bankId: host.
+const psuId:  host.        (* [id_P] identifier of the enrolled account of the PSU (public) *)
+const certS:  cb_t.        (* channel binding = hash(REAL gateway certificate), used by the bank *)
+
+(* Events for the injective agreement *)
+event psu_proves(pkey, nonce, cb_t).
+event bank_accepts(pkey, nonce, cb_t).
+
+(* Goal: the bank accepts (X,n,cb) => EXACTLY one PSU proved (X,n,cb) - against relay *)
+query X:pkey, n:nonce, cb:cb_t;
+  inj-event(bank_accepts(X,n,cb)) ==> inj-event(psu_proves(X,n,cb)).
+
+(* Channels *)
+channel cKey, cP1, cP2, cB1, cB2.
+
+(* -- PSU: receives (n, the cb it sees), signs the context, sends the proof ------------- *)
+let processPSU(skP: skey, pkP: pkey) =
+  ! N
+  in(cP1, (n: nonce, seenCb: cb_t));
+  event psu_proves(pkP, n, seenCb);
+  out(cP2, sign(ctx(pkP, psuId, n, seenCb, bankId), skP)).   (* [id_P] *)
+
+(* -- Bank: issues a fresh nonce, verifies the proof with the REGISTERED key pkP + cb = certS (REAL) - *)
+(*    The bank looks up the key of Alice (pkP) and does NOT accept an arbitrary X (an attacker registering *)
+(*    its own key is legitimate, not a flaw) => authentication is certified FOR Alice only.          *)
+let processBank(pkP: pkey) =
+  ! N2
+  in(cB1, ());
+  new n: nonce;
+  out(cB1, n);
+  in(cB2, s: signature);
+  if check(ctx(pkP, psuId, n, certS, bankId), pkP, s) then   (* [id_P] *)
+    event bank_accepts(pkP, n, certS).
+
+(* -- System ------------------------------------------------------------------ *)
+process
+  in(cKey, ());
+  new ks: keyseed;
+  let skP = skgen(ks) in
+  let pkP = pkgen(ks) in
+  out(cKey, pkP);          (* X = pk public *)
+  ( processPSU(skP, pkP) | processBank(pkP) )
+
+(* Reading the result: CryptoVerif prints "RESULT ... is true" + a probability bound
+   parameterised by Psign (UF-CMA advantage). That is the BOUND on the advantage of the
+   authentication property - the "composition + bound" part of the verification framework. *)
