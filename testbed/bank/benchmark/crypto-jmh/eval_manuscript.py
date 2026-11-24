@@ -17,6 +17,19 @@ Data: the JMH result file (JSON_PATH, default results/official-final.json). The 
 passed by the calling script in JMH_CONFIG and is not written into the figures. SUBMISSION=1 produces the
 journal version (no suptitle or variant tag; that information goes into the caption). Each figure is saved as PNG (600 dpi) and PDF.
 Usage:  python3 eval_manuscript.py            # writes tables_*.md and fig1..fig4 (.png + .pdf)
+
+Environment, added in version 3.1 of the package:
+  STYLE=paper (default)  fig1 and fig2 at their final size in the paper: fig1 3.297 in wide (one column, 238.25 TeX pt),
+                         fig2 6.843 in wide (text width, 494.51 TeX pt), included at scale 1; no text smaller than 7 pt;
+                         fixed margins instead of a tight bounding box. fig3, fig4 and fig4.1 keep the layout of version 3.0.
+  STYLE=v30              the layout of version 3.0 for every figure (the paper scaled its lettering to 2.3 to 4.8 pt).
+  SUMMARY_CSV=<results>/crypto-jmh/tables/jmh_summary.csv
+                         draws fig1 and fig2 from the derived summary (rows of step "main": mean over forks, SD over forks,
+                         number of forks, JMH score error) instead of the JMH result file, so the raw data are not needed.
+                         The summary has six significant digits and no allocation rates, so this mode writes neither the
+                         tables nor fig3, fig4 and fig4.1 (the radar needs the allocation rates of the JMH result file).
+  DUMP=1                 also writes fig1_*.plotted.json and fig2_*.plotted.json: the arrays handed to the plotting calls,
+                         which are the same for both styles.
 """
 
 import json
@@ -38,6 +51,20 @@ warnings.filterwarnings("ignore", message=".*not compatible with tight_layout.*"
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.environ.get("OUT_DIR") or _SCRIPT_DIR
 JSON_PATH = os.environ.get("JSON_PATH") or os.path.join(_SCRIPT_DIR, "results", "official-final.json")
+SUMMARY_CSV = os.environ.get("SUMMARY_CSV", "").strip()
+STYLE = os.environ.get("STYLE", "paper").strip()
+if STYLE not in ("paper", "v30"):
+    raise SystemExit("STYLE must be paper or v30")
+PAPER = (STYLE == "paper")
+DUMP = os.environ.get("DUMP", "0") == "1"
+
+
+def _dump(fname, obj):
+    if DUMP:
+        with open(_out(fname), "w", encoding="utf-8") as f:
+            json.dump(obj, f, indent=1)
+COLW = 238.25444 / 72.27       # column width of the journal class in inches
+TEXTW = 494.50888 / 72.27      # text width of the journal class in inches
 
 # Display order: traditional -> modern -> ours (last, highlighted). HIGHLIGHT = the proposed mechanism.
 ORDER = ["Password", "mTLS-PSU", "Private-Key-JWT", "Pure-EdDSA", "Schnorr-IZK", "ML-DSA-65", "NIPoK"]
@@ -177,6 +204,8 @@ def _ci95_sum(parts):
 def load_measured():
     """Read every measured value (verify/sign/alloc/parse) from the JMH result JSON; nothing is hard-coded. The JSON
     file is required: a missing or invalid file raises an error, so tables and figures are never drawn from stale numbers."""
+    if SUMMARY_CSV:
+        return _load_summary()
     if not os.path.exists(JSON_PATH):
         raise FileNotFoundError(
             f"Missing {JSON_PATH} - run the JMH benchmark first, then generate the tables and figures "
@@ -216,6 +245,48 @@ def load_measured():
         data[mech]["genkey"] = ec_genkey if mech in _EC_GENKEY_MECHS else _GENKEY_CONST[mech]
     print(f"[ok] all measured values read from {os.path.basename(JSON_PATH)} (EC key generation = measured gen_R; "
           f"only the ML-DSA/Password key generation values are fixed estimates).")
+    return data
+
+
+def _load_summary():
+    """Same record per mechanism as load_measured, from jmh_summary.csv (step "main"). Mean and SD over forks give the
+    score and the fork statistics; allocation rates are not in the summary, so the fields that need them are None."""
+    import csv
+    sc, fk = {}, {}
+    with open(SUMMARY_CSV, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["step"] != "main":
+                continue
+            if r["unit"] != "us/op":
+                raise ValueError(f"{SUMMARY_CSV}: {r['benchmark']} is in {r['unit']}, expected us/op")
+            cls, m = r["benchmark"].split(".")
+            n, mean, sd = int(r["n_forks"]), float(r["mean"]), float(r["sd_forks"])
+            sc[(cls, m)] = (mean, float(r["jmh_score_error_99_9"]))
+            fk[(cls, m)] = (n, mean, sd / np.sqrt(n) if n > 1 else float("nan"))
+    data = {}
+    for cls, (mech, vm, sms, pm) in JMH_MAP.items():
+        if (cls, vm) not in sc:
+            raise KeyError(f"{SUMMARY_CSV} has no row for '{cls}.{vm}' in step main.")
+        rec = {"verify": sc[(cls, vm)][0], "verify_err": sc[(cls, vm)][1], "alloc": None,
+               "verify_ci95": _ci95_sum([fk[(cls, vm)]])}
+        svals = [sc[(cls, m)][0] for m in sms if (cls, m) in sc]
+        if svals:
+            rec["sign"] = float(np.sum(svals))
+            rec["sign_err"] = sc[(cls, sms[0])][1]
+            rec["sign_ci95"] = _ci95_sum([fk[(cls, m)] for m in sms if (cls, m) in fk])
+            rec["sign_alloc"] = None
+        else:
+            rec["sign"], rec["sign_alloc"] = None, None
+        if pm and (cls, pm) in sc:
+            rec["parse_verify"] = sc[(cls, pm)][0]
+        if cls == "SchnorrBenchmark":
+            rec["gen_R"], rec["compute_s"] = sc[(cls, "gen_R")][0], sc[(cls, "compute_s")][0]
+            rec["compute_s_alloc"] = None
+        data[mech] = rec
+    ec_genkey = data["Schnorr-IZK"]["gen_R"]
+    for mech in ORDER:
+        data[mech]["genkey"] = ec_genkey if mech in _EC_GENKEY_MECHS else _GENKEY_CONST[mech]
+    print(f"[ok] measured values read from {os.path.basename(SUMMARY_CSV)} (derived summary, step main; no allocation rates).")
     return data
 
 
@@ -336,6 +407,17 @@ plt.rcParams.update({
     "axes.edgecolor": "0.30", "axes.linewidth": 0.9, "grid.alpha": 0.4,
 })
 CLR_HL = "#1f6fb2"   # highlight colour of NIPoK
+_V30_RC = {k: plt.rcParams[k] for k in ("font.size", "axes.titlesize", "axes.labelsize", "xtick.labelsize", "ytick.labelsize",
+                                        "legend.fontsize", "savefig.bbox", "axes.linewidth", "axes.titleweight", "axes.labelweight")}
+_PAPER_RC = {"font.size": 7.5, "axes.titlesize": 8.5, "axes.labelsize": 8, "xtick.labelsize": 7, "ytick.labelsize": 7,
+             "legend.fontsize": 7, "savefig.bbox": None, "axes.linewidth": 0.7, "axes.titleweight": "bold",
+             "axes.labelweight": "semibold", "xtick.major.pad": 2, "ytick.major.pad": 2, "axes.labelpad": 2.5,
+             "axes.titlepad": 4, "grid.linewidth": 0.5}
+
+
+def _plain(v, _=None):
+    """Tick label of a log axis as a plain number (paper style): the exponent of a power of ten would be under 7 pt."""
+    return "{:,.0f}".format(v) if v >= 1 else "%g" % v
 
 
 def disp(m):
@@ -366,19 +448,21 @@ MECH_COLORS = {
 }
 
 
-def _mech_legend_handles():
+def _mech_legend_handles(ms=11, mew_hl=2.2, mew=0.6):
     """Colour legend handles for the seven mechanisms (NIPoK with a yellow edge); NIPoK is labelled 'NIPoK (Ours)'."""
-    return [plt.Line2D([0], [0], marker="s", ls="", ms=11, mfc=MECH_COLORS[m],
+    return [plt.Line2D([0], [0], marker="s", ls="", ms=ms, mfc=MECH_COLORS[m],
                        mec="#e8a317" if m == HIGHLIGHT else "0.3",
-                       mew=2.2 if m == HIGHLIGHT else 0.6, label=disp(m)) for m in ORDER]
+                       mew=mew_hl if m == HIGHLIGHT else mew, label=disp(m)) for m in ORDER]
 
 
-def _bar_panel(ax, mechs, vals, errs, title, ylabel, log=True, est_mask=None):
+def _bar_panel(ax, mechs, vals, errs, title, ylabel, log=True, est_mask=None, paper=False):
     colors = [MECH_COLORS[m] for m in mechs]                 # one colour per mechanism (same as fig4 and the legend)
     edges = ["#e8a317" if m == HIGHLIGHT else "0.25" for m in mechs]
-    lws = [2.6 if m == HIGHLIGHT else 0.7 for m in mechs]    # thick yellow edge for NIPoK (stands out without a label)
-    bars = ax.bar(range(len(mechs)), vals, yerr=errs, capsize=3, color=colors,
-                  edgecolor=edges, linewidth=lws, error_kw=dict(ecolor="0.3", lw=0.9))
+    lws = [(1.6 if paper else 2.6) if m == HIGHLIGHT else (0.5 if paper else 0.7) for m in mechs]    # thick yellow edge for NIPoK
+    bars = ax.bar(range(len(mechs)), vals, yerr=errs, capsize=2 if paper else 3, color=colors,
+                  edgecolor=edges, linewidth=lws, error_kw=dict(ecolor="0.3", lw=0.7 if paper else 0.9))
+    if paper:
+        plt.rcParams["hatch.linewidth"] = 0.6
     if est_mask is not None:                                 # estimated values (not measured with JMH) are hatched
         for b, is_est in zip(bars, est_mask):
             if is_est:
@@ -389,7 +473,12 @@ def _bar_panel(ax, mechs, vals, errs, title, ylabel, log=True, est_mask=None):
         ax.grid(axis="y", which="minor", linestyle=":", alpha=0.25)
     ax.grid(axis="y", which="major", alpha=0.5)
     ax.set_axisbelow(True)
-    ax.set_title(title)
+    if paper:
+        ax.set_title(title, loc="left")
+        ax.yaxis.set_major_formatter(mticker.FuncFormatter(_plain))
+        ax.margins(y=0.16)                                   # room for the value labels above the bars
+    else:
+        ax.set_title(title)
     ax.set_ylabel(ylabel)
     ax.set_xticks([])                                        # no mechanism names under the bars; a colour legend at the bottom
     for i, (b, v) in enumerate(zip(bars, vals)):
@@ -399,8 +488,8 @@ def _bar_panel(ax, mechs, vals, errs, title, ylabel, log=True, est_mask=None):
         lab = f"{v/1000:,.0f} ms" if v >= 10000 else (f"{v:.1f}" if v < 3 else f"{v:.0f}")
         if est_mask is not None and est_mask[i]:
             lab = "≈" + lab                                  # estimate, same sign as in Table 1
-        ax.annotate(lab, xy=(b.get_x() + b.get_width() / 2, v), xytext=(0, 3),
-                    textcoords="offset points", ha="center", va="bottom", fontsize=8.5)
+        ax.annotate(lab, xy=(b.get_x() + b.get_width() / 2, v), xytext=(0, 2.2 if paper else 3),
+                    textcoords="offset points", ha="center", va="bottom", fontsize=7 if paper else 8.5)
 
 
 def fig1_bars(d):
@@ -413,6 +502,11 @@ def fig1_bars(d):
     er = [d[m]["verify_ci95"] for m in ORDER]
     sger = [d[m]["sign_ci95"] if d[m]["sign"] is not None else 0 for m in ORDER]
 
+    _dump("fig1_verify_logbar.plotted.json", dict(order=ORDER, keygen=gk, sign=[None if v != v else v for v in sg], verify=vf,
+                                                    verify_ci95=[float(v) for v in er], sign_ci95=[float(v) for v in sger]))
+    if PAPER:
+        _fig1_paper(gk, sg, vf, er, sger)
+        return
     fig = plt.figure(figsize=(12.5, 9.4))
     gs = fig.add_gridspec(2, 4, hspace=0.34, wspace=0.46)
     ax_a = fig.add_subplot(gs[0, 0:2])           # top row, left
@@ -445,6 +539,28 @@ def fig1_bars(d):
     print(f"[ok] {os.path.basename(_out('fig1_verify_logbar.png'))} (+.pdf)")
 
 
+def _fig1_paper(gk, sg, vf, er, sger):
+    """fig1 at column width: the three panels of fig1_bars one below the other, same values, bars and labels."""
+    with plt.rc_context(_PAPER_RC):
+        W, H = COLW, 5.62
+        fig = plt.figure(figsize=(W, H))
+        box = lambda b_, t_: fig.add_axes([0.52 / W, b_ / H, (W - 0.52 - 0.05) / W, (t_ - b_) / H])
+        ax_a, ax_b, ax_c = box(4.12, 5.40), box(2.52, 3.80), box(0.92, 2.20)
+        est_a = [m in _GENKEY_CONST for m in ORDER]
+        _bar_panel(ax_a, ORDER, gk, None, "(a) Key Generation", "Latency (µs, log scale)", est_mask=est_a, paper=True)
+        _bar_panel(ax_b, ORDER, sg, sger, "(b) Sign / Prove (Client)", "Latency (µs, log scale)", paper=True)
+        _bar_panel(ax_c, ORDER, vf, er, "(c) Verify (Server)", "Latency (µs, log scale)", paper=True)
+        ax_b.annotate("Password: no signing\n(sends plaintext)", xy=(0.02, 0.96), xycoords="axes fraction", ha="left", va="top",
+                      fontsize=7, style="italic", color="0.4", linespacing=1.1)
+        leg = fig.legend(handles=_mech_legend_handles(ms=5.5, mew_hl=1.3, mew=0.4), loc="lower center", ncol=3, frameon=False,
+                         bbox_to_anchor=(0.5, 0.02 / H), fontsize=7, columnspacing=1.0, handletextpad=0.3, labelspacing=0.3,
+                         borderaxespad=0.0, borderpad=0.0)
+        _bold_hl_legend(leg)
+        _save(fig, "fig1_verify_logbar.png")
+        plt.close(fig)
+    print(f"[ok] {os.path.basename(_out('fig1_verify_logbar.png'))} (+.pdf), paper style")
+
+
 def _pareto_front(points):
     pts = sorted(points, key=lambda p: (p[0], p[1]))
     front, best = [], float("inf")
@@ -453,6 +569,10 @@ def _pareto_front(points):
             front.append((x, y, n))
             best = y
     return front
+
+
+def _cluster_note(front):
+    return f"{front[0][1]:.0f}-B payload: " + ", ".join(p[2] for p in front)
 
 
 def _pareto_panel(ax, mechs, xs, ys, title, xlabel, cmap):
@@ -479,12 +599,10 @@ def _pareto_panel(ax, mechs, xs, ys, title, xlabel, cmap):
         ax.legend(loc="lower right", fontsize=8.5)
     else:
         # Degenerate case (the Schnorr-type cluster shares the 96-B payload, so the frontier collapses to a flat segment):
-        # no line and no legend entry for an invisible line. The note states dominance precisely: "the cluster dominates
-        # every other public-key scheme" (each scheme outside the cluster is dominated by at least one member)
-        # without calling each member Pareto-optimal (weak dominance remains inside the cluster,
-        # e.g. NIPoK dominates Pure-EdDSA on the sign axis). Members and payload come from the data.
-        names = " · ".join(disp(p[2]) for p in front)
-        ax.annotate(f"{front[0][1]:.0f}-B cluster: {names}\n— Pareto-dominates every other PK scheme",
+        # no line and no legend entry for an invisible line. The note names the mechanisms with the smallest payload and
+        # makes no dominance claim: on the client plane Pure-EdDSA is not cheaper than mTLS-PSU and Private-Key-JWT, so
+        # the cluster as a whole does not dominate the other public-key mechanisms. Members and payload come from the data.
+        ax.annotate(_cluster_note(front),
                     xy=(0.03, 0.03), xycoords="axes fraction",
                     ha="left", va="bottom", fontsize=8.5, style="italic", color="0.35",
                     bbox=dict(boxstyle="round", fc="0.97", ec="0.85"))
@@ -549,7 +667,7 @@ def _pareto_inset(ax, mechs, xs, ys, cmap):
     axin.set_ylim(-0.7, len(grp) - 0.3)
     axin.set_xlim(min(gx) - span * 0.5, max(gx) + span * 0.85)
     axin.tick_params(axis="x", labelsize=6.8)
-    axin.set_title(f"zoom: {pay_min:.0f}-B cluster — identical payload,\nCPU cost only "
+    axin.set_title(f"zoom: {pay_min:.0f}-B cluster, identical payload;\nCPU cost only "
                    "(← cheaper)", fontsize=7.2, pad=3)
     axin.grid(axis="x", linestyle=":", alpha=0.4)
     for s in axin.spines.values():
@@ -578,9 +696,14 @@ def fig2_pareto(d):
     vf = [d[m]["verify"] for m in ORDER]
     pay_v = [SPEC[m]["payload"] for m in ORDER]
 
+    _dump("fig2_pareto.plotted.json", dict(panel_a=dict(mechanisms=mech_s, cpu_us=sg, payload_bytes=pay_s),
+                                           panel_b=dict(mechanisms=ORDER, cpu_us=vf, payload_bytes=pay_v)))
+    if PAPER:
+        _fig2_paper(mech_s, sg, pay_s, vf, pay_v)
+        return
     fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=(12.5, 6.4))
     _pareto_panel(ax_a, mech_s, sg, pay_s, "(a) Payload vs. Sign / Prove (Client)", "Sign / Prove", cmap)
-    ax_a.annotate("Password: no signing\n(sends plaintext) — not shown", xy=(0.03, 0.97),
+    ax_a.annotate("Password: no signing\n(sends plaintext), not shown", xy=(0.03, 0.97),
                   xycoords="axes fraction", ha="left", va="top", fontsize=9,
                   style="italic", color="0.4")
     _pareto_panel(ax_b, ORDER, vf, pay_v, "(b) Payload vs. Verify (Server)", "Verify", cmap)
@@ -597,6 +720,93 @@ def fig2_pareto(d):
     _save(fig, "fig2_pareto.png")
     plt.close(fig)
     print(f"[ok] {os.path.basename(_out('fig2_pareto.png'))} (2 panels, frontier-degeneracy handled, +.pdf)")
+
+
+def _fig2_paper(mech_s, sg, pay_s, vf, pay_v):
+    """fig2 at text width. Same points as the layout of version 3.0. The zoom on the cluster with the smallest payload is a
+    separate strip under each panel instead of an inset: at this size an inset with 7-pt lettering would cover data
+    (in the layout of version 3.0 the inset of panel (a) covers the ML-DSA-65 point)."""
+    import matplotlib.patches as mpatches
+    cmap = MECH_COLORS
+    with plt.rc_context(_PAPER_RC):
+        W, H = TEXTW, 4.72
+        fig = plt.figure(figsize=(W, H))
+        half = W / 2.0
+        for k, (mechs, xs, ys, title, xlabel) in enumerate((
+                (mech_s, sg, pay_s, "(a) Payload vs. Sign / Prove (Client)", "Sign / Prove"),
+                (ORDER, vf, pay_v, "(b) Payload vs. Verify (Server)", "Verify"))):
+            x0 = k * half
+            ax = fig.add_axes([(x0 + 0.60) / W, 1.98 / H, (half - 0.60 - 0.10) / W, (H - 0.24 - 1.98) / H])
+            for i, m in enumerate(mechs):
+                if m != HIGHLIGHT:
+                    ax.scatter(xs[i], ys[i], s=58, color=cmap[m], edgecolor="0.2", linewidth=0.6, alpha=0.82, zorder=5)
+            j = mechs.index(HIGHLIGHT)
+            ax.scatter(xs[j], ys[j], s=160, facecolor="none", edgecolor="#e8a317", linewidth=1.7, zorder=8)
+            ax.scatter(xs[j], ys[j], s=30, color=cmap[HIGHLIGHT], edgecolor="white", linewidth=0.6, zorder=9)
+            front = _pareto_front([(xs[i], ys[i], m) for i, m in enumerate(mechs) if m != "Password"])
+            fxs, fys = {round(p[0], 6) for p in front}, {round(p[1], 6) for p in front}
+            if len(fxs) > 1 and len(fys) > 1:
+                ax.plot([p[0] for p in front], [p[1] for p in front], "--", lw=1.1, color="0.45", marker="D", markersize=3.2,
+                        markerfacecolor="none", markeredgecolor="0.45", zorder=3, label="Pareto frontier (PK schemes)")
+                ax.legend(loc="lower right", fontsize=7)
+            else:
+                ax.annotate(_cluster_note(front), xy=(0.025, 0.035), xycoords="axes fraction", ha="left", va="bottom", fontsize=7,
+                            style="italic", color="0.35", bbox=dict(boxstyle="round,pad=0.3", fc="0.97", ec="0.85", lw=0.5))
+            ax.annotate(HIGHLIGHT + " (Ours)", xy=(xs[j], ys[j]), xytext=(9, 11), textcoords="offset points", ha="left", fontsize=7,
+                        fontweight="bold", color=CLR_HL, arrowprops=dict(arrowstyle="-", color=CLR_HL, lw=0.6))
+            if k == 0:
+                ax.annotate("Password: no signing\n(sends plaintext), not shown", xy=(0.025, 0.975), xycoords="axes fraction", ha="left",
+                            va="top", fontsize=7, style="italic", color="0.4", linespacing=1.1)
+            ax.set_xscale("log"); ax.set_yscale("log")
+            ax.set_xlim(left=min(xs) * 0.45, right=max(xs) * 2.4)
+            ax.set_ylim(bottom=min(ys) * 0.45, top=max(ys) * 2.6)
+            if max(xs) / min(xs) < 100:                       # narrow range: ticks at 1, 2 and 5 of each decade
+                ax.xaxis.set_major_locator(mticker.LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
+            ax.xaxis.set_major_formatter(mticker.FuncFormatter(_plain)); ax.xaxis.set_minor_formatter(mticker.NullFormatter())
+            ax.yaxis.set_major_formatter(mticker.FuncFormatter(_plain)); ax.yaxis.set_minor_formatter(mticker.NullFormatter())
+            ax.set_xlabel(xlabel + " (µs, log) ← cheaper")
+            ax.set_ylabel("Payload per Auth (bytes, log) ↓ smaller")
+            ax.set_title(title, loc="left")
+            ax.grid(which="both", linestyle=":", alpha=0.35)
+            # cluster with the smallest payload (Password excluded): dashed frame in the panel, zoom strip below
+            pay_min = min(ys[i] for i, m in enumerate(mechs) if m != "Password")
+            grp = sorted([(xs[i], m) for i, m in enumerate(mechs) if m != "Password" and abs(ys[i] - pay_min) < 1e-9])
+            if len(grp) < 2:
+                continue
+            gx = [p[0] for p in grp]
+            span = max(max(gx) - min(gx), max(gx) * 0.02)
+            ax.add_patch(mpatches.Rectangle((min(gx) * 0.80, pay_min * 0.80), max(gx) * 1.25 - min(gx) * 0.80, pay_min * 0.45,
+                                            fill=False, ec="0.5", lw=0.7, ls="--", zorder=4))
+            az = fig.add_axes([(x0 + 1.02) / W, 0.74 / H, (half - 1.02 - 0.10) / W, 0.62 / H])
+            for r_, (x, m) in enumerate(grp):
+                hl = (m == HIGHLIGHT)
+                az.hlines(r_, min(gx) - span * 0.45, x, color="0.78", lw=0.7, zorder=1)
+                az.scatter(x, r_, s=95 if hl else 40, facecolor="none" if hl else cmap[m], edgecolor="#e8a317" if hl else "0.25",
+                           linewidth=1.5 if hl else 0.6, zorder=6)
+                if hl:
+                    az.scatter(x, r_, s=20, color=cmap[m], edgecolor="white", linewidth=0.5, zorder=7)
+                az.annotate(f"{x:.1f} µs", (x, r_), textcoords="offset points", xytext=(7.5, 0), va="center", fontsize=7,
+                            fontweight="bold" if hl else "normal", color=CLR_HL if hl else "0.3")
+            az.set_yticks(range(len(grp)))
+            az.set_yticklabels([disp(m) for _, m in grp], fontsize=7)
+            for lbl, (_, m) in zip(az.get_yticklabels(), grp):
+                if m == HIGHLIGHT:
+                    lbl.set_color(CLR_HL); lbl.set_fontweight("bold")
+            az.set_ylim(-0.6, len(grp) - 0.4)
+            az.set_xlim(min(gx) - span * 0.5, max(gx) + span * 0.85)
+            fig.text((x0 + 0.10) / W, (0.74 + 0.62 + 0.05) / H, f"Zoom on the {pay_min:.0f}-B cluster (dashed frame), CPU cost in µs",
+                     fontsize=7, style="italic", color="0.25", ha="left", va="bottom")
+            az.grid(axis="x", linestyle=":", alpha=0.4); az.grid(axis="y", visible=False)
+            for sp_ in az.spines.values():
+                sp_.set_color("0.45")
+            az.set_facecolor("#fbfbfa")
+        leg = fig.legend(handles=_mech_legend_handles(ms=5.5, mew_hl=1.3, mew=0.4), loc="lower center", ncol=7, frameon=False,
+                         bbox_to_anchor=(0.5, 0.05 / H), fontsize=7, columnspacing=1.2, handletextpad=0.3, borderaxespad=0.0,
+                         borderpad=0.0)
+        _bold_hl_legend(leg)
+        _save(fig, "fig2_pareto.png")
+        plt.close(fig)
+    print(f"[ok] {os.path.basename(_out('fig2_pareto.png'))} (+.pdf), paper style")
 
 
 def fig3_diverging(d):
@@ -829,6 +1039,12 @@ def fig4b_radar_small(d):
 # ------------------------------------------------------------------------------------------
 def main():
     d = load_measured()
+    if SUMMARY_CSV:
+        print("===== FIGURES fig1 and fig2 from the derived summary (600 dpi) =====")
+        fig1_bars(d)
+        fig2_pareto(d)
+        print("\nDone: fig1 and fig2 (.png, .pdf). Tables, fig3, fig4 and fig4.1 need the JMH result file (allocation rates).")
+        return
     print("\n===== TABLES (Markdown) =====")
     print(build_tables(d))
     print("===== FIGURES (600 dpi) =====")
