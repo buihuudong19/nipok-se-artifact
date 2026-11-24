@@ -1,0 +1,397 @@
+{
+  "about": "Correspondence between the objects of this package and the numbering of the manuscript. Edited by docs/renumber_paper_map.py (see its header); 'package_name' is the name an object has in the file names, scripts and generated reports of the package and never changes; 'number' is what the manuscript prints.",
+  "source": "long revised version of 23 Nov 2026 (39 pages in the check build; main text and supplementary material)",
+  "targets": [
+    "docs/paper-map.md",
+    "formal/README.md",
+    "experiments/r1-c6-statistical-evaluation/analysis/templates/MAPPING.md",
+    "experiments/r1-c6-statistical-evaluation/results/MAPPING.md",
+    "experiments/r1-c7-security-cost-ablation/analysis/templates/MAPPING.md",
+    "experiments/r1-c7-security-cost-ablation/results/MAPPING.md",
+    "experiments/r1-c8-conformance/analysis/templates/MAPPING.md",
+    "experiments/r1-c8-conformance/results/MAPPING.md",
+    "experiments/r1-c8-conformance/README.md",
+    "experiments/r1-c8-conformance/run-conformance.sh"
+  ],
+  "objects": [
+    {
+      "label": "sec:intro",
+      "kind": "Section",
+      "document": "main",
+      "number": "1",
+      "object": "Introduction"
+    },
+    {
+      "label": "sec:proposed-framework",
+      "kind": "Section",
+      "document": "main",
+      "number": "4",
+      "object": "Proposed framework"
+    },
+    {
+      "label": "subsec:nipok-protocol",
+      "kind": "Section",
+      "document": "main",
+      "number": "4.1",
+      "object": "NIPoK protocol"
+    },
+    {
+      "label": "subsec:system-arch",
+      "kind": "Section",
+      "document": "main",
+      "number": "4.2",
+      "object": "System architecture and security envelope"
+    },
+    {
+      "label": "subsec:lifecycle",
+      "kind": "Section",
+      "document": "main",
+      "number": "4.4",
+      "object": "Enrollment, recovery and revocation boundary"
+    },
+    {
+      "label": "sec:security",
+      "kind": "Section",
+      "document": "main",
+      "number": "5",
+      "object": "Security analysis"
+    },
+    {
+      "label": "subsec:framework",
+      "kind": "Section",
+      "document": "main",
+      "number": "5.2",
+      "object": "Three-tier verification framework"
+    },
+    {
+      "label": "subsec:tier3",
+      "kind": "Section",
+      "document": "main",
+      "number": "5.3",
+      "object": "Tier 3: Schnorr Sigma-protocol",
+      "files": [
+        "formal/easycrypt/SchnorrFS.ec"
+      ]
+    },
+    {
+      "label": "subsec:tier2",
+      "kind": "Section",
+      "document": "main",
+      "number": "5.4",
+      "object": "Tier 2: composition and concrete bound",
+      "files": [
+        "formal/cryptoverif/nipok.cv"
+      ]
+    },
+    {
+      "label": "subsec:tier1",
+      "kind": "Section",
+      "document": "main",
+      "number": "5.5",
+      "object": "Tier 1: end-to-end symbolic verification",
+      "files": [
+        "formal/proverif/"
+      ]
+    },
+    {
+      "label": "subsec:system-impl",
+      "kind": "Section",
+      "document": "main",
+      "number": "6.1",
+      "object": "System implementation"
+    },
+    {
+      "label": "subsec:environment-setup",
+      "kind": "Section",
+      "document": "main",
+      "number": "6.2.1",
+      "object": "Environment setup"
+    },
+    {
+      "label": "subsec:performance-evaluation",
+      "kind": "Section",
+      "document": "main",
+      "number": "6.2.2",
+      "object": "Performance evaluation",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/"
+      ]
+    },
+    {
+      "label": "subsec:c7-ablation",
+      "kind": "Section",
+      "document": "main",
+      "number": "6.2.3",
+      "object": "Cost breakdown and operational tests",
+      "files": [
+        "experiments/r1-c7-security-cost-ablation/"
+      ]
+    },
+    {
+      "label": "subsec:c8-conformance",
+      "kind": "Section",
+      "document": "main",
+      "number": "6.2.4",
+      "object": "Conformance tests and interoperability",
+      "files": [
+        "experiments/r1-c8-conformance/"
+      ]
+    },
+    {
+      "label": "sec:conclusion",
+      "kind": "Section",
+      "document": "main",
+      "number": "7",
+      "object": "Conclusion"
+    },
+    {
+      "label": "supp:micro",
+      "kind": "Section",
+      "document": "supplementary",
+      "number": "S6",
+      "object": "Per-operation micro-benchmarks"
+    },
+    {
+      "label": "tab:claims-scope",
+      "kind": "Table",
+      "document": "main",
+      "number": "3",
+      "package_name": "Table 3",
+      "object": "Claims and scope"
+    },
+    {
+      "label": "tab:goals",
+      "kind": "Table",
+      "document": "main",
+      "number": "4",
+      "package_name": "Table 4",
+      "object": "Security goals"
+    },
+    {
+      "label": "tab:proverif",
+      "kind": "Table",
+      "document": "main",
+      "number": "5",
+      "package_name": "Table 5",
+      "object": "Outcomes of the archived models",
+      "files": [
+        "formal/README.md"
+      ]
+    },
+    {
+      "label": "tab:stride",
+      "kind": "Table",
+      "document": "supplementary",
+      "number": "S1",
+      "package_name": "Table 6",
+      "object": "STRIDE assessment"
+    },
+    {
+      "label": "tab:owasp",
+      "kind": "Table",
+      "document": "supplementary",
+      "number": "S2",
+      "package_name": "Table 7",
+      "object": "OWASP API Security Top 10 assessment"
+    },
+    {
+      "label": "tab:lt-efficiency",
+      "kind": "Table",
+      "document": "main",
+      "number": "6",
+      "package_name": "Table 8",
+      "object": "Efficiency over six blocks",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/load-test/tables/table8.{tex,md,csv}",
+        "experiments/r1-c6-statistical-evaluation/results/load-test/tables/table8_ci.md"
+      ]
+    },
+    {
+      "label": "tab:fbc-ab",
+      "kind": "Table",
+      "document": "supplementary",
+      "number": "S3",
+      "package_name": "Table 9",
+      "object": "Fixed-base comb against Straus",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/crypto-jmh/tables/table9_fbc_ab.{tex,md,csv}",
+        "experiments/r1-c6-statistical-evaluation/results/crypto-jmh/tables/table9_fbc_ab_manuscript.tex"
+      ]
+    },
+    {
+      "label": "tab:lt-stats",
+      "kind": "Table",
+      "document": "main",
+      "number": "7",
+      "package_name": "Table 10",
+      "object": "NIPoK against each baseline",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/load-test/tables/table10_compact.{tex,md,csv}",
+        "experiments/r1-c6-statistical-evaluation/results/load-test/tables/table10_full.{tex,md,csv}"
+      ]
+    },
+    {
+      "label": "tab:c7-ablation",
+      "kind": "Table",
+      "document": "main",
+      "number": "8",
+      "package_name": "Table 11",
+      "object": "Cost of each security component",
+      "files": [
+        "experiments/r1-c7-security-cost-ablation/results/tables/table11_c7-ablation_onecol_rows.tex",
+        "experiments/r1-c7-security-cost-ablation/results/tables/table11_c7-ablation.{csv,md}"
+      ]
+    },
+    {
+      "label": "tab:c7-lifecycle",
+      "kind": "Table",
+      "document": "main",
+      "number": "9",
+      "package_name": "Table 12",
+      "object": "Registration, failure classes and lifecycle",
+      "files": [
+        "experiments/r1-c7-security-cost-ablation/results/tables/table12_c7-lifecycle_bold_rows.tex",
+        "experiments/r1-c7-security-cost-ablation/results/tables/table12_c7-lifecycle.{csv,md}"
+      ]
+    },
+    {
+      "label": "tab:c8-conformance",
+      "kind": "Table",
+      "document": "main",
+      "number": "10",
+      "package_name": "Table 13",
+      "object": "Test vectors and conformance results",
+      "files": [
+        "experiments/r1-c8-conformance/results/tables/paper/table13_c8-conformance_rows.tex",
+        "experiments/r1-c8-conformance/results/tables/c8_conformance.csv"
+      ]
+    },
+    {
+      "label": "tab:c8-parameters",
+      "kind": "Table",
+      "document": "main",
+      "number": "11",
+      "package_name": "Table 14",
+      "object": "Shared parameters",
+      "files": [
+        "experiments/r1-c8-conformance/results/tables/paper/table14_c8-parameters_rows.tex",
+        "experiments/r1-c8-conformance/results/tables/c8_parameters.csv"
+      ]
+    },
+    {
+      "label": "fig:architecture",
+      "kind": "Figure",
+      "document": "main",
+      "number": "2",
+      "package_name": "Figure 2",
+      "object": "Architecture and security envelope"
+    },
+    {
+      "label": "fig:impl-topology",
+      "kind": "Figure",
+      "document": "supplementary",
+      "number": "S1",
+      "package_name": "Figure 3",
+      "object": "Three-cluster testbed"
+    },
+    {
+      "label": "fig:micro-cost",
+      "kind": "Figure",
+      "document": "supplementary",
+      "number": "S2",
+      "package_name": "Figure 4",
+      "object": "Per-operation cost",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/crypto-jmh/figures/fig1_verify_logbar_fbc.pdf"
+      ]
+    },
+    {
+      "label": "fig:micro-pareto",
+      "kind": "Figure",
+      "document": "supplementary",
+      "number": "S3",
+      "package_name": "Figure 5",
+      "object": "Payload against CPU",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/crypto-jmh/figures/fig2_pareto_fbc.pdf"
+      ]
+    },
+    {
+      "label": "fig:micro-radar",
+      "kind": "Figure",
+      "document": "supplementary",
+      "number": "S4",
+      "package_name": "Figure 6",
+      "object": "Radar comparison",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/crypto-jmh/figures/fig4-1_radar_fbc.pdf"
+      ]
+    },
+    {
+      "label": "fig:lt-saturation",
+      "kind": "Figure",
+      "document": "main",
+      "number": "3",
+      "package_name": "Figure 7",
+      "object": "Saturation",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/load-test/figures/fig7_saturation.{pdf,csv}"
+      ]
+    },
+    {
+      "label": "fig:lt-latency",
+      "kind": "Figure",
+      "document": "main",
+      "number": "4",
+      "package_name": "Figure 8",
+      "object": "Tail latency at 30, 60 and 100% of the knee",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/load-test/figures/fig8_latency.{pdf,csv}",
+        "experiments/r1-c6-statistical-evaluation/results/load-test/figures/fig8b_knee100.csv"
+      ]
+    },
+    {
+      "label": "fig:lt-rtt",
+      "kind": "Figure",
+      "document": "main",
+      "number": "5",
+      "package_name": "Figure 9",
+      "object": "Injected round-trip time",
+      "files": [
+        "experiments/r1-c6-statistical-evaluation/results/load-test/figures/fig9_wan_ab.pdf",
+        "experiments/r1-c6-statistical-evaluation/results/load-test/figures/fig9_wan.csv",
+        "experiments/r1-c6-statistical-evaluation/results/load-test/figures/fig9_1_wan_delta.csv"
+      ]
+    },
+    {
+      "label": "fig:c7-hops",
+      "kind": "Figure",
+      "document": "main",
+      "number": "6",
+      "package_name": "Figure 10",
+      "object": "Stages of a journey",
+      "files": [
+        "experiments/r1-c7-security-cost-ablation/results/hop-breakdown/c7_hop_breakdown.{pdf,csv,txt}"
+      ]
+    },
+    {
+      "label": "fig:c7-burst",
+      "kind": "Figure",
+      "document": "main",
+      "number": "7",
+      "package_name": "Figure 11",
+      "object": "Latency during a burst",
+      "files": [
+        "experiments/r1-c7-security-cost-ablation/results/burst-timeline/c7_burst_timeline.{pdf,csv,txt}"
+      ]
+    },
+    {
+      "label": "fig:c8-deployment",
+      "kind": "Figure",
+      "document": "supplementary",
+      "number": "S5",
+      "package_name": "Figure 12",
+      "object": "Deployment of the two-bank interoperability test"
+    }
+  ]
+}
