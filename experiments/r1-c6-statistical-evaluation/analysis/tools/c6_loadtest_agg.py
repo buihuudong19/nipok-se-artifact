@@ -1472,8 +1472,9 @@ def main():
                 max([tuple(B[b][m]["max_thr"]) for b in blocks if m in B[b] and B[b][m]["max_thr"]], default=None))))
 
     P("\n## Auth-server CPU per journey at the same absolute load (ladder steps of 30 s), ms: median over blocks (min-max); [normalised to the nominal clock]")
-    P("   For checking only, not used in the paper: the first ladder steps are not yet stable for the six public-key mechanisms;")
-    P("   the CPU metric of the paper is the CPU per journey at constant VU (Table 8).")
+    P("   The 8 j/s column is used in the performance evaluation of the paper as the CPU per journey at a common offered load, with this caveat:")
+    P("   these are ladder steps of 30 s, in which the six public-key mechanisms have not reached a steady state (the 4 and 16 j/s columns are for checking only).")
+    P("   The main CPU metric of the paper remains the CPU per journey at constant VU (Table 8); ratios with intervals at both load points: c6_served_ratio.py.")
     for m in mechs:
         P("   %-28s %s" % (m, " | ".join("%d j/s: %s [%s]" % (rt, rng(series(m, "cpu_r%d" % rt), 2), rng(series(m, "cpu_nom_r%d" % rt), 2))
                                        for rt in (4, 8, 16))))
