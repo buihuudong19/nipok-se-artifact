@@ -70,7 +70,7 @@ which figure, table or number of the paper and how it differs from the submitted
 
 ## This run
 
-- Script: generate-results.sh 2.0
+- Script: generate-results.sh 2.1
 - Data: `benchmark-R1-C6` (blocks 1,2,3,4,5,6; WAN: loadtest/wan)
 - Python: 3.11.18, numpy 1.26.4, scipy 1.11.4, matplotlib 3.6.3, seaborn 0.13.2
 - JMH configuration read from official-final.json: -f10 -wi8 -i10

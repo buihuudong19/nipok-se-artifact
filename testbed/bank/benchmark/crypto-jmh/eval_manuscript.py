@@ -21,7 +21,8 @@ Usage:  python3 eval_manuscript.py            # writes tables_*.md and fig1..fig
 Environment, added in version 3.1 of the package:
   STYLE=paper (default)  fig1 and fig2 at their final size in the paper: fig1 3.297 in wide (one column, 238.25 TeX pt),
                          fig2 6.843 in wide (text width, 494.51 TeX pt), included at scale 1; no text smaller than 7 pt;
-                         fixed margins instead of a tight bounding box. fig3, fig4 and fig4.1 keep the layout of version 3.0.
+                         fixed margins instead of a tight bounding box. fig4.1 (radar, small multiples) is drawn at column width
+                         on a 3 x 3 grid. fig3 and fig4 keep the layout of version 3.0.
   STYLE=v30              the layout of version 3.0 for every figure (the paper scaled its lettering to 2.3 to 4.8 pt).
   SUMMARY_CSV=<results>/crypto-jmh/tables/jmh_summary.csv
                          draws fig1 and fig2 from the derived summary (rows of step "main": mean over forks, SD over forks,
@@ -992,6 +993,9 @@ def fig4b_radar_small(d):
     ang = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
     ang += ang[:1]
     ref = scores[HIGHLIGHT] + scores[HIGHLIGHT][:1]            # NIPoK profile (reference)
+    if PAPER:
+        _fig4b_paper(scores, axes_lbl, ang, ref)
+        return
 
     fig = plt.figure(figsize=(15, 8.4))
     gs = fig.add_gridspec(2, 4, hspace=0.45, wspace=0.32)
@@ -1034,6 +1038,54 @@ def fig4b_radar_small(d):
     _save(fig, "fig4.1_radar.png")
     plt.close(fig)
     print(f"[ok] {os.path.basename(_out('fig4.1_radar.png'))} (+.pdf)")
+
+
+def _fig4b_paper(scores, axes_lbl, ang, ref):
+    """fig4.1 at column width (3.297 in): the same seven radars and key as fig4b_radar_small, on a 3 x 3 grid, with no
+    text under 7 pt. Same scores, axes, numbering and NIPoK reference as the layout of version 3.0."""
+    n = len(axes_lbl)
+    with plt.rc_context(_PAPER_RC):
+        W, H = COLW, 3.95
+        fig = plt.figure(figsize=(W, H))
+        cw, rh = (W - 0.10) / 3, (H - 0.06) / 3          # cell width and height (in)
+        side = 0.72                                       # diameter of a radar (in)
+        for idx, m in enumerate(ORDER):
+            r, c = divmod(idx, 3)
+            x0 = 0.05 + c * cw + (cw - side) / 2
+            y0 = H - 0.03 - (r + 1) * rh + 0.12
+            ax = fig.add_axes([x0 / W, y0 / H, side / W, side / H], polar=True)
+            col = MECH_COLORS[m]
+            v = scores[m] + scores[m][:1]
+            if m != HIGHLIGHT:
+                ax.plot(ang, ref, lw=0.7, color=CLR_HL, alpha=0.55, ls="--", zorder=2)
+            ax.plot(ang, v, lw=1.1, color=col, marker="o", markersize=1.8, zorder=4)
+            ax.fill(ang, v, color=col, alpha=0.30, zorder=3)
+            ax.set_title(disp(m), fontsize=7.5, pad=7, fontweight="bold" if m == HIGHLIGHT else "semibold",
+                         color=CLR_HL if m == HIGHLIGHT else "0.15")
+            ax.set_xticks(ang[:-1])
+            ax.set_xticklabels([str(i + 1) for i in range(n)], fontsize=7, color="0.35")
+            ax.tick_params(axis="x", pad=-3)
+            ax.set_yticks([0.25, 0.5, 0.75, 1.0])
+            ax.set_yticklabels([])
+            ax.set_ylim(0, 1.0)
+            ax.grid(alpha=0.35, linewidth=0.4)
+            ax.spines["polar"].set_linewidth(0.5)
+        # key in the two remaining cells of the last row
+        keyax = fig.add_axes([(0.05 + cw) / W, 0.02 / H, (2 * cw) / W, (rh - 0.02) / H])
+        keyax.axis("off")
+        # short names of the nine axes, in the order of _radar_scores (the key of version 3.0 uses axes_lbl)
+        names = ["Capacity per core", "Cheap client", "Compact payload", "Low GC (alloc.)", "Compact public key",
+                 "Non-interactive", "Stateless", "Zero-knowledge", "Post-quantum"]
+        assert len(names) == n
+        half = (n + 1) // 2
+        keyax.text(0.04, 0.98, "Axes (criteria)", fontsize=7.5, fontweight="bold", va="top")
+        keyax.text(0.04, 0.83, "\n".join(f"{i + 1}. {names[i]}" for i in range(half)), fontsize=7, va="top", linespacing=1.2)
+        keyax.text(0.58, 0.83, "\n".join(f"{i + 1}. {names[i]}" for i in range(half, n)), fontsize=7, va="top", linespacing=1.2)
+        keyax.text(0.04, 0.0, "Dashed: NIPoK (Ours) as reference.\nOuter is better on each axis;\nsame 0-1 scale in every panel.",
+                   fontsize=7, style="italic", color=CLR_HL, va="bottom", linespacing=1.15)
+        _save(fig, "fig4.1_radar.png")
+        plt.close(fig)
+    print(f"[ok] {os.path.basename(_out('fig4.1_radar.png'))} (+.pdf, paper style)")
 
 
 # ------------------------------------------------------------------------------------------

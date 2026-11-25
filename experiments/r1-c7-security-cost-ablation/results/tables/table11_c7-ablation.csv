@@ -5,6 +5,7 @@ group,operation,side,per_journey,mark,mean_us,ci95_half_us,method,source
 "Proof verification","authenticate(): nonce, decoding, verification; no database, no audit","AS","1","†",66.654231,0.298288,JMH,"nipok-as.json as_auth_total shaProvider=Conscrypt"
 "Wallet decryption","Unseal the secret (AES-256-GCM)","Agent","1","",1.060958,0.015925,JMH,"nipok-agent.json agent_step_unseal "
 "Wallet decryption","Generate the proof with the sealed wallet (includes unsealing)","Agent","1","‡",37.790334,0.162638,JMH,"nipok-agent.json agent_prove_sealed "
+"Wallet decryption","Generate the proof with a resident witness (no unsealing; reference)","Agent","-","",36.498867,0.109924,JMH,"nipok-agent.json agent_prove_resident "
 "Wallet decryption","Proof generation, sealed minus resident wallet","Agent","-","",1.291467,0.167238,JMH-diff,"(nipok-agent.json agent_prove_sealed ) − (nipok-agent.json agent_prove_resident ), CI Welch df 7.0"
 "Nonce storage","Issue and consume a nonce, 1 thread","AS","1","",0.303570,0.002898,JMH,"nipok-as.json as_step_nonce_issue_consume shaProvider=Conscrypt"
 "Nonce storage","Issue and consume a nonce, 8 threads sharing the store","AS","-","",3.832445,0.124231,JMH,"nipok-as.json as_step_nonce_issue_consume_t8 shaProvider=Conscrypt"

@@ -72,7 +72,8 @@ python3 $R7/analysis/c7_burst_timeline.py --from-results $R7/results/burst-timel
 
 The default style is the final size of the paper. `--style v30` (`STYLE=v30` for the last script) gives the layout of
 version 3.0 from the same values; for the three load-test figures it reproduces the files of version 3.0 byte for byte
-with the pinned packages and `SOURCE_DATE_EPOCH=0`. The radar figure needs the JMH result file of the raw data.
+with the pinned packages and `SOURCE_DATE_EPOCH=0`. The radar figure needs the JMH result
+file of the raw data, since its allocation axis comes from `gc.alloc.rate.norm`.
 
 The served-throughput ratios of the paper are computed from `blocks.json` alone:
 

@@ -1,4 +1,4 @@
-R1-C7 journey breakdown by stage (c7_hop_breakdown.py 1.1, 2026-11-19T06:57:05)
+R1-C7 journey breakdown by stage (c7_hop_breakdown.py 1.2, 2026-11-25T06:18:11)
 input: benchmark-R1-C7/e2e/hops/hops.json (md5 b2abc63b59ad05fa7d417adf21a5aafc)
 
 mechanism             PAR    authz PSU auth    token     data  outside        GW   journey journeys

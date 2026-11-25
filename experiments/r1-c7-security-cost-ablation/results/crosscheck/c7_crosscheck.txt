@@ -1,4 +1,4 @@
-R1-C7 cross-checks (c7_crosscheck.py 1.1, 2026-11-19T06:57:07)
+R1-C7 cross-checks (c7_crosscheck.py 1.1, 2026-11-25T06:18:13)
 C7: benchmark-R1-C7
 C6 WAN: benchmark-R1-C6/loadtest/wan
 C6 (A2, E): benchmark-R1-C6

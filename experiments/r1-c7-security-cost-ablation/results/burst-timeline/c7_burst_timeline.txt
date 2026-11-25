@@ -1,4 +1,4 @@
-R1-C7 journey latency under a burst (c7_burst_timeline.py 1.2, 2026-11-19T06:57:07)
+R1-C7 journey latency under a burst (c7_burst_timeline.py 1.3, 2026-11-25T06:18:12)
 measurement directory: benchmark-R1-C7/e2e/burst
 burst: 8 j/s 60 s → 64 j/s 30 s → 8 j/s 90 s; buckets of 5 s by journey start time; plotted p99
 runs used: Password r1,2,3; mTLS-PSU r1,2,3; Private-Key-JWT r1,2,3; Pure-EdDSA r1,2,3; Schnorr-IZK r1,2,3; ML-DSA-65 r1,2,3; NIPoK r1,2,3

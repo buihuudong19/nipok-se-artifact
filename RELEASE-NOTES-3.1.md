@@ -1,6 +1,6 @@
 # Release notes, version 3.1 (draft)
 
-Status of this draft: the changes below are in the tree. Three things remain before the release, and only the
+Status of this draft: the changes below are in the tree. Two things remain before the release, and only the
 authors can do them; they are listed under "Before the release".
 
 ## Changes since 3.0
@@ -49,7 +49,9 @@ authors can do them; they are listed under "Before the release".
 - `fig2_pareto_fbc`: the note reads "96-B payload: Schnorr-IZK, NIPoK, Pure-EdDSA" and makes no dominance claim;
   no dash in the lettering; the zoom on the cluster is a strip under each panel, so the ML-DSA-65 point of panel
   (a) is no longer covered.
-- Unchanged: `fig4-1_radar_fbc` (see below).
+- `fig4-1_radar_fbc` (radar, small multiples): drawn at column width on a 3 x 3 grid, no lettering under 7 pt
+  (`eval_manuscript.py`, function `_fig4b_paper`). Scores, axes, numbering and the NIPoK reference are those of
+  version 3.0; `STYLE=v30` draws the layout of version 3.0.
 
 ### Formal models (prepared, not run)
 
@@ -69,21 +71,17 @@ authors can do them; they are listed under "Before the release".
 2. **Fill the EasyCrypt release or commit with which `SchnorrFS.ec` was checked** (line marked "TO FILL" in its
    header). The adapted source is already identified there: the version of `examples/SchnorrPK.ec` written by
    commit 9656af66 (releases r2023.09 to r2026.05); the MIT notice is identical at that commit.
-3. **Regenerate the results from the raw data** with the pinned Python packages
-   (`experiments/requirements.txt`):
-   `C6_DATA=<raw>/benchmark-R1-C6 FORCE=1 experiments/r1-c6-statistical-evaluation/analysis/generate-results.sh`
-   and the same for `r1-c7-security-cost-ablation` (`C7_DATA`, `C6_DATA`). This is needed for three items that the
-   derived data cannot give:
-   - `fig4-1_radar_fbc` (radar): it needs the allocation rates of the JMH result file. It still has the layout of
-     version 3.0 (lettering of about 2.3 pt at column width). `eval_manuscript.py` has no final-size layout for it
-     yet.
-   - Table of the cost of each security operation: the row "Prove, resident witness" appears in
-     `table11_c7-ablation*` only after `c7_tables.py` 1.2 has run on the raw data. The files in `results/tables/`
-     are still those of version 3.0.
-   - The figures of the cost breakdown and the two micro-benchmark figures in `results/` were drawn from the
-     derived values (three decimals in ms; six significant digits), not from the raw data. A run on the raw data
-     replaces them with files drawn from full precision.
-   After the run, `md5sum -c md5sums.txt` in each results directory and `docs/renumber_paper_map.py --check`.
+3. **Results regenerated from the raw data** (done on 25 Nov 2026), with the pinned packages of
+   `experiments/requirements.txt` under Python 3.11, from `nipok-se-raw-data-v3.0.tar.gz`
+   (md5 38a89fc0f96c4475ad7f596bb37fe656; the 18,565 entries of its `md5sums.txt` check):
+   - Check of version 3.0 first: the scripts of v3.0 on the raw data reproduce the 73 files of the Section 6.2.2
+     results byte for byte, and the 24 files of the Section 6.2.3 results except the first line (time of generation)
+     of the four `.txt` reports, as `docs/reproduce.md` states.
+   - With the scripts of 3.1: `table11_c7-ablation*` carry the row "Prove, resident witness" (36.50 +/- 0.11 us);
+     the radar has its final-size layout; the micro-benchmark, cost-breakdown and burst figures are drawn from full
+     precision and differ from the files drawn from the derived values by no visible pixel (rasterised at 110 dpi,
+     no pixel differs by more than 40 of 255). `md5sum -c md5sums.txt` passes in both results directories and
+     `docs/renumber_paper_map.py --check` is in step.
 4. Refresh the numbers when the manuscript is final:
    `docs/renumber_paper_map.py --aux <build>/main_rev.aux --supp-aux <build>/supplementary.aux --source "<build>"`.
 5. Update `CHANGELOG.md` (move these notes there), the version and date in `CITATION.cff` and in `README.md`,
