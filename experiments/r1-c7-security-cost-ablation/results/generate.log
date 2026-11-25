@@ -21,9 +21,9 @@
    [ok] crosscheck/: done
 
 == [6] README, MAPPING, checksums
-   [ok] 24 files, 1.4M
+   [ok] 24 files, 920K
 
-== [7] done in 4 s
+== [7] done in 3 s
    ./burst-timeline
    ./crosscheck
    ./hop-breakdown

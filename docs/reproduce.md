@@ -56,6 +56,31 @@ other software versions, and, for Section 6.2.3, the first line of the four `.tx
 generation. Other versions of matplotlib change the bytes of the figures. Without `OUT`, the scripts write into the
 `results/` directory of the repository and need `FORCE=1` to replace it.
 
+### Figures without the raw data
+
+The figures of Sections 6.2.2 and 6.2.3 can be drawn again from the derived values in the repository:
+
+```bash
+R6=experiments/r1-c6-statistical-evaluation; R7=experiments/r1-c7-security-cost-ablation
+python3 $R6/analysis/tools/c6_figures.py --csv $R6/results/load-test/figures --out /tmp/figs
+python3 $R7/analysis/c7_hop_breakdown.py --from-results $R7/results/hop-breakdown --out /tmp/figs
+python3 $R7/analysis/c7_burst_timeline.py --from-results $R7/results/burst-timeline --out /tmp/figs
+(cd /tmp/figs && OUT_DIR=/tmp/figs SUMMARY_CSV=$OLDPWD/$R6/results/crypto-jmh/tables/jmh_summary.csv \
+   NIPOK_VERIFY=verify_server_prepared FIG_SUFFIX=_fbc SUBMISSION=1 \
+   python3 $OLDPWD/testbed/bank/benchmark/crypto-jmh/eval_manuscript.py)
+```
+
+The default style is the final size of the paper. `--style v30` (`STYLE=v30` for the last script) gives the layout of
+version 3.0 from the same values; for the three load-test figures it reproduces the files of version 3.0 byte for byte
+with the pinned packages and `SOURCE_DATE_EPOCH=0`. The radar figure needs the JMH result
+file of the raw data, since its allocation axis comes from `gc.alloc.rate.norm`.
+
+The served-throughput ratios of the paper are computed from `blocks.json` alone:
+
+```bash
+python3 $R6/analysis/tools/c6_served_ratio.py $R6/results/load-test/stats/blocks.json
+```
+
 ### Conformance tests (Section 6.2.4)
 
 ```bash

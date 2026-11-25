@@ -20,9 +20,9 @@
    istio: 6 blocks (1: 166 runs, 2: 166 runs, 3: 166 runs, 4: 166 runs, 5: 166 runs, 6: 166 runs), 8 mechanisms -> <results>/istio/tables
 
 == [5] README, MAPPING, checksums
-   [ok] 73 files, 11M
+   [ok] 74 files, 7.6M
 
-== [6] done in 23 s
+== [6] done in 24 s
    ./crypto-jmh
    ./crypto-jmh/figures
    ./crypto-jmh/params

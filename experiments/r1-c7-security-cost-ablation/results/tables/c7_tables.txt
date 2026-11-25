@@ -1,4 +1,4 @@
-R1-C7 Table 11, Table 12 (c7_tables.py 1.1, 2026-11-19T06:57:07)
+R1-C7 Table 11, Table 12 (c7_tables.py 1.2, 2026-11-25T06:18:13)
 data: benchmark-R1-C7
 gateway certificate (e2e/probe/gateway.pem): ECDSA P-256; probe: C7Probe (R1-C7 v1.2) run 1794864157, https://bank.openbanking.dev:30443, verifier bank, cb matches: True
 
@@ -11,6 +11,7 @@ Table 11 (µs; JMH: mean ± half 95% CI over forks, t(n − 1); with the raw JMH
   Proof verification         authenticate(): nonce, decoding, verification; no database, no audit†    AS           1     66.65 ± 0.30  [nipok-as.json as_auth_total shaProvider=Conscrypt] | forks: 66.993, 66.739, 66.640, 66.561, 66.338 | JMH 66.654 ± 0.222 (99.9%), 1 threads
   Wallet decryption          Unseal the secret (AES-256-GCM)                                          Agent        1      1.06 ± 0.02  [nipok-agent.json agent_step_unseal ] | forks: 1.047, 1.069, 1.048, 1.065, 1.076 | JMH 1.061 ± 0.007 (99.9%), 1 threads
   Wallet decryption          Generate the proof with the sealed wallet (includes unsealing)‡          Agent        1     37.79 ± 0.16  [nipok-agent.json agent_prove_sealed ] | forks: 37.723, 37.611, 37.793, 37.879, 37.945 | JMH 37.790 ± 0.100 (99.9%), 1 threads
+  Wallet decryption          Generate the proof with a resident witness (no unsealing; reference)     Agent        -     36.50 ± 0.11  [nipok-agent.json agent_prove_resident ] | forks: 36.609, 36.411, 36.506, 36.558, 36.410 | JMH 36.499 ± 0.137 (99.9%), 1 threads
   Wallet decryption          Proof generation, sealed minus resident wallet                           Agent        -      1.29 ± 0.17  [(nipok-agent.json agent_prove_sealed ) − (nipok-agent.json agent_prove_resident ), CI Welch df 7.0]
   Nonce storage              Issue and consume a nonce, 1 thread                                      AS           1    0.304 ± 0.003  [nipok-as.json as_step_nonce_issue_consume shaProvider=Conscrypt] | forks: 0.305, 0.307, 0.302, 0.303, 0.301 | JMH 0.304 ± 0.001 (99.9%), 1 threads
   Nonce storage              Issue and consume a nonce, 8 threads sharing the store                   AS           -      3.83 ± 0.12  [nipok-as.json as_step_nonce_issue_consume_t8 shaProvider=Conscrypt] | forks: 3.939, 3.880, 3.822, 3.671, 3.849 | JMH 3.832 ± 0.046 (99.9%), 8 threads

@@ -230,8 +230,9 @@ JMH Argon2id sensitivity: benchmark-R1-C6/jmh/argon2id-sensitivity/argon2id-sens
                                 Windows: perf 143 (142–143)%, time 52 (51–52)%; steal 0.0 (0.0–0.0)%, iowait 0.2 (0.2–0.2)%; largest CPU throttling (all runs): AS 0.0%, agent 4.0%, container customer-cluster-nsp/customer-agent-5cf86cb997-4zkvt/customer-agent 4.0%
 
 ## Auth-server CPU per journey at the same absolute load (ladder steps of 30 s), ms: median over blocks (min-max); [normalised to the nominal clock]
-   For checking only, not used in the paper: the first ladder steps are not yet stable for the six public-key mechanisms;
-   the CPU metric of the paper is the CPU per journey at constant VU (Table 8).
+   The 8 j/s column is used in the performance evaluation of the paper as the CPU per journey at a common offered load, with this caveat:
+   these are ladder steps of 30 s, in which the six public-key mechanisms have not reached a steady state (the 4 and 16 j/s columns are for checking only).
+   The main CPU metric of the paper remains the CPU per journey at constant VU (Table 8); ratios with intervals at both load points: c6_served_ratio.py.
    Password                     4 j/s: 122.68 (117.15–155.00) [270.12 (257.63–341.81)] | 8 j/s: 123.43 (114.98–128.10) [266.53 (248.99–278.44)] | 16 j/s: 152.61 (145.28–154.73) [303.11 (277.79–313.50)]
    Password (OWASP parameters)  4 j/s: 24.88 (23.79–25.35) [53.07 (50.90–54.50)] | 8 j/s: 24.57 (23.22–25.20) [52.56 (49.92–53.81)] | 16 j/s: 23.78 (23.56–24.51) [49.06 (48.66–50.57)]
    mTLS-PSU                     4 j/s: 9.44 (7.56–11.45) [20.12 (16.06–24.61)] | 8 j/s: 11.46 (10.58–12.08) [24.16 (22.31–25.54)] | 16 j/s: 7.98 (7.26–8.26) [16.30 (14.82–16.95)]
@@ -304,3 +305,39 @@ JMH Argon2id sensitivity: benchmark-R1-C6/jmh/argon2id-sensitivity/argon2id-sens
    MANIFEST loadtest/wan 2026-11-15T04:52:35+07:00
       clocksource: hyperv_clocksource_tsc_page
       windows: BatteryStatus=2 Charge=78% PowerOnline=True win_utc_ms=1794693156839 | wsl_mono=329380.542546..329380.951335 wsl_real=1794693156.463679229 | plan: 7cd642b1-8aa1-4fe3-988c-7b6be8db535c  (High 
+
+## Served throughput at the knee and CPU per journey at common load points (c6_served_ratio.py)
+   Computed from blocks.json only (6 blocks: 1, 2, 3, 4, 5, 6). Ratios are NIPoK / baseline for throughput and baseline / NIPoK for CPU.
+   GM = ratio of geometric means over blocks, 95% CI by Welch on the log scale (as in Table 10).
+
+   A. Served throughput (journeys/s), median over blocks (min-max) [offered rate per block]
+   30-s ladder step at the knee of each block:
+      NIPoK                         86.58 (84.19-88.19)   [offered 96 96 92 96 92 96; served/offered 90.1-92.3%]
+      Password                      18.92 (18.91-19.90)   [offered 19 19 19 19 19 20; served/offered 99.5-99.6%]
+      Password (OWASP parameters)   67.02 (66.08-67.68)   [offered 68 68 68 68 68 68; served/offered 97.2-99.5%]
+   60-s run offered at 100% of the knee:
+      NIPoK                         82.77 (81.97-83.09)   [offered 97 97 92 97 92 97; served/offered 85.0-90.1%]
+      Password                      17.96 (4.15-17.96)   [offered 18 18 18 18 18 20; served/offered 20.8-99.8%]
+      Password (OWASP parameters)   67.87 (67.56-67.89)   [offered 68 68 68 68 68 68; served/offered 99.4-99.8%]
+
+   Ratio of served throughput, NIPoK / baseline:
+      baseline                     run type   ratio of medians   GM ratio [95% CI] (three decimals)             per-block ratios (min-max)
+      Password                     knee step  4.58 (4.576)       4.52 [4.41, 4.63] (4.519 [4.410, 4.631])       4.43-4.60
+      Password                     60-s run   4.61 (4.608)       5.87 [3.14, 11.00] (5.874 [3.136, 11.002])     4.56-19.96
+      Password (OWASP parameters)  knee step  1.29 (1.292)       1.29 [1.26, 1.31] (1.287 [1.263, 1.310])       1.25-1.31
+      Password (OWASP parameters)  60-s run   1.22 (1.220)       1.22 [1.21, 1.22] (1.219 [1.213, 1.225])       1.21-1.22
+   Note: Password, 60-s run: block 6 offered 20, served 4.15. One block far from the others widens the interval of the geometric means;
+         the ratio of medians is not affected by it.
+   Range of the four ratios of medians (both run types, both Password configurations): 1.22 to 4.61
+   Ratio of the offered knees (medians NIPoK 96, Password 19, Password (OWASP parameters) 68): NIPoK / Password 5.05, NIPoK / Password (OWASP parameters) 1.41
+
+   B. Auth-server CPU per journey (ms), baseline / NIPoK
+      baseline                     load point                     values (baseline; NIPoK) GM ratio [95% CI]            per-block ratios (min-max)
+      Password                     16 virtual users, 3 x 60 s     336.8; 11.3 (mean)     29.81 [28.55, 31.13]         28.07-31.18
+      Password                     8 journeys/s, ladder step 30 s 123.4; 12.9 (median)   9.38 [8.93, 9.85]            8.89-9.81
+      Password (OWASP parameters)  16 virtual users, 3 x 60 s     54.0; 11.3 (mean)      4.78 [4.60, 4.96]            4.57-5.00
+      Password (OWASP parameters)  8 journeys/s, ladder step 30 s 24.6; 12.9 (median)    1.89 [1.80, 1.97]            1.79-2.03
+   The 8 journeys/s values are ladder steps of 30 s, in which the six public-key mechanisms have not reached a steady state;
+   60-s runs at the same offered load are in the wide-area session and in the stage runs of the cost breakdown
+   (r1-c7-security-cost-ablation/results/crosscheck/c7_crosscheck.txt, section A).
+## end of the section written by c6_served_ratio.py

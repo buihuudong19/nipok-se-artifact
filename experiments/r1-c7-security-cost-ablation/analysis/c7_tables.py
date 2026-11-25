@@ -40,7 +40,7 @@ import statistics as st
 import sys
 from datetime import datetime
 
-VERSION = "1.1"
+VERSION = "1.2"
 # t(0.975, df) for two-sided 95% CIs
 T975 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
         11: 2.201, 12: 2.179, 13: 2.160, 14: 2.145, 15: 2.131, 16: 2.120, 17: 2.110, 18: 2.101, 19: 2.093, 20: 2.086,
@@ -291,6 +291,8 @@ def table11(root, J):
     g = "Wallet decryption"
     j(g, "Unseal the secret (AES-256-GCM)", "Agent", "1", "nipok-agent", "agent_step_unseal")
     row(g, "Generate the proof with the sealed wallet (includes unsealing)", "Agent", "1", sealed, "JMH", mark=True)
+    # the measured value with a resident witness (no unsealing), which the difference row below is taken against
+    row(g, "Generate the proof with a resident witness (no unsealing; reference)", "Agent", "-", resident, "JMH")
     d = welch_diff(sealed, resident)
     row(g, "Proof generation, sealed minus resident wallet", "Agent", "-", d, "JMH-diff", fn="c")
     g = "Nonce storage"

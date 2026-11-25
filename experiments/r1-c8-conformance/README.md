@@ -1,4 +1,4 @@
-# Conformance tests and interoperability (Section 6.2.4)
+# Conformance tests and interoperability (Section 6.2.4<!--ref:subsec:c8-conformance-->)
 
 Test vectors for NIPoK, negative cases, and the parameters that a bank and an agent must share. Four implementations
 run every vector: the Java verifier of the prototype with two group backends and two independent Python
@@ -11,9 +11,10 @@ implementations. The experiment answers Comment 8 of Reviewer 1.
 | Independent implementations | `tools/nipok_ref.py` (pure Python, standard library) and `tools/nipok_nacl_check.py` (PyNaCl/libsodium) |
 | Driver | `run-conformance.sh` (`check`, `test`, `vectors`, `tables`); the testbed is not needed |
 | Analysis | `analysis/c8_tables.py`, `analysis/c8_table_layout.py`; `analysis/templates/` holds the `README.md` and `MAPPING.md` written into the results |
-| Derived results | `results/`: Tables 13 and 14, the `\Cei*` macros, JUnit reports and per-vector reports; `results/MAPPING.md` gives the file of every paper item |
+| Derived results | `results/`: Table 10<!--ref:tab:c8-conformance--> and Supplementary Table S4<!--ref:tab:c8-parameters-->, the `\Cei*` macros, JUnit reports and per-vector reports; `results/MAPPING.md` gives the file of every paper item |
 
-The end-to-end rows of Table 13 and the testbed values of Table 14 come from Section 6.2.3 (Table 12 and `probe.json`
+The end-to-end rows of Table 10<!--ref:tab:c8-conformance--> and the testbed values of Supplementary Table S4<!--ref:tab:c8-parameters-->
+come from Section 6.2.3<!--ref:subsec:c7-ablation--> (Table 9<!--ref:tab:c7-lifecycle--> and `probe.json`
 of its raw data). Regenerate the Python reports and the tables:
 
 ```bash

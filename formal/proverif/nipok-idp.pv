@@ -1,0 +1,99 @@
+(* ---------------------------------------------------------------------------- *)
+(*  VERSION 3.1, PREPARED AND NOT YET RUN. See ../UNVERIFIED-3.1.md.            *)
+(*  Copy of nipok.pv with the prover identifier id_P as a field of the proof        *)
+(*  context: ctx = (X, id_P, N, cb, id_V), the deployed context of the paper. The    *)
+(*  three changed lines are marked [id_P]. Events, queries and all other lines       *)
+(*  are those of nipok.pv.                                                           *)
+(* ---------------------------------------------------------------------------- *)
+(* ============================================================================ *)
+(*  nipok.pv - NIPoK (RFC 8235) + channel binding (tls-server-end-point, RFC 5929)    *)
+(*  Shows that inter-cluster relay/MitM/mafia-fraud attacks are DEFEATED.            *)
+(*  RUN:  proverif nipok.pv                                                         *)
+(*                                                                                 *)
+(*  PROPERTIES:                                                                     *)
+(*    (1) secrecy(x)              - the private scalar does not leak.              *)
+(*    (2) INJECTIVE AGREEMENT on cb - the server accepts with cb => EXACTLY the      *)
+(*        client proved with THAT cb. The verifier uses cb = hash(its OWN           *)
+(*        certificate), the proof binds cb = hash(certificate RECEIVED by the client,*)
+(*        chosen by the MitM) => a relay changes cb => verification fails.          *)
+(*                                                                                 *)
+(*  LIMIT: FS/ROM soundness is computational -> CryptoVerif (outside the symbolic model). *)
+(*                                                                                 *)
+(*  COUNTERFACTUAL (see the note at the end of this file): if cb is dropped from    *)
+(*    ctx on both sides, a proof made in one session can be relayed into another    *)
+(*    session, so the anti-relay guarantee is lost.                                 *)
+(*                                                                                 *)
+(*  KEY CUSTODY (wallet: SEALED + off-heap + Kubernetes Secret):                   *)
+(*    The custody boundary of the wallet IS modelled here: the scalar `xA` is       *)
+(*    declared `[private]`, held by the PSU principal (wallet) and NEVER sent on    *)
+(*    the net channel => the result `not attacker(xA) is true` IS the key-secrecy   *)
+(*    proof of the custody boundary, for EVERY backend (simulator/Vault/TEE), since *)
+(*    all three implement the same boundary "x does not cross the interface".      *)
+(*    OUTSIDE the symbolic scope (Dolev-Yao ASSUMES a trusted host/RAM): pod dumps  *)
+(*    and reading the Secret at rest. That host-security threat is ADDRESSED by     *)
+(*    SEALED (in-memory encryption) + off-heap + Kubernetes Secret (tmpfs mount)    *)
+(*    + zeroisation; this model does NOT change (they only turn the "trusted        *)
+(*    custody" assumption into a fact).                                            *)
+(* ============================================================================ *)
+
+free net: channel.
+
+type scalar.
+type point.
+type cb_t.                                   (* channel-binding = SHA-256(DER server cert) *)
+
+fun pk(scalar): point.                       (* X = x·B *)
+fun nizk(scalar, bitstring): bitstring.      (* proof π=(V,s) bound to the context *)
+reduc forall x: scalar, ctx: bitstring;
+      verify(pk(x), nizk(x, ctx), ctx) = true.
+
+free verifierId: bitstring.
+free psuId: bitstring.                       (* [id_P] identifier of the enrolled account of the PSU (public) *)
+free certS: cb_t.                            (* hash of the REAL gateway certificate, used by the bank (public) *)
+free certM: cb_t.                            (* hash of the MitM/attacker certificate (public, ≠ certS) *)
+free xA: scalar [private].                   (* private scalar of the PSU *)
+
+event client_authenticates(point, bitstring, cb_t).   (* (X, nonce, cb seen by the CLIENT) *)
+event server_accepts(point, bitstring, cb_t).          (* (X, nonce, cb expected by the SERVER) *)
+
+(* (1) Secrecy of the private key *)
+query attacker(xA).
+
+(* (2) Injective agreement ON cb: server accept(X,n,cb) => the client proved(X,n,cb) with the same cb.   *)
+(*     MitM relay => cb_client(certM) ≠ cb_server(certS) => the correspondence CANNOT hold through a relay. *)
+(* X bound to pk(xA) (Alice): the bank accepts a proof OF ALICE => EXACTLY Alice proved with the same cb.
+   (A free X would be false because the attacker can register ITS OWN key - legitimate, not a flaw.) *)
+query n: bitstring, cb: cb_t;
+      inj-event(server_accepts(pk(xA), n, cb)) ==> inj-event(client_authenticates(pk(xA), n, cb)).
+
+(* PSU: cb = hash(certificate of the SERVER the PSU is REALLY connected to) - the attacker does NOT supply cb
+   (that would be the insecure-tls scenario). realCb is fixed per session: certS (direct connection to the bank)
+   OR certM (MitM leads to the attacker). The attacker CANNOT present certS to the PSU (no gateway private key) => a relayed proof always binds certM. *)
+let PSU(x: scalar, realCb: cb_t) =
+  in(net, n: bitstring);
+  let ctx = (pk(x), psuId, n, realCb, verifierId) in   (* [id_P] *)
+  event client_authenticates(pk(x), n, realCb);
+  out(net, (pk(x), nizk(x, ctx))).
+
+(* Bank: issues a FRESH nonce; verifies with cb = certS (its OWN real certificate, NOT taken from the client) *)
+let Bank() =
+  new n: bitstring;
+  out(net, n);
+  in(net, (X: point, pf: bitstring));
+  let ctx = (X, psuId, n, certS, verifierId) in        (* [id_P] *)
+  if verify(X, pf, ctx) = true then
+    event server_accepts(X, n, certS).
+
+process
+  out(net, pk(xA));        (* X public *)
+  out(net, certS);  out(net, certM);   (* the attacker knows both certificate hashes; NO gateway key *)
+  ( (! PSU(xA, certS)) | (! PSU(xA, certM)) | (! Bank()) )
+  (* PSU(certS) = DIRECT session with the bank (honest);  PSU(certM) = session under MitM (cb = attacker certificate). *)
+
+(* ---------------------------------------------------------------------------- *)
+(*  COUNTERFACTUAL (FLAWED version - uncomment to see ProVerif find the relay):    *)
+(*    If the PSU uses  ctx = (pk(x), n, verifierId)  [WITHOUT cb] and the bank      *)
+(*    verifies the same ctx without cb, the injective-on-cb query does not apply    *)
+(*    (there is no cb), and a query on the CHANNEL FAILS: the attacker relays pf    *)
+(*    (valid, unforgeable) from the client session into its own session => server_accepts without a client proof for that channel. *)
+(* ---------------------------------------------------------------------------- *)

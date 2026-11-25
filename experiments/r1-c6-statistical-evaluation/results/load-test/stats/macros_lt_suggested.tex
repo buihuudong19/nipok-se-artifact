@@ -7,3 +7,35 @@
 \newcommand{\LtHealthyRate}{58.0}  % j/s at 60% of the knee, median p99 102 ms <= 120 ms
 \newcommand{\LtPwdOwaspThrpt}{66.9}  % j/s, Password (OWASP parameters) (m=19456,t=2,p=1), constant-VU 16 (SD 1.1)
 \newcommand{\LtPwdOwaspCpuMs}{54.0}  % ms auth-server CPU per journey, Password (OWASP parameters) (SD 1.65)
+% --- begin: written by c6_served_ratio.py from blocks.json ---
+\newcommand{\LtNipokKneeServed}{87}  % journeys/s served at the knee step, median over blocks, rounded (86.58)
+\newcommand{\LtNipokKneeServedExact}{86.6}  % same, one decimal
+\newcommand{\LtPwdKnee}{19}  % Password: offered rate at the knee, median over blocks
+\newcommand{\LtPwdKneeServed}{18.9}  % Password: journeys/s served at the knee step, median over blocks
+\newcommand{\LtPwdOwaspKnee}{68}  % Password (OWASP parameters): offered rate at the knee, median
+\newcommand{\LtPwdOwaspKneeServed}{67.0}  % Password (OWASP parameters): served at the knee step, median
+\newcommand{\LtNipokServedLong}{83}  % journeys/s served in the 60-s runs at 100% of the knee, median, rounded (82.77)
+\newcommand{\LtNipokServedLongExact}{82.8}  % same, one decimal
+\newcommand{\LtServedRatioLo}{1.2}  % smallest of the four ratios of medians below (1.220)
+\newcommand{\LtServedRatioHi}{4.6}  % largest of the four ratios of medians below (4.608)
+\newcommand{\LtServedRatioKneePwd}{4.58}  % served throughput, NIPoK / Password, 30-s knee steps: ratio of medians 86.58 / 18.92
+\newcommand{\LtServedGmRatioKneePwd}{4.52}  % same pair, ratio of geometric means over blocks; 95% CI [4.41, 4.63]
+\newcommand{\LtServedGmRatioKneePwdLo}{4.41}  % lower limit of the 95% CI
+\newcommand{\LtServedGmRatioKneePwdHi}{4.63}  % upper limit of the 95% CI
+\newcommand{\LtServedRatioLongPwd}{4.61}  % served throughput, NIPoK / Password, 60-s runs at 100% of the knee: ratio of medians 82.77 / 17.96
+\newcommand{\LtServedGmRatioLongPwd}{5.87}  % same pair, ratio of geometric means over blocks; 95% CI [3.14, 11.00]
+\newcommand{\LtServedGmRatioLongPwdLo}{3.14}  % lower limit of the 95% CI
+\newcommand{\LtServedGmRatioLongPwdHi}{11.00}  % upper limit of the 95% CI
+\newcommand{\LtServedRatioKneePwdOwasp}{1.29}  % served throughput, NIPoK / Password (OWASP parameters), 30-s knee steps: ratio of medians 86.58 / 67.02
+\newcommand{\LtServedGmRatioKneePwdOwasp}{1.29}  % same pair, ratio of geometric means over blocks; 95% CI [1.26, 1.31]
+\newcommand{\LtServedGmRatioKneePwdOwaspLo}{1.26}  % lower limit of the 95% CI
+\newcommand{\LtServedGmRatioKneePwdOwaspHi}{1.31}  % upper limit of the 95% CI
+\newcommand{\LtServedRatioLongPwdOwasp}{1.22}  % served throughput, NIPoK / Password (OWASP parameters), 60-s runs at 100% of the knee: ratio of medians 82.77 / 67.87
+\newcommand{\LtServedGmRatioLongPwdOwasp}{1.22}  % same pair, ratio of geometric means over blocks; 95% CI [1.21, 1.22]
+\newcommand{\LtServedGmRatioLongPwdOwaspLo}{1.21}  % lower limit of the 95% CI
+\newcommand{\LtServedGmRatioLongPwdOwaspHi}{1.22}  % upper limit of the 95% CI
+\newcommand{\LtCpuRatioVuLo}{4.8}  % CPU per journey at 16 virtual users, Password (OWASP parameters) / NIPoK, GM; 95% CI [4.60, 4.96]
+\newcommand{\LtCpuRatioVuHi}{30}  % same, Password / NIPoK, GM 29.8; 95% CI [28.6, 31.1]
+\newcommand{\LtCpuRatioEightOwasp}{1.9}  % CPU per journey at 8 journeys/s (30-s ladder steps), Password (OWASP parameters) / NIPoK, GM; 95% CI [1.80, 1.97]
+\newcommand{\LtCpuRatioEightLo}{9}  % same, Password / NIPoK, GM 9.4; 95% CI [8.9, 9.9]. The upper end of the range in the paper comes from the 60-s runs (c7_crosscheck.txt, section A)
+% --- end: written by c6_served_ratio.py ---

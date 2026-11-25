@@ -1,5 +1,5 @@
 % Table 11 body, one-column layout (R1-C7), written by c7_table_layout.py 1.3 from table11_c7-ablation_rows.tex
-% (c7_tables.py 1.1): shorter labels, footnote marks a-d dropped (content in the text of
+% (c7_tables.py 1.2): shorter labels, footnote marks a-d dropped (content in the text of
 % Sec. 6.2.3), key values in bold; left out: the Conscrypt signature alone, the in-server
 % signing timer, the TPP sum.
 % Every value shown is the generated one. n: executions per NIPoK journey. Do not edit by hand.
@@ -16,6 +16,7 @@ Operation & Side & $n$ & \textmu s \\
 \multicolumn{4}{@{}l}{\textit{Wallet decryption}} \\
 \quad Unseal (AES-256-GCM) & Agent & 1 & $1.06 \pm 0.02$ \\
 \quad Prove, sealed wallet$^{\ddagger}$ & Agent & 1 & $\mathbf{37.79} \pm 0.16$ \\
+\quad Prove, resident witness & Agent & - & $36.50 \pm 0.11$ \\
 \quad Sealed minus resident & Agent & - & $1.29 \pm 0.17$ \\
 \addlinespace[2pt]
 \multicolumn{4}{@{}l}{\textit{Nonce storage}} \\

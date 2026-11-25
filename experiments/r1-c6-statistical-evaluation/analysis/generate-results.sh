@@ -30,7 +30,7 @@
 # numpy 1.26.4, scipy 1.11.4, matplotlib 3.6.3 and seaborn 0.13.2.
 # =====================================================================================================================
 set -uo pipefail
-VERSION="2.0"
+VERSION="2.1"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="${REPO:-$(cd "$HERE/../../.." && pwd)}"
 TOOLS="$HERE/tools"
@@ -70,7 +70,7 @@ for b in $(blocks); do
   [ "$n" -gt 0 ] || die "loadtest/block$b has no *.summary.json"
 done
 ok "inputs: jmh (main, fbc-ab, argon2id-sensitivity), loadtest/block{$(blocks | paste -sd, -)}, wan, istio"
-for t in c6_loadtest_agg.py c6_jmh_agg.py c6_istio_summary.py c6_block_acceptance.py c6_params_summary.py; do
+for t in c6_loadtest_agg.py c6_served_ratio.py c6_figures.py c6_jmh_agg.py c6_istio_summary.py c6_block_acceptance.py c6_params_summary.py; do
   [ -f "$TOOLS/$t" ] || die "missing tool $TOOLS/$t"
 done
 [ -f "$EVAL" ] || die "missing $EVAL"
@@ -157,11 +157,20 @@ L="$OUT/load-test"
 hargs=(); [ -n "$HEALTHY_MS" ] && hargs=(--healthy-ms "$HEALTHY_MS")
 "$PY" "$TOOLS/c6_loadtest_agg.py" "$D" --out "$W/lt" --blocks "$BLOCKS" "${hargs[@]}" > "$W/lt.log" 2>&1 \
   || { tail -n 30 "$W/lt.log"; die "c6_loadtest_agg.py failed (log: $W/lt.log)"; }
+# served-throughput ratios at the knee and CPU ratios at common load points: computed from blocks.json alone, appended to
+# the report and to the macro file (the headline range of the paper is regenerated here)
+"$PY" "$TOOLS/c6_served_ratio.py" "$W/lt/blocks.json" --report "$W/lt/report.txt" --macros "$W/lt/macros_lt_suggested.tex" \
+    --csv "$W/lt/served_ratio.csv" > "$W/served.log" 2>&1 \
+  || { tail -n 30 "$W/served.log"; die "c6_served_ratio.py failed (log: $W/served.log)"; }
+# Figures 7, 8 and 9 as printed: drawn again at column width from the CSV files that c6_loadtest_agg.py has just written
+# (c6_figures.py, style "paper"); they replace the files of the same names drawn by c6_loadtest_agg.py in the layout of 3.0
+"$PY" "$TOOLS/c6_figures.py" --csv "$W/lt" --out "$W/lt" > "$W/figs.log" 2>&1 \
+  || { tail -n 30 "$W/figs.log"; die "c6_figures.py failed (log: $W/figs.log)"; }
 mvq "$W"/lt/fig7_saturation.{pdf,png,csv} "$W"/lt/fig8_latency.{pdf,png,csv} "$W"/lt/fig8b_knee100.csv "$W"/lt/fig9_wan_ab.{pdf,png} \
     "$W"/lt/fig9_wan.csv "$W"/lt/fig9_1_wan_delta.csv "$L/figures"
 mvq "$W"/lt/fig9_wan.{pdf,png} "$W"/lt/fig9_1_wan_delta.{pdf,png} "$W"/lt/fig8a_latency_30_60.{pdf,png} "$L/figures/extra"
 mvq "$W"/lt/table8.{tex,md,csv} "$W"/lt/table8_ci.md "$W"/lt/table10_compact.{tex,md,csv} "$W"/lt/wan_summary.{md,csv} \
-    "$W"/lt/wan_slopes.csv "$W"/lt/per_block.csv "$W"/lt/password_owasp_paired.csv "$L/tables"
+    "$W"/lt/wan_slopes.csv "$W"/lt/per_block.csv "$W"/lt/password_owasp_paired.csv "$W"/lt/served_ratio.csv "$L/tables"
 for x in md csv tex; do [ -f "$W/lt/table10.$x" ] && mv -f "$W/lt/table10.$x" "$L/tables/table10_full.$x"; done
 mv -f "$W/lt/report.txt" "$L/stats/loadtest_report.txt"
 mvq "$W"/lt/blocks.json "$W"/lt/macros_lt_suggested.tex "$L/stats"

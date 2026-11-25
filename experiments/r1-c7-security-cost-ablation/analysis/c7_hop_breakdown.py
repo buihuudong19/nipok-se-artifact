@@ -30,7 +30,16 @@ palette checked for colour-vision deficiency, and the part outside the gateway i
   (a) the six public-key mechanisms on one ms axis;
   (b) NIPoK and Password on a separate axis (Password is about three times longer). Without Password only (a) is drawn.
 
-Usage: python3 c7_hop_breakdown.py benchmark-R1-C7/e2e/hops/hops.json [--out <results>/hop-breakdown]
+Two styles of the figure, same values and same drawing code (--style):
+  paper  (default) final size: 3.297 in wide, the width of a column of the journal class (238.25 TeX pt), so that the
+         figure is included at scale 1; no text smaller than 7 pt; fixed margins instead of a tight bounding box.
+  v30    the layout of version 3.0 of the package (6.4 in wide; the paper scaled its 8.5 to 11 pt lettering to about 4.4 to 5.7 pt).
+
+Usage: python3 c7_hop_breakdown.py benchmark-R1-C7/e2e/hops/hops.json [--out <results>/hop-breakdown] [--style paper|v30]
+       python3 c7_hop_breakdown.py --from-results <results>/hop-breakdown --out <dir> [--style paper|v30]
+The second form draws the figure again from c7_hop_breakdown.csv of an earlier run, without the raw data. That file holds
+the plotted values with three decimals (ms), so a bar can differ from the original by at most 0.0005 ms; it writes the
+figure only (.pdf, .png), not the .csv and .txt.
 Output (never inside the measurement directory): c7_hop_breakdown.pdf, .png, .csv (plotted values), .txt (report, md5 of the input).
 Requires: python3, matplotlib.
 """
@@ -42,7 +51,7 @@ import os
 import sys
 from datetime import datetime
 
-VERSION = "1.1"
+VERSION = "1.2"
 MECH_MAP = {"password": "Password", "mtls": "mTLS-PSU", "private_key_jwt": "Private-Key-JWT",
             "ed25519": "Pure-EdDSA", "schnorr_interactive": "Schnorr-IZK", "ml_dsa": "ML-DSA-65", "nipok": "NIPoK"}
 PK_ORDER = ["NIPoK", "Private-Key-JWT", "Pure-EdDSA", "Schnorr-IZK", "ML-DSA-65", "mTLS-PSU"]
@@ -96,41 +105,93 @@ def breakdown(v, lab):
     return seg, parts, nj, jm, runs, gw
 
 
+COLW = 238.25444 / 72.27      # column width of the journal class in inches (238.25 TeX pt)
+# every size that differs between the two styles; the drawing code has no other number for it
+STYLES = {
+    "v30": dict(tight=True, base=11, tick=9, ytick=None, lab=8.5, xlabel=10, panel=11, legend=9, axes_lw=0.9, grid_lw=0.6,
+                bar_h=0.58, bar_lw=1.0),
+    "paper": dict(tight=False, base=8, tick=7, ytick=7, lab=7, xlabel=8, panel=8.5, legend=7, axes_lw=0.7, grid_lw=0.5,
+                  bar_h=0.66, bar_lw=0.5),
+}
+
+
+def rows_from_results(d):
+    """rows as built from hops.json, read back from c7_hop_breakdown.csv (values with three decimals)."""
+    import csv
+    import re
+    path = os.path.join(d, "c7_hop_breakdown.csv")
+    if not os.path.isfile(path):
+        sys.exit("not found: " + path)
+    rows = {}
+    with open(path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if r["stage"] not in STAGES:
+                sys.exit("%s: unknown stage %r" % (path, r["stage"]))
+            e = rows.setdefault(r["mechanism"], [{s: 0.0 for s in STAGES}, None, None, None, None, None])
+            e[0][r["stage"]] = float(r["ms_per_journey"])
+            if r["stage"] == "Outside the gateway":
+                m = re.fullmatch(r"journey mean \(k6\) ([0-9.]+) − gateway ([0-9.]+)", r["requests"])
+                if not m:
+                    sys.exit("%s: cannot read the journey mean of %s" % (path, r["mechanism"]))
+                e[3], e[5] = float(m.group(1)), float(m.group(2))
+    for m, e in rows.items():
+        if e[3] is None:
+            sys.exit("%s: no row 'Outside the gateway' for %s" % (path, m))
+    return {m: tuple(e) for m, e in rows.items()}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("hops_json")
+    ap.add_argument("hops_json", nargs="?")
+    ap.add_argument("--from-results", metavar="DIR", help="draw the figure from c7_hop_breakdown.csv in DIR instead of hops.json")
     ap.add_argument("--out", help="output directory (default: <C7_DATA>/analysis/hop-breakdown, C7_DATA = parent of e2e)")
+    ap.add_argument("--style", choices=sorted(STYLES), default="paper")
     a = ap.parse_args()
-    src = os.path.abspath(a.hops_json)
-    if not os.path.isfile(src):
-        sys.exit("not found: " + src)
-    hd = os.path.dirname(src)
-    out = os.path.abspath(a.out) if a.out else os.path.join(os.path.dirname(os.path.dirname(hd)), "analysis", "hop-breakdown")
-    if out == hd or out.startswith(hd + os.sep):
-        sys.exit("--out must not be inside the measurement directory %s" % hd)
-    with open(src, encoding="utf-8") as f:
-        d = json.load(f)
-    rows = {}
-    for k, v in d.items():
-        if k in MECH_MAP and isinstance(v, dict):
-            rows[MECH_MAP[k]] = breakdown(v, MECH_MAP[k])
+    S = STYLES[a.style]
+    if bool(a.hops_json) == bool(a.from_results):
+        sys.exit("give either hops.json or --from-results <directory>")
+    if a.from_results:
+        if not a.out:
+            sys.exit("--from-results needs --out")
+        src = hd = None
+        out = os.path.abspath(a.out)
+        rows = rows_from_results(a.from_results)
+    else:
+        src = os.path.abspath(a.hops_json)
+        if not os.path.isfile(src):
+            sys.exit("not found: " + src)
+        hd = os.path.dirname(src)
+        out = os.path.abspath(a.out) if a.out else os.path.join(os.path.dirname(os.path.dirname(hd)), "analysis", "hop-breakdown")
+        if out == hd or out.startswith(hd + os.sep):
+            sys.exit("--out must not be inside the measurement directory %s" % hd)
+        with open(src, encoding="utf-8") as f:
+            d = json.load(f)
+        rows = {}
+        for k, v in d.items():
+            if k in MECH_MAP and isinstance(v, dict):
+                rows[MECH_MAP[k]] = breakdown(v, MECH_MAP[k])
     pk = [m for m in PK_ORDER if m in rows]
     if not pk:
-        sys.exit("hops.json has no public-key mechanism")
+        sys.exit("no public-key mechanism in the input")
     os.makedirs(out, exist_ok=True)
 
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 11, "figure.dpi": 600, "savefig.dpi": 600,
-                         "savefig.bbox": "tight", "axes.edgecolor": "0.30", "axes.linewidth": 0.9})
+    plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": S["base"], "figure.dpi": 600, "savefig.dpi": 600,
+                         "axes.edgecolor": "0.30", "axes.linewidth": S["axes_lw"]})
+    if S["tight"]:
+        plt.rcParams.update({"savefig.bbox": "tight"})
+    else:
+        plt.rcParams.update({"savefig.bbox": None, "xtick.major.width": 0.6, "ytick.major.width": 0.6, "xtick.major.size": 2.5,
+                             "ytick.major.size": 2.5, "xtick.major.pad": 2, "ytick.major.pad": 2, "axes.labelpad": 2.5})
 
     def style(ax):
         for sp in ("top", "right"):
             ax.spines[sp].set_visible(False)
-        ax.xaxis.grid(True, color="#d9d8d4", linewidth=0.6, zorder=0)
+        ax.xaxis.grid(True, color="#d9d8d4", linewidth=S["grid_lw"], zorder=0)
         ax.set_axisbelow(True)
-        ax.tick_params(colors="#52514e", labelsize=9)
+        ax.tick_params(colors="#52514e", labelsize=S["tick"])
 
     LABELS = []
 
@@ -141,44 +202,72 @@ def main():
             x = 0.0
             for s in STAGES:
                 if seg[s] > 0:
-                    ax.barh(i, seg[s], left=x, height=0.58, color=COLORS[s], edgecolor="#ffffff", linewidth=1.0, zorder=3)
+                    ax.barh(i, seg[s], left=x, height=S["bar_h"], color=COLORS[s], edgecolor="#ffffff", linewidth=S["bar_lw"], zorder=3)
                 x += seg[s]
-            ax.text(jm + xmax * 0.012, i, "%.1f ms" % jm, va="center", ha="left", fontsize=8.5, color="#2b2a28")
+            ax.text(jm + xmax * 0.012, i, "%.1f ms" % jm, va="center", ha="left", fontsize=S["lab"], color="#2b2a28")
             a0 = seg["PAR"] + seg["Authorization"]
             if seg["PSU authentication"] >= 0.06 * xmax:   # label inside the green segment: black text (contrast 7.5:1 on #1baf7a)
                 ax.text(a0 + seg["PSU authentication"] / 2.0, i, "%.1f" % seg["PSU authentication"], va="center", ha="center",
-                        fontsize=8.5, color="#10100e", zorder=4)
+                        fontsize=S["lab"], color="#10100e", zorder=4)
                 LABELS.append((tag, m, seg["PSU authentication"]))
         ax.set_yticks(range(len(names)))
-        ax.set_yticklabels([("NIPoK (Ours)" if m == HL else m) + ("*" if m == "mTLS-PSU" else "") for m in names])
+        ax.set_yticklabels([("NIPoK (Ours)" if m == HL else m) + ("*" if m == "mTLS-PSU" else "") for m in names],
+                           **({} if S["ytick"] is None else {"fontsize": S["ytick"]}))
         for t in ax.get_yticklabels():
             if t.get_text().startswith("NIPoK"):
                 t.set_fontweight("bold")
         ax.set_xlim(0, xmax)
         ax.set_ylim(len(names) - 0.5, -0.5)
-        ax.set_xlabel("Mean time per journey (ms)", fontsize=10)
+        ax.set_xlabel("Mean time per journey (ms)", fontsize=S["xlabel"])
         style(ax)
 
     two = "Password" in rows and HL in rows
-    H = 5.3 if two else 3.9
-    fig = plt.figure(figsize=(6.4, H))
-    if two:
-        pa = fig.add_axes([0.21, 0.455, 0.73, 0.405])
-        pb = fig.add_axes([0.21, 0.105, 0.73, 0.15])
+    if S["tight"]:
+        H = 5.3 if two else 3.9
+        fig = plt.figure(figsize=(6.4, H))
+        if two:
+            pa = fig.add_axes([0.21, 0.455, 0.73, 0.405])
+            pb = fig.add_axes([0.21, 0.105, 0.73, 0.15])
+        else:
+            pa = fig.add_axes([0.21, 0.14, 0.73, 0.66])
+            pb = None
     else:
-        pa = fig.add_axes([0.21, 0.14, 0.73, 0.66])
-        pb = None
+        # fixed layout in inches: legend (three rows), panel (a) with one row of 0.2 in per mechanism, panel (b)
+        W = COLW
+        ha, hb = 0.2 * len(pk), 0.2 * 2
+        H = 0.56 + ha + (0.62 + hb if two else 0.0) + 0.36
+        fig = plt.figure(figsize=(W, H))
+        left, right = 0.93, W - 0.10
+        top_a = H - 0.56
+        pa = fig.add_axes([left / W, (top_a - ha) / H, (right - left) / W, ha / H])
+        pb = fig.add_axes([left / W, 0.36 / H, (right - left) / W, hb / H]) if two else None
     bars(pa, pk, 10, "(a)")
-    pa.text(-0.285, 1.03, "(a)", transform=pa.transAxes, fontsize=11, fontweight="bold", va="bottom", color="#2b2a28")
+    if S["tight"]:
+        pa.text(-0.285, 1.03, "(a)", transform=pa.transAxes, fontsize=S["panel"], fontweight="bold", va="bottom", color="#2b2a28")
+    else:
+        fig.text(0.012, pa.get_position().y1 + 0.02 / H, "(a)", fontsize=S["panel"], fontweight="bold", va="bottom", color="#2b2a28")
     if pb is not None:
         bars(pb, [HL, "Password"], 20, "(b)")
-        pb.text(-0.285, 1.1, "(b)", transform=pb.transAxes, fontsize=11, fontweight="bold", va="bottom", color="#2b2a28")
+        if S["tight"]:
+            pb.text(-0.285, 1.1, "(b)", transform=pb.transAxes, fontsize=S["panel"], fontweight="bold", va="bottom", color="#2b2a28")
+        else:
+            fig.text(0.012, pb.get_position().y1 + 0.02 / H, "(b)", fontsize=S["panel"], fontweight="bold", va="bottom", color="#2b2a28")
     hs = [plt.Rectangle((0, 0), 1, 1, color=COLORS[s]) for s in STAGES]
-    fig.legend(hs, STAGES, loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.575, 0.995), fontsize=9,
-               handlelength=1.2, columnspacing=1.4)
+    if S["tight"]:
+        fig.legend(hs, STAGES, loc="upper center", ncol=3, frameon=False, bbox_to_anchor=(0.575, 0.995), fontsize=S["legend"],
+                   handlelength=1.2, columnspacing=1.4)
+    else:
+        fig.legend(hs, STAGES, loc="upper right", ncol=2, frameon=False, bbox_to_anchor=(1.0 - 0.03 / W, 1.0 - 0.02 / H),
+                   fontsize=S["legend"], handlelength=1.1, handletextpad=0.5, columnspacing=1.2, labelspacing=0.28,
+                   borderaxespad=0.0, borderpad=0.0)
     for ext in (".pdf", ".png"):
         fig.savefig(os.path.join(out, "c7_hop_breakdown" + ext), facecolor="#ffffff")
     plt.close(fig)
+    if a.from_results:
+        print("drawn from %s: %d mechanisms; labels in the figure (PSU authentication, ms): %s" % (
+            os.path.join(a.from_results, "c7_hop_breakdown.csv"), len(rows), "; ".join("%s %s %.1f" % t for t in LABELS)))
+        print("written: %s/c7_hop_breakdown.{pdf,png} (style %s)" % (out, a.style))
+        return
 
     order = pk + (["Password"] if "Password" in rows else [])
     with open(os.path.join(out, "c7_hop_breakdown.csv"), "w", encoding="utf-8") as f:

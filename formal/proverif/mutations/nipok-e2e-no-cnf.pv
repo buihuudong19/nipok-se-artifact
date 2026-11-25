@@ -1,0 +1,178 @@
+(* ---------------------------------------------------------------------------- *)
+(*  VERSION 3.1, PREPARED AND NOT YET RUN. See ../UNVERIFIED-3.1.md.            *)
+(*  MUTATION COPY of nipok-e2e.pv, for the check described in ../UNVERIFIED-3.1.md. *)
+(*  It is NOT a model of the protocol: the RS does not check the cnf binding.      *)
+(*  Deleted source line(s) of nipok-e2e.pv: 149                                     *)
+(*  All other lines are those of nipok-e2e.pv.                                   *)
+(* ---------------------------------------------------------------------------- *)
+(* ============================================================================ *)
+(*  nipok-e2e.pv - ProVerif: the WHOLE FAPI E2E flow (extends nipok.pv)           *)
+(*    PSU -[NIPoK]-> AS -[PAR/PKCE]-> -[JARM: JWS-in-JWE]-> TPP -[mTLS token]-> AS *)
+(*    -> TPP -[token + certificate-bound (cnf)]-> RS -> data                      *)
+(*  LAYER 1 (symbolic / Dolev-Yao): traces + correspondence + secrecy.            *)
+(*  RUN: proverif nipok-e2e.pv   -> 7 RESULT ... is true (verified, terminates in <150 s) *)
+(*    S1 secrecy(xPSU) - A1 inj NIPoK-on-cb (anti-relay+replay) - A2 inj PKCE    *)
+(*    A3 JARM authenticity - A4 token integrity - A5 RAR resource binding (BOLA customer) *)
+(*    - A6 transitive RAR account binding (BOLA account).                        *)
+(*  TERMINATION HINT: one mTLS channel per leg (cPar/cTokQ/cTokR/cRs), NOT one    *)
+(*    shared channel (ProVerif would match message shapes wrongly -> non-termination). *)
+(*  LIMIT: IDEALISED crypto (FS/ROM/DL soundness -> CryptoVerif/EasyCrypt).        *)
+(*  JWE: the encryption layer of JARM is NOT modeled, here or in any other model  *)
+(*    of this artifact; its confidentiality is assumed, not proved.               *)
+(* ============================================================================ *)
+
+(* -- Channels -------------------------------------------------------------- *)
+free net:  channel.            (* front channel: controlled by the attacker (Dolev-Yao) *)
+(* mTLS back channel SEPARATED per leg (one shape per channel) - prevents ProVerif from matching
+   messages across legs => saturation blow-up/non-termination with one shared channel. *)
+free cPar:  channel [private].  (* TPP -> AS: PAR push (pkceChallenge) *)
+free cTokQ: channel [private].  (* TPP -> AS: token request (code, verifier) *)
+free cTokR: channel [private].  (* AS -> TPP: token response (token) *)
+free cRs:   channel [private].  (* TPP -> RS: (token, cnf) *)
+free cRsA:  channel [private].  (* TPP -> RS-account: (token, cnf, owner(account)) *)
+
+(* -- Types ----------------------------------------------------------------- *)
+type scalar. type point. type skey. type pkey. type cb_t. type nonce_t.
+
+(* -- Primitives (idealised) --------------------------------------------------- *)
+(* NIPoK NIZK: pf = nizk(x, ctx); verification succeeds only for the right x and ctx *)
+fun pk(scalar): point.
+fun nizk(scalar, bitstring): bitstring.
+reduc forall x:scalar, ctx:bitstring; verifyZk(pk(x), nizk(x,ctx), ctx) = true.
+
+(* Ed25519 signature (JARM JWS of the AS, access token) *)
+fun spk(skey): pkey.
+fun sign(bitstring, skey): bitstring.
+reduc forall m:bitstring, sk:skey; checksign(m, sign(m,sk), spk(sk)) = true.
+reduc forall m:bitstring, sk:skey; getmsg(sign(m,sk)) = m.
+
+(* JARM is modeled as a JWS only (Ed25519 signature: authenticity). Its JWE layer (X25519,
+   ECDH-ES) is not modeled in this or any other model of the artifact; the confidentiality
+   of JWE is an assumption, not a proved property. *)
+fun H(bitstring): bitstring.          (* PKCE S256 + Fiat-Shamir (idealised) *)
+fun cnf(pkey): bitstring.             (* x5t#S256 - certificate binding of the token *)
+
+(* -- Constants/identifiers ---------------------------------------------------- *)
+free bankId: bitstring. free tppId: bitstring.
+free certS_cb: cb_t.                  (* channel binding = hash(REAL gateway certificate) *)
+free certM: cb_t.                     (* hash of the MitM/attacker certificate (≠ certS, known to the attacker) *)
+free resPSU:  bitstring.              (* (RAR) resource OWNED by the PSU (e.g. customerId) - NOT secret *)
+free resOther:bitstring.              (* resource of ANOTHER customer - what the attacker/TPP wants to harvest *)
+free xPSU:    scalar [private].       (* NIPoK key of the PSU *)
+free skJarm:  skey   [private].       (* AS: JARM signing (Ed25519) *)
+free skTok:   skey   [private].       (* AS: access-token signing *)
+free skTppMtls:skey  [private].       (* TPP: mTLS client key *)
+
+(* -- Events ---------------------------------------------------------------- *)
+event PsuProves(point, nonce_t, cb_t).
+event BankAccepts(point, nonce_t, cb_t).
+event CodeIssued(bitstring, bitstring).      (* (code, pkce_challenge) *)
+event TokenIssued(bitstring, bitstring).     (* (token, code) - after the PKCE verification *)
+event TppGotCode(bitstring).
+event RsGrants(bitstring, bitstring).        (* (token, cnf) *)
+event ConsentCovers(bitstring).              (* (RAR) the AS issues a consent COVERING this resource *)
+event RsGrantsResource(bitstring).           (* (RAR) the RS releases data for this resource *)
+event RsGrantsAccountResource(bitstring).    (* (RAR account) the account RS releases data for the account with this owner *)
+
+(* -- Queries (security properties) ------------------------------------------- *)
+query attacker(xPSU).                                   (* (S1) secrecy of the NIPoK key *)
+(* (A1) INJECTIVE NIPoK agreement on cb - bound to pk(xPSU) (Alice): against relay + replay *)
+query n:nonce_t, cb:cb_t;
+  inj-event(BankAccepts(pk(xPSU),n,cb)) ==> inj-event(PsuProves(pk(xPSU),n,cb)).
+(* (A2) INJECTIVE PKCE binding: each token <=> one code issued by the AS (against code reuse) *)
+query t:bitstring, code:bitstring, ch:bitstring;
+  inj-event(TokenIssued(t,code)) ==> inj-event(CodeIssued(code, ch)).
+(* (A3) JARM authenticity: the TPP receives a code => the AS issued that code (signature + aud) *)
+query code:bitstring, ch:bitstring;
+  event(TppGotCode(code)) ==> event(CodeIssued(code, ch)).
+(* (A4) Token integrity: the RS releases data => THAT token was issued by the AS (against forged tokens) *)
+query t:bitstring, c:bitstring, code:bitstring;
+  event(RsGrants(t,c)) ==> event(TokenIssued(t, code)).
+(* (A5, RAR/RFC 9396) RESOURCE BINDING against BOLA/IDOR:
+   the RS releases data for resource r only if r IS covered by a consent of the AS.
+   PASS => a malicious TPP that changes {customerId} to resOther (no consent) CANNOT obtain data. *)
+query r:bitstring;
+  event(RsGrantsResource(r)) ==> event(ConsentCovers(r)).
+(* (A6, RAR account) TRANSITIVE BINDING against account-level BOLA:
+   the account RS releases data only for an account whose OWNER (customerId) IS covered by the consent.
+   => a malicious TPP that changes {accountId} to an account of ANOTHER customer (owner=resOther, no consent) CANNOT obtain data. *)
+query o:bitstring;
+  event(RsGrantsAccountResource(o)) ==> event(ConsentCovers(o)).
+
+(* -- PSU: cb = certificate of the SERVER the PSU is REALLY connected to (realCb fixed: certS|certM); not supplied by the attacker *)
+let PSU(realCb:cb_t) =
+  in(net, n:nonce_t);
+  let ctx = (pk(xPSU), n, realCb, bankId) in
+  event PsuProves(pk(xPSU), n, realCb);
+  out(net, (pk(xPSU), nizk(xPSU, ctx))).
+
+(* -- AS: issues a nonce, verifies NIPoK against the REGISTERED key pk(xPSU) + cb = REAL certS, then issues the code (JARM) *)
+let AS =
+  in(cPar, pkceChallenge:bitstring);             (* PAR challenge from the TPP *)
+  new n:nonce_t; out(net, n);                    (* fresh bank nonce *)
+  in(net, pf:bitstring);
+  let ctxA = (pk(xPSU), n, certS_cb, bankId) in
+  if verifyZk(pk(xPSU), pf, ctxA) = true then
+  event BankAccepts(pk(xPSU), n, certS_cb);
+  (* after consent: issue the code; JARM = Ed25519 signature only (JWE layer not modeled) *)
+  new code:bitstring;
+  event CodeIssued(code, pkceChallenge);
+  let jarm = sign((code, tppId, bankId), skJarm) in       (* JARM-JWS: aud=tpp, iss=bank *)
+  out(net, jarm);                  (* front channel via the agent; JWE confidentiality assumed, not modeled *)
+  (* Token endpoint: receives code + verifier; verifies PKCE; issues a certificate-bound token *)
+  in(cTokQ, (codeIn:bitstring, verifier:bitstring));
+  if codeIn = code then
+  if H(verifier) = pkceChallenge then
+  new tok:bitstring;
+  event ConsentCovers(resPSU);                            (* RAR: the consent covers the resource owned by the PSU *)
+  let token = sign((tok, cnf(spk(skTppMtls)), resPSU), skTok) in  (* cnf = TPP certificate + RAR resource binding *)
+  event TokenIssued(token, code);
+  out(cTokR, token).
+
+(* -- TPP: PAR push, receives the JARM, token exchange, calls the RS ------------- *)
+let TPP =
+  new verifier:bitstring;
+  let challenge = H(verifier) in
+  out(cPar, challenge);                                    (* PAR push *)
+  in(net, jarm:bitstring);
+  let m = getmsg(jarm) in
+  if checksign(m, jarm, spk(skJarm)) = true then           (* verifies the Ed25519 JWS of the AS *)
+  let (code:bitstring, aud:bitstring, iss:bitstring) = m in
+  if aud = tppId then if iss = bankId then                 (* against mix-up *)
+  event TppGotCode(code);
+  out(cTokQ, (code, verifier));                            (* token exchange *)
+  in(cTokR, token:bitstring);
+  in(net, rReq:bitstring);                                 (* the TPP (POSSIBLY MALICIOUS) chooses ANY requested resource *)
+  out(cRs, (token, cnf(spk(skTppMtls)), rReq));            (* calls the customer RS with token + certificate + {customerId} *)
+  in(net, acctOwner:bitstring);                            (* the TPP chooses ANY account -> owner(account) determined by the account service *)
+  out(cRsA, (token, cnf(spk(skTppMtls)), acctOwner)).      (* calls the account RS: owner(account) is checked against the consent *)
+
+(* -- RS: releases data if the token is valid + the certificate matches cnf ------ *)
+let RS =
+  in(cRs, (token:bitstring, presentedCnf:bitstring, rReq:bitstring));
+  let mt = getmsg(token) in
+  if checksign(mt, token, spk(skTok)) = true then          (* verify access-token sig *)
+  let (tok:bitstring, boundCnf:bitstring, boundRes:bitstring) = mt in
+  event RsGrants(token, presentedCnf);
+  (* RAR enforcement: r_req ∈ consent. Here consent = {boundRes} => membership = equality.
+     REMOVING the line 'if rReq = boundRes' reproduces the BOLA flaw => query A5 becomes false. *)
+  if rReq = boundRes then
+  event RsGrantsResource(rReq).
+
+(* -- RS-account: releases account data only if owner(account) ∈ consent ({boundRes}) ------- *)
+let RSAcct =
+  in(cRsA, (token:bitstring, presentedCnf:bitstring, acctOwner:bitstring));
+  let mt = getmsg(token) in
+  if checksign(mt, token, spk(skTok)) = true then
+  let (tok:bitstring, boundCnf:bitstring, boundRes:bitstring) = mt in
+  if boundCnf = presentedCnf then
+  (* Transitive binding: owner(account) MUST match the consented resource. REMOVING this line = account BOLA => A6 false. *)
+  if acctOwner = boundRes then
+  event RsGrantsAccountResource(acctOwner).
+
+(* -- System: many parallel sessions; the attacker knows the public keys --------- *)
+process
+  out(net, pk(xPSU));  out(net, certS_cb);  out(net, certM);
+  out(net, spk(skJarm)); out(net, spk(skTok)); out(net, spk(skTppMtls));
+  ( (!PSU(certS_cb)) | (!PSU(certM)) | (!AS) | (!TPP) | (!RS) | (!RSAcct) )
+  (* PSU(certS_cb) = direct session with the bank (honest); PSU(certM) = session under MitM (cb = attacker certificate) *)

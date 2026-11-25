@@ -6,6 +6,7 @@
 | Proof verification | authenticate(): nonce, decoding, verification; no database, no audit† | AS | 1 | 66.65 ± 0.30 | JMH |
 | Wallet decryption | Unseal the secret (AES-256-GCM) | Agent | 1 | 1.06 ± 0.02 | JMH |
 | Wallet decryption | Generate the proof with the sealed wallet (includes unsealing)‡ | Agent | 1 | 37.79 ± 0.16 | JMH |
+| Wallet decryption | Generate the proof with a resident witness (no unsealing; reference) | Agent | - | 36.50 ± 0.11 | JMH |
 | Wallet decryption | Proof generation, sealed minus resident wallet | Agent | - | 1.29 ± 0.17 | JMH-diff |
 | Nonce storage | Issue and consume a nonce, 1 thread | AS | 1 | 0.304 ± 0.003 | JMH |
 | Nonce storage | Issue and consume a nonce, 8 threads sharing the store | AS | - | 3.83 ± 0.12 | JMH |

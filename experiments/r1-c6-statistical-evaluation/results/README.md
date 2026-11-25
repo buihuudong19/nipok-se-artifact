@@ -27,7 +27,7 @@ which figure, table or number of the paper and how it differs from the submitted
 | `crypto-jmh/stats` | `jmh_report.txt`, `macros_jmh_suggested.{tex,md,csv}` (values of the JMH macros of the paper), `text_numbers.csv` (numbers of the text of Section 6.2.2 and of the graphical abstract: value from this campaign and the sentence of the submitted version), `jvm_control_summary.txt` |
 | `crypto-jmh/params` | `PARAMS.md`: JMH configuration read from the result files |
 | `load-test/figures` | Figure 7 `fig7_saturation`, Figure 8 `fig8_latency` (two panels: (a) 30%, 60% and 100% of the knee, (b) 100% of the knee with the served/offered ratio), Figure 9 `fig9_wan_ab` (.pdf/.png) and the plotted data as `.csv` (`fig8_latency.csv` for panel (a), `fig8b_knee100.csv` for panel (b)); `extra/`: single-panel variants |
-| `load-test/tables` | `table8.{md,tex,csv}`, `table8_ci.md`, `table10_compact.{md,tex,csv}` (paper version), `table10_full.{md,tex,csv}` (every test and metric), `wan_summary.{md,csv}`, `wan_slopes.csv`, `per_block.csv`, `password_owasp_paired.csv` |
+| `load-test/tables` | `table8.{md,tex,csv}`, `table8_ci.md`, `table10_compact.{md,tex,csv}` (paper version), `table10_full.{md,tex,csv}` (every test and metric), `wan_summary.{md,csv}`, `wan_slopes.csv`, `per_block.csv`, `password_owasp_paired.csv`, `served_ratio.csv` (served throughput at the knee and CPU per journey at common load points, NIPoK against the two Password configurations; written by `c6_served_ratio.py` from `blocks.json`) |
 | `load-test/stats` | `loadtest_report.txt` (data checks, knee, resources, measurement conditions, numbers quoted in the text), `blocks.json` (every per-block value), `macros_lt_suggested.tex` (values of the `\Lt*` macros of the paper) |
 | `load-test/qc` | `block_acceptance.{md,csv}`: values and thresholds of the block acceptance criteria |
 | `load-test/params` | `PARAMS.md`: load-test parameters read from the parameter files of the blocks |
@@ -70,7 +70,7 @@ which figure, table or number of the paper and how it differs from the submitted
 
 ## This run
 
-- Script: generate-results.sh 2.0
+- Script: generate-results.sh 2.1
 - Data: `benchmark-R1-C6` (blocks 1,2,3,4,5,6; WAN: loadtest/wan)
 - Python: 3.11.18, numpy 1.26.4, scipy 1.11.4, matplotlib 3.6.3, seaborn 0.13.2
 - JMH configuration read from official-final.json: -f10 -wi8 -i10

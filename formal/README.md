@@ -1,11 +1,51 @@
 # NIPoK-SE: formal verification
 
 This directory contains the formal models behind the security analysis
-(Section 5) of the paper *A Privacy-Preserving Framework using Non-Interactive
+(Section 5<!--ref:sec:security-->) of the paper *A Privacy-Preserving Framework using Non-Interactive
 Proofs of Knowledge for End-to-End Secure Authentication in Open Banking*.
-The analysis is organized in three tiers, each of which discharges what the
-tier above it assumes. Model names (D_Σ, G_auth, M_E2E, M_NIPoK, M_cust) are
+The analysis uses three tools in three tiers. Tier 3 supports the premise of
+Tier 2, and Tier 2 bounds what Tier 1 idealizes for the proof; two links of
+this chain are classical results that are stated in the paper and not
+mechanized (see below). Model names (D_Σ, G_auth, M_E2E, M_NIPoK, M_cust) are
 those of the paper.
+
+What each tool establishes, and what it does not (Section 5.2<!--ref:subsec:framework--> of the paper):
+
+- Tier 3, EasyCrypt (D_Σ). Completeness, special soundness and perfect
+  special honest-verifier zero-knowledge of the interactive Schnorr
+  Σ-protocol with a uniformly sampled nonce, in an abstract cyclic group of
+  prime order, with no computational assumption. Not covered: the
+  Fiat-Shamir transform, the deterministic nonce of the implementation, the
+  edwards25519 encoding, the cofactor checks of the verifier and the hash
+  function.
+- Tier 2, CryptoVerif (G_auth). Injective agreement for the authentication
+  step, with an explicit probability bound. The EUF-CMA security of the proof
+  is the only cryptographic premise: the model replaces the proof by a
+  deterministic signature over the reduced context (X, N, cb, id_V) and uses
+  no other property of it, so the same bound holds for any EUF-CMA-secure
+  signature over that context. Not covered: the wallet, the OAuth exchange,
+  and the prover identifier id_P of the deployed context.
+- Tier 1, ProVerif (M_E2E, M_NIPoK, M_cust). Secrecy and correspondence
+  properties of the composed flow for an unbounded number of sessions, with
+  idealized cryptography: the proof, the Ed25519 signatures, the hash
+  functions and the authenticated encryption of the wallet are perfect. The
+  tier is not quantitative. For the proof, the lower tiers support this
+  idealization (query S1 has its computational counterpart in the
+  zero-knowledge property, query A1 in the bound of G_auth). Query A3 rests on
+  the idealized JARM signature, whose computational assumption no tier proves.
+  Queries A2 and A4 follow from the session structure and from the private
+  back channels of the model; they exercise neither the PKCE check nor the
+  certificate-binding check that the model contains. Queries A5 and A6 depend
+  on the consent checks at the resource server (see "Counterfactual checks").
+
+Three limits hold for every model of this directory. No model was run on the
+deployed context, which contains the prover identifier id_P (see "Identity
+binding" below). A nonce is accepted only by the verifier session that issued
+it, whereas the deployed store accepts it from any session of the
+authorization server, so the models do not cover an adversary that obtains an
+unspent proof. The enrolled key is preinstalled, and no model covers
+enrollment, re-enrollment, lockout, rate limiting, token expiry or refresh
+tokens.
 
 ## Contents
 
@@ -18,6 +58,14 @@ those of the paper.
 | 1 | ProVerif | `proverif/custody-boundary.pv`, `proverif/custody-fulldump.pv` | M_cust (model pair) | The witness stays secret when the sealed blob on the heap is disclosed (first file) and is recovered once the off-heap key is disclosed as well (second file, a counterfactual) |
 
 `run-all-formal.sh` runs all six files.
+
+Version 3.1 adds, beside these six files, three copies of the models with the prover identifier id_P in the signed
+context (`cryptoverif/nipok-idp.cv`, `proverif/nipok-idp.pv`, `proverif/nipok-e2e-idp.pv`), four mutation copies of
+the end-to-end model (`proverif/mutations/`) and `run-3.1.sh`, which runs every file and writes a summary table.
+**These additions have not been run yet**: `UNVERIFIED-3.1.md` lists every changed line, the expected results and
+what each outcome means for the paper. The results in the table above are those of the six archived files. The
+paper does not rely on the copies with id_P: each model has a single prover, for which id_P would be the same
+public constant in every proof, so adding it to an injectively encoded context changes no query result.
 
 Two steps of the argument are classical results stated in the paper and are
 not mechanized: the Fiat-Shamir reduction, which derives EUF-CMA security from
@@ -67,6 +115,18 @@ proof and prints nothing. Delete the cache before compiling, as above and in
 `run-all-formal.sh`, so that every proof is checked again.
 
 `nipok-e2e.pv` takes the longest; the paper reports convergence in under 150 s.
+
+### Tool versions and machine of the published runs
+
+| Item | Value |
+|---|---|
+| ProVerif | 2.05 |
+| CryptoVerif | 2.12 |
+| EasyCrypt | r2026.05-23-gc64f7a3 (git-hash printed by `easycrypt config`; opam pin of git+https://github.com/EasyCrypt/easycrypt.git, 23 commits after release r2026.05); the adapted `examples/SchnorrPK.ec` is the version of commit 9656af66, shipped in r2023.09 to r2026.05 |
+| SMT solver(s) | Alt-Ergo 2.4.3 and Z3 4.16.0, through Why3 1.8.2 |
+| OCaml switch | 4.14.2 |
+| Machine of the 150 s | Intel Core i9-14900HX, 24 logical cores; 25.4 GiB of memory visible to the WSL2 virtual machine; Ubuntu 24.04.4 LTS under WSL2 (Linux 6.6.87.2-microsoft-standard-WSL2) |
+| Measured run time of `nipok-e2e.pv` | 0.014 s (wall clock, median of three runs on 25 Nov 2026, machine above) |
 
 ## Expected results
 
@@ -120,7 +180,7 @@ the `print` commands that follow the proofs display their statements.
 
 ## Modeling assumptions and abstractions
 
-These points are stated in Section 5 of the paper and are summarized here.
+These points are stated in Section 5<!--ref:sec:security--> of the paper and are summarized here.
 
 - D_Σ (EasyCrypt). An abstract cyclic group of prime order (the primality
   of the order is an axiom of the development), an interactive challenge, and a
@@ -145,10 +205,14 @@ These points are stated in Section 5 of the paper and are summarized here.
   JARM is modeled as a signed message only: its JWE layer is not modeled in any
   model of this artifact, and its confidentiality is an assumption. The TPP
   follows the protocol but may request any resource or account.
-- Identity binding. G_auth, M_NIPoK, and M_E2E bind the prover's key X and
-  the verifier identity id_V but not the prover identifier id_P of the deployed
-  context; this additional field can only shrink the set of contexts that an
-  adversary can bring about.
+- Identity binding. G_auth, M_NIPoK, and M_E2E were run on the reduced
+  context (X, N, cb, id_V), which binds the prover's key X and the verifier
+  identity id_V but omits the prover identifier id_P of the deployed context.
+  The paper expects the argument to carry over, since id_P is one more field
+  of an injectively encoded message, but no model covers the separation of
+  accounts under a shared key that id_P adds. Copies of the three models with
+  id_P in the context are prepared in this directory and have not been run:
+  see `UNVERIFIED-3.1.md`.
 - M_cust (ProVerif). The sealing is perfect symmetric encryption
   (`senc`/`sdec`), and the heap is a public channel that the attacker reads.
   The off-heap key `kek` is either kept off the heap (`custody-boundary.pv`) or
@@ -170,6 +234,22 @@ channel from which the channel-binding value is derived.
 - In `nipok.pv`, dropping cb from the context on both sides lets a proof made
   in one session be relayed into another (see the note at the end of the file).
 - `custody-fulldump.pv` is the counterfactual of `custody-boundary.pv`.
+
+## Changes since version 3.0
+
+- The introduction states what each tool establishes and what it does not, in the terms of the paper. The sentence
+  "each of which discharges what the tier above it assumes" is withdrawn: two links of the chain are not mechanized.
+- The entry "Identity binding" no longer says that the prover identifier "can only shrink the set of contexts that
+  an adversary can bring about"; it says what the paper says.
+- The header comment of `cryptoverif/nipok.cv` gave "Adv_auth ≤ N · Adv_UF-CMA(PSU key) + nonce-collision
+  statistics", which is not the bound that CryptoVerif prints. It now gives the printed bound,
+  Psign(time_1, N) + 0.5 * N2^2 / |nonce|. The code of the model is unchanged.
+- `easycrypt/SchnorrFS.ec` states its origin (`examples/SchnorrPK.ec` of the EasyCrypt distribution) and reproduces
+  the MIT notice of EasyCrypt. Two comments that claimed more than the file proves are corrected: the
+  Fiat-Shamir bound is the one printed in the paper, and the chain is described with its two links that are not
+  mechanized. The code is unchanged.
+- New, not yet run: the copies with id_P, the mutation copies and `run-3.1.sh` (see `UNVERIFIED-3.1.md`).
+- A table for the tool versions and the machine of the published runs, to be filled before release.
 
 ## Changes since version 2.0
 

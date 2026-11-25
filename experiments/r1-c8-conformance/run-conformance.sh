@@ -9,13 +9,15 @@
 #             (elisabeth, libsodium) into $OUT
 #   vectors   the two independent Python implementations: tools/nipok_ref.py (pure Python) and tools/nipok_nacl_check.py
 #             (PyNaCl/libsodium, skipped when PyNaCl is not installed)
-#   tables    Table 13 and Table 14 (candidate bodies and the bodies printed in the paper), the \Cei* macros, summary,
-#             README.md, MAPPING.md and checksums of $OUT
+#   tables    the conformance table and the parameter table of the paper (candidate bodies and the bodies printed in
+#             the paper), the \Cei* macros, summary, README.md, MAPPING.md and checksums of $OUT.
+#             In the paper these are Table 10<!--ref:tab:c8-conformance--> and Supplementary Table S4<!--ref:tab:c8-parameters-->
+#             (numbers written by docs/renumber_paper_map.py; the file names table13_*, table14_* do not change)
 # The testbed (minikube) is not needed; no image is rebuilt.
 #
 # Variables (optional):
 #   OUT       output directory (default: experiments/r1-c8-conformance/results)
-#   C7_T12    Table 12 data of Comment 7 (default: experiments/r1-c7-security-cost-ablation/results/tables/table12_c7-lifecycle.csv)
+#   C7_T12    lifecycle-table data of Comment 7 (default: experiments/r1-c7-security-cost-ablation/results/tables/table12_c7-lifecycle.csv)
 #   C7_PROBE  probe.json of Comment 7 (raw data; default: testbed/bank/benchmark-R1-C7/e2e/probe/probe.json, or the
 #             extracted raw-data archive on Zenodo)
 #   PYTHON=python3   ALLOW_RUNNING=1 skips the check that no load test is running
@@ -135,7 +137,7 @@ cmd_vectors(){
 }
 
 cmd_tables(){
-  hdr "tables: Table 13, Table 14, \\Cei* macros, summary"
+  hdr "tables: conformance table (table13_*), parameter table (table14_*), \\Cei* macros, summary"
   local rc
   "$PY" "$HERE/analysis/c8_tables.py" --vectors "$VEC" \
     --java-elisabeth "$OUT/vectors/java-vectors-elisabeth.json" --java-libsodium "$OUT/vectors/java-vectors-libsodium.json" \

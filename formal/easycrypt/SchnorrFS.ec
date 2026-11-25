@@ -8,13 +8,29 @@
 (*                              witness w=(z−z')/(e−e')  => knowledge soundness.  *)
 (*    - SHVZK                 - the SIMULATOR produces identically distributed transcripts *)
 (*                              WITHOUT w => zero knowledge.                      *)
-(*  These are EXACTLY the 2 properties (soundness + ZK) that ProVerif "assumes" and *)
-(*  CryptoVerif "takes as premise (UF-CMA)". Foundation: the Discrete-Log (DL) problem. *)
+(*  Special soundness and SHVZK are the two properties of the protocol from which  *)
+(*  the classical Fiat-Shamir argument derives, under the discrete-logarithm (DL)  *)
+(*  assumption in the random oracle model, the UF-CMA property that CryptoVerif    *)
+(*  takes as its premise. That argument is stated in the paper and is NOT          *)
+(*  mechanized in this file, which treats the interactive protocol only.           *)
 (*                                                                               *)
 (*  NIPoK mapping: statement h = X = g^x (public key) ; witness w = x (PSU scalar); *)
 (*    R_DL h w <=> h = g^w (possession of the discrete log). challenge e = Fiat-Shamir hash. *)
 (*                                                                               *)
-(*  Based on examples/SchnorrPK.ec of EasyCrypt (fully proved).                   *)
+(*  ORIGIN: adapted from examples/SchnorrPK.ec of the EasyCrypt distribution     *)
+(*    (https://github.com/EasyCrypt/easycrypt), in the version written by        *)
+(*    commit 9656af6610f18e4ce2a2c7b6ef927cc7c76b74a7 (2 Sep 2022). That version *)
+(*    is the one shipped in releases r2023.09 to r2026.05. Apart from line       *)
+(*    breaks, the code of this file is that version with the prefix              *)
+(*    schnorr_proof_of_knowledge_ of the four lemma names shortened to schnorr_; *)
+(*    the comments, which relate the development to NIPoK, were added. Later     *)
+(*    commits change the example: 1c7e6d78 (11 Jun 2026) one step of the         *)
+(*    completeness proof, c4219281 (24 Nov 2026) the clone of the field and two  *)
+(*    rewrite steps. EasyCrypt is distributed under the MIT license; its         *)
+(*    copyright and permission notice, identical at 9656af66 and on the main     *)
+(*    branch on 24 Nov 2026, is reproduced below.                                *)
+(*    EasyCrypt release or commit with which this file was checked:              *)
+(*    r2026.05-23-gc64f7a3 (git-hash printed by `easycrypt config`).             *)
 (*  RUN:  easycrypt compile easycrypt/SchnorrFS.ec   -> 3 prints (proven).        *)
 (*                                                                               *)
 (*  KEY CUSTODY: the witness `w=x` is generated in `keygen` (`w <$ dt`) and held by *)
@@ -22,6 +38,37 @@
 (*    where x is STORED (simulator SEALED/off-heap, Kubernetes Secret, TEE) lies BELOW the abstraction - *)
 (*    the model is invariant to the backend. At-rest/host dumps are outside the computational scope. *)
 (* ============================================================================ *)
+(* ---------------------------------------------------------------------------- *)
+(*  Copyright and permission notice of EasyCrypt (file LICENSE of its repository, *)
+(*  identical at commit 9656af66 and on the main branch on 24 Nov 2026), which   *)
+(*  covers the parts of this file taken from examples/SchnorrPK.ec:               *)
+(*
+   MIT License
+
+   Copyright (c) 2012 IMDEA Software Institute
+   Copyright (c) 2012 Inria
+   Copyright (c) 2017 École Polytechnique
+   Copyright (c) EasyCrypt contributors (see AUTHORS)
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+*)
+(* ---------------------------------------------------------------------------- *)
 require import Int.
 require import Real.
 require import Distr.
@@ -187,15 +234,21 @@ print schnorr_shvzk.
 (*    (special soundness ∧ SHVZK) - PROVED ABOVE - under Fiat-Shamir               *)
 (*    (`test` replaced by e = H(statement‖message‖ctx), H a random oracle) yields  *)
 (*    a signature/NIZK that is EUF-CMA in the ROM, with:                          *)
-(*        Adv^{EUF-CMA}_A  ≤  q_H/ℓ  +  sqrt( q_H · Adv^{DL}_B ).                   *)
+(*        Adv^{EUF-CMA}_A  ≤  (q_H + q_S(q_S+q_H))/ℓ  +  sqrt( q_H · Adv^{DL}_B )    *)
+(*    (the bound printed in the paper; q_H random-oracle queries, q_S signing      *)
+(*    queries, ℓ the group order),                                                *)
 (*    where: SHVZK => signatures simulated without x (answers the oracle queries); *)
 (*           special soundness + forking (RO rewinding) => x extracted => DL solved. *)
 (*                                                                               *)
-(*  The forking part is computational rewinding, to be DEVELOPED with the standard library: *)
-(*    crypto/DigitalSignaturesROM.eca + crypto/PROM.ec + the Forking lemma. The two RESULTS *)
-(*    above (special soundness, SHVZK) are EXACTLY the 2 input hypotheses of the FS theorem. *)
+(*  The forking part is computational rewinding. It is NOT developed in this file; *)
+(*    it could be built on the standard library (crypto/DigitalSignaturesROM.eca,  *)
+(*    crypto/PROM.ec and a forking lemma). The two results proved above (special   *)
+(*    soundness, SHVZK) are the two properties of the protocol that it uses.       *)
 (*                                                                               *)
-(*  => CLOSED chain of the verification framework:                                *)
-(*     ProVerif (logic, anti-relay)  <=  CryptoVerif (composition, bound Psign)   *)
-(*       <=  EasyCrypt: Psign = Adv^{EUF-CMA}  <=  special soundness + SHVZK <= DL. *)
+(*  Chain of the verification framework, with its two links that are not          *)
+(*  mechanized (the Fiat-Shamir reduction above, and the replacement of the       *)
+(*  uniform nonce by the deterministic nonce of the implementation):             *)
+(*     ProVerif (symbolic, end to end)  <-  CryptoVerif (authentication step,     *)
+(*       bound in Psign)  <-  [paper, not mechanized] Psign = Adv^{EUF-CMA} <= DL  *)
+(*       <-  EasyCrypt (this file): special soundness + SHVZK of the Σ-protocol.  *)
 (* ============================================================================ *)
