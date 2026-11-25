@@ -3,7 +3,8 @@
 # collect-versions.sh - records the tool versions and the machine of the formal runs, and times the six models of
 # version 3.0 once, so that the table "Tool versions and machine of the published runs" of README.md can be filled.
 #
-# Usage:  cd formal && ./collect-versions.sh            (TIMEOUT=seconds per file, default 1800; OUT=file)
+# Usage:  cd formal && ./collect-versions.sh [--fill]   (TIMEOUT=seconds per file, default 1800; OUT=file)
+#         --fill  then copies the values into README.md and easycrypt/SchnorrFS.ec (fill-tool-versions.py)
 # Output: tool-versions-3.1.txt (or $OUT). Nothing else in the tree is changed, except that the EasyCrypt cache
 #         easycrypt/SchnorrFS.eco is deleted so that every proof is checked again.
 # Run it on the machine and with the tools that produced the results reported in the paper.
@@ -11,6 +12,7 @@
 set -uo pipefail
 cd "$(dirname "$0")"
 OUT="${OUT:-tool-versions-3.1.txt}"
+FILL=0; [ "${1:-}" = "--fill" ] && FILL=1
 TIMEOUT="${TIMEOUT:-1800}"
 
 has() { command -v "$1" >/dev/null 2>&1; }
@@ -84,4 +86,9 @@ timed() {  # <label> <tool> <args...>: runs once, prints wall-clock seconds, exi
 } > "$OUT" 2>&1
 
 case "$OUT" in /*) echo "Written: $OUT";; *) echo "Written: formal/$OUT";; esac
-echo "Send this file to the corresponding author, or commit it on the branch release-3.1."
+if [ "$FILL" = 1 ]; then
+  python3 fill-tool-versions.py "$OUT"
+  echo "Next: git diff, then  git add -A && git commit -m \"formal: tool versions and machine of the published runs\""
+else
+  echo "Next: ./collect-versions.sh --fill (or python3 fill-tool-versions.py) to copy the values into README.md."
+fi
