@@ -1,0 +1,165 @@
+# Tool versions and machine of the formal runs (collect-versions.sh)
+date: 2026-11-25 06:44:16 UTC
+
+## Machine
+Linux 6.6.87.2-microsoft-standard-WSL2 x86_64
+model name	: Intel(R) Core(TM) i9-14900HX
+logical cores: 24
+MemTotal:       26671240 kB
+os: Ubuntu 24.04.4 LTS
+running under WSL: Linux version 6.6.87.2-microsoft-standard-WSL2 (root@439a258ad544) (gcc (GCC) 11.2.0, GNU ld (GNU Binutils) 2.37) #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025
+
+## Tools
+--- opam switch and packages
+4.14.2
+alt-ergo    2.4.3       The Alt-Ergo SMT prover
+cryptoverif 2.12        CryptoVerif: Cryptographic protocol verifier in the computational model
+easycrypt   ~dev        pinned to version ~dev at git+https://github.com/EasyCrypt/easycrypt.git
+ocaml       4.14.2      The OCaml compiler (virtual package)
+proverif    2.05        ProVerif: Cryptographic protocol verifier in the symbolic model
+why3        1.8.2       Why3 environment for deductive program verification
+z3          4.16.0      Z3 solver
+--- ocaml
+The OCaml toplevel, version 4.14.2
+--- proverif
+Proverif 2.05. Cryptographic protocol verifier, by Bruno Blanchet, Vincent Cheval, and Marc Sylvestre
+  -test 		display a bit more information for debugging
+--- cryptoverif
+Cryptoverif 2.12. Cryptographic protocol verifier, by Bruno Blanchet, Pierre Boutry, David Cadé, Christian Doczkal, Aymeric Fromherz, Charlie Jacomme, Benjamin Lipp, and Pierre-Yves Strub
+Copyright ENS, CNRS, Inria, MPI-SP, Ecole Polytechnique, distributed under the CeCILL-B license.
+--- easycrypt
+git-hash: r2026.05-23-gc64f7a3
+load-path:
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/tactics
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/structure
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/query_counting
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/modules
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/looping
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/encryption
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/distributions
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/datatypes
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/crypto
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/crypto/ske
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/crypto/prp_prf
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/crypto/pke
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/crypto/assumptions
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/core
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/analysis
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/algebra
+  <system>@/home/dongbh/.opam/4.14.2/lib/easycrypt/theories/prelude
+why3 configuration file
+  /home/dongbh/.config/easycrypt/why3.conf
+EasyCrypt system configuration directory
+  /home/dongbh/.opam/4.14.2/lib/easycrypt/config
+EasyCrypt configuration file
+--- alt-ergo
+2.4.3
+--- z3
+Z3 version 4.16.0 - 64 bit
+--- cvc4/cvc5
+
+## One timed run of each model of version 3.0
+
+### proverif/nipok-e2e.pv
+command: proverif proverif/nipok-e2e.pv
+exit status: 0
+wall-clock seconds: 0.0
+result lines:
+  RESULT not attacker(xPSU[]) is true.
+  RESULT inj-event(BankAccepts(pk(xPSU[]),n_3,cb)) ==> inj-event(PsuProves(pk(xPSU[]),n_3,cb)) is true.
+  RESULT inj-event(TokenIssued(t,code_2)) ==> inj-event(CodeIssued(code_2,ch)) is true.
+  RESULT event(TppGotCode(code_2)) ==> event(CodeIssued(code_2,ch)) is true.
+  RESULT event(RsGrants(t,c)) ==> event(TokenIssued(t,code_2)) is true.
+  RESULT event(RsGrantsResource(r)) ==> event(ConsentCovers(r)) is true.
+  RESULT event(RsGrantsAccountResource(o)) ==> event(ConsentCovers(o)) is true.
+  Verification summary:
+  Query not attacker(xPSU[]) is true.
+  Query inj-event(BankAccepts(pk(xPSU[]),n_3,cb)) ==> inj-event(PsuProves(pk(xPSU[]),n_3,cb)) is true.
+  Query inj-event(TokenIssued(t,code_2)) ==> inj-event(CodeIssued(code_2,ch)) is true.
+  Query event(TppGotCode(code_2)) ==> event(CodeIssued(code_2,ch)) is true.
+  Query event(RsGrants(t,c)) ==> event(TokenIssued(t,code_2)) is true.
+  Query event(RsGrantsResource(r)) ==> event(ConsentCovers(r)) is true.
+  Query event(RsGrantsAccountResource(o)) ==> event(ConsentCovers(o)) is true.
+last lines of the output:
+  
+  Query event(RsGrantsAccountResource(o)) ==> event(ConsentCovers(o)) is true.
+  
+  --------------------------------------------------------------
+  
+
+### proverif/nipok.pv
+command: proverif proverif/nipok.pv
+exit status: 0
+wall-clock seconds: 0.0
+result lines:
+  RESULT not attacker(xA[]) is true.
+  RESULT inj-event(server_accepts(pk(xA[]),n_3,cb)) ==> inj-event(client_authenticates(pk(xA[]),n_3,cb)) is true.
+  Verification summary:
+  Query not attacker(xA[]) is true.
+  Query inj-event(server_accepts(pk(xA[]),n_3,cb)) ==> inj-event(client_authenticates(pk(xA[]),n_3,cb)) is true.
+last lines of the output:
+  
+  Query inj-event(server_accepts(pk(xA[]),n_3,cb)) ==> inj-event(client_authenticates(pk(xA[]),n_3,cb)) is true.
+  
+  --------------------------------------------------------------
+  
+
+### proverif/custody-boundary.pv
+command: proverif proverif/custody-boundary.pv
+exit status: 0
+wall-clock seconds: 0.0
+result lines:
+  RESULT not attacker(x[]) is true.
+  Verification summary:
+  Query not attacker(x[]) is true.
+last lines of the output:
+  
+  Query not attacker(x[]) is true.
+  
+  --------------------------------------------------------------
+  
+
+### proverif/custody-fulldump.pv (attack expected)
+command: proverif proverif/custody-fulldump.pv
+exit status: 0
+wall-clock seconds: 0.0
+result lines:
+  RESULT not attacker(x[]) is false.
+  Verification summary:
+  Query not attacker(x[]) is false.
+last lines of the output:
+  
+  Query not attacker(x[]) is false.
+  
+  --------------------------------------------------------------
+  
+
+### cryptoverif/nipok.cv
+command: cryptoverif cryptoverif/nipok.cv
+exit status: 0
+wall-clock seconds: 0.0
+result lines:
+  Proved query forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb)) up to probability 0.5 * N2^2 / |nonce|
+  Proved forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb)) in game 7 up to probability 0.5 * N2^2 / |nonce|
+  RESULT Proved forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb)) up to probability Psign(time_1, N) + 0.5 * N2^2 / |nonce|
+  RESULT time_1 = N * time(([1,N])) + (N + N2) * time(ctx) + N2 * time(([1,N2])) + time + (N2 - 1) * time(check)
+  All queries proved.
+last lines of the output:
+  Adv[Game 1: forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb))] <= Psign(time_1, N) + Adv[Game 7: forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb))]
+  Adv[Game 7: forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb))] <= 0.5 * N2^2 / |nonce|
+  RESULT Proved forall cb: cb_t, n: nonce, X: pkey; inj-event(bank_accepts(X, n, cb)) ==> inj-event(psu_proves(X, n, cb)) up to probability Psign(time_1, N) + 0.5 * N2^2 / |nonce|
+  RESULT time_1 = N * time(([1,N])) + (N + N2) * time(ctx) + N2 * time(([1,N2])) + time + (N2 - 1) * time(check)
+  All queries proved.
+
+### easycrypt/SchnorrFS.ec
+command: easycrypt compile easycrypt/SchnorrFS.ec
+exit status: 0
+wall-clock seconds: 1.2
+result lines:
+last lines of the output:
+         () @ &m : res] =
+      Pr[SimulateHonestVerifier(SchnorrPK, SchnorrPKAlgorithms, D).gameReal
+         () @ &m : res].
+  
+  [|] [0256] 100.0% (-1.0B / [frag -1.0B])                                                   

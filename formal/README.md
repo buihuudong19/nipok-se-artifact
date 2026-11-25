@@ -118,19 +118,15 @@ proof and prints nothing. Delete the cache before compiling, as above and in
 
 ### Tool versions and machine of the published runs
 
-<!-- TO BE FILLED BY THE FIRST AUTHOR BEFORE THE RELEASE OF 3.1 (item 7 of the
-     list of open actions). Do not release with this block unfilled.
-     `./collect-versions.sh` writes the values to tool-versions-3.1.txt. -->
-
 | Item | Value |
 |---|---|
-| ProVerif | version: TO FILL (`proverif --help`, first line) |
-| CryptoVerif | version: TO FILL (`cryptoverif` banner) |
-| EasyCrypt | release or commit: TO FILL (`easycrypt config`, or `git rev-parse HEAD` of the pinned checkout); the adapted `examples/SchnorrPK.ec` is the version of commit 9656af66, shipped in r2023.09 to r2026.05 |
-| SMT solver(s) | Alt-Ergo version: TO FILL (`alt-ergo --version`) |
-| OCaml switch | TO FILL (`ocaml -version`) |
-| Machine of the 150 s | CPU model, core count, memory, operating system: TO FILL |
-| Measured run time of `nipok-e2e.pv` | TO FILL (`time proverif proverif/nipok-e2e.pv`) |
+| ProVerif | 2.05 |
+| CryptoVerif | 2.12 |
+| EasyCrypt | r2026.05-23-gc64f7a3 (git-hash printed by `easycrypt config`; opam pin of git+https://github.com/EasyCrypt/easycrypt.git, 23 commits after release r2026.05); the adapted `examples/SchnorrPK.ec` is the version of commit 9656af66, shipped in r2023.09 to r2026.05 |
+| SMT solver(s) | Alt-Ergo 2.4.3 and Z3 4.16.0, through Why3 1.8.2 |
+| OCaml switch | 4.14.2 |
+| Machine of the 150 s | Intel Core i9-14900HX, 24 logical cores; 25.4 GiB of memory visible to the WSL2 virtual machine; Ubuntu 24.04.4 LTS under WSL2 (Linux 6.6.87.2-microsoft-standard-WSL2) |
+| Measured run time of `nipok-e2e.pv` | 0.014 s (wall clock, median of three runs on 25 Nov 2026, machine above) |
 
 ## Expected results
 
