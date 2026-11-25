@@ -61,7 +61,8 @@ authors can do them; they are listed under "Before the release".
 ## Before the release
 
 1. **Fill the table "Tool versions and machine of the published runs"** in `formal/README.md` with the versions
-   and the machine of the runs reported in the paper. Running `run-3.1.sh` is optional for this release: the paper
+   and the machine of the runs reported in the paper. `cd formal && ./collect-versions.sh` writes everything the
+   table needs to `formal/tool-versions-3.1.txt` (versions, machine, one timed run of each model of version 3.0). Running `run-3.1.sh` is optional for this release: the paper
    argues that, each model having a single prover, id_P would be the same public constant in every proof and
    cannot change a query result. If it is run, apply the matching case of `formal/UNVERIFIED-3.1.md`, section 4,
    and replace that file by `results-3.1/summary.md`; if not, `UNVERIFIED-3.1.md` stays as it is.

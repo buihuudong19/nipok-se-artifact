@@ -119,7 +119,8 @@ proof and prints nothing. Delete the cache before compiling, as above and in
 ### Tool versions and machine of the published runs
 
 <!-- TO BE FILLED BY THE FIRST AUTHOR BEFORE THE RELEASE OF 3.1 (item 7 of the
-     list of open actions). Do not release with this block unfilled. -->
+     list of open actions). Do not release with this block unfilled.
+     `./collect-versions.sh` writes the values to tool-versions-3.1.txt. -->
 
 | Item | Value |
 |---|---|
