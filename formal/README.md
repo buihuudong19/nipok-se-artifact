@@ -63,7 +63,9 @@ Version 3.1 adds, beside these six files, three copies of the models with the pr
 context (`cryptoverif/nipok-idp.cv`, `proverif/nipok-idp.pv`, `proverif/nipok-e2e-idp.pv`), four mutation copies of
 the end-to-end model (`proverif/mutations/`) and `run-3.1.sh`, which runs every file and writes a summary table.
 **These additions have not been run yet**: `UNVERIFIED-3.1.md` lists every changed line, the expected results and
-what each outcome means for the paper. The results in the table above are those of the six archived files.
+what each outcome means for the paper. The results in the table above are those of the six archived files. The
+paper does not rely on the copies with id_P: each model has a single prover, for which id_P would be the same
+public constant in every proof, so adding it to an injectively encoded context changes no query result.
 
 Two steps of the argument are classical results stated in the paper and are
 not mechanized: the Fiat-Shamir reduction, which derives EUF-CMA security from
@@ -123,7 +125,7 @@ proof and prints nothing. Delete the cache before compiling, as above and in
 |---|---|
 | ProVerif | version: TO FILL (`proverif --help`, first line) |
 | CryptoVerif | version: TO FILL (`cryptoverif` banner) |
-| EasyCrypt | commit: TO FILL (`easycrypt config`, or `git rev-parse HEAD` of the pinned checkout) |
+| EasyCrypt | release or commit: TO FILL (`easycrypt config`, or `git rev-parse HEAD` of the pinned checkout); the adapted `examples/SchnorrPK.ec` is the version of commit 9656af66, shipped in r2023.09 to r2026.05 |
 | SMT solver(s) | Alt-Ergo version: TO FILL (`alt-ergo --version`) |
 | OCaml switch | TO FILL (`ocaml -version`) |
 | Machine of the 150 s | CPU model, core count, memory, operating system: TO FILL |

@@ -60,11 +60,14 @@ authors can do them; they are listed under "Before the release".
 
 ## Before the release
 
-1. **Run the formal models**: `cd formal && ./run-3.1.sh`. Read `results-3.1/summary.md`, apply the matching case
-   of `formal/UNVERIFIED-3.1.md`, section 4, to the paper, fill the table "Tool versions and machine of the
-   published runs" in `formal/README.md`, then delete `UNVERIFIED-3.1.md` or replace it by the summary.
-2. **Fill the EasyCrypt commit** in the header of `formal/easycrypt/SchnorrFS.ec` (line marked "TO FILL") and
-   compare the MIT notice with the `LICENSE` file at that commit.
+1. **Fill the table "Tool versions and machine of the published runs"** in `formal/README.md` with the versions
+   and the machine of the runs reported in the paper. Running `run-3.1.sh` is optional for this release: the paper
+   argues that, each model having a single prover, id_P would be the same public constant in every proof and
+   cannot change a query result. If it is run, apply the matching case of `formal/UNVERIFIED-3.1.md`, section 4,
+   and replace that file by `results-3.1/summary.md`; if not, `UNVERIFIED-3.1.md` stays as it is.
+2. **Fill the EasyCrypt release or commit with which `SchnorrFS.ec` was checked** (line marked "TO FILL" in its
+   header). The adapted source is already identified there: the version of `examples/SchnorrPK.ec` written by
+   commit 9656af66 (releases r2023.09 to r2026.05); the MIT notice is identical at that commit.
 3. **Regenerate the results from the raw data** with the pinned Python packages
    (`experiments/requirements.txt`):
    `C6_DATA=<raw>/benchmark-R1-C6 FORCE=1 experiments/r1-c6-statistical-evaluation/analysis/generate-results.sh`
@@ -95,7 +98,7 @@ authors can do them; they are listed under "Before the release".
   are in the dataset record. For the new version use a title that ends, for example, "... Benchmark Harnesses,
   and Derived Results", and give the entry `nipok-artifact` exactly the title of the record.
 - Dataset record (10.5281/zenodo.24370110): no new version is needed for 3.1, since the raw data are unchanged.
-  Correct the three creator names in its metadata ("Trinh-Cao, Thang", "Pham-An, Vinh", "Nguyen-An, Khuong").
+  The three creator names in its metadata were corrected on 25 Nov 2026.
   `docs/reproduce.md` names the archive `nipok-se-raw-data-v3.0.tar.gz`; this stays valid.
 - With version 3.1 cited, the paper no longer needs the sentence "The paper map of version 3.0 numbers ..." in the
   Data availability paragraph, nor the supplementary section and table that give the correspondence.
