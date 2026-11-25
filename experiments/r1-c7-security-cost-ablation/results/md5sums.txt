@@ -1,4 +1,4 @@
-06387351c6849ba15a005db8ff8297b0  ./MAPPING.md
+7be8a8d453934deca4598169419817eb  ./MAPPING.md
 508c3e8d6cca0e19337a4eaa39d6d33d  ./README.md
 8cf46af95f285b121067a5e322c13800  ./burst-timeline/c7_burst_timeline.csv
 d38d796684919cbe2f88afe013285a98  ./burst-timeline/c7_burst_timeline.pdf

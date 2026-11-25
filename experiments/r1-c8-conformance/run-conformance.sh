@@ -11,7 +11,7 @@
 #             (PyNaCl/libsodium, skipped when PyNaCl is not installed)
 #   tables    the conformance table and the parameter table of the paper (candidate bodies and the bodies printed in
 #             the paper), the \Cei* macros, summary, README.md, MAPPING.md and checksums of $OUT.
-#             In the paper these are Table 10<!--ref:tab:c8-conformance--> and Table 11<!--ref:tab:c8-parameters-->
+#             In the paper these are Table 10<!--ref:tab:c8-conformance--> and Supplementary Table S4<!--ref:tab:c8-parameters-->
 #             (numbers written by docs/renumber_paper_map.py; the file names table13_*, table14_* do not change)
 # The testbed (minikube) is not needed; no image is rebuilt.
 #

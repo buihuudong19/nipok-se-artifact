@@ -1,6 +1,6 @@
 {
   "about": "Correspondence between the objects of this package and the numbering of the manuscript. Edited by docs/renumber_paper_map.py (see its header); 'package_name' is the name an object has in the file names, scripts and generated reports of the package and never changes; 'number' is what the manuscript prints.",
-  "source": "long revised version of 23 Nov 2026 (39 pages in the check build; main text and supplementary material)",
+  "source": "revised manuscript (short version), build of 2026-11-25",
   "targets": [
     "docs/paper-map.md",
     "formal/README.md",
@@ -148,7 +148,7 @@
       "label": "supp:micro",
       "kind": "Section",
       "document": "supplementary",
-      "number": "S6",
+      "number": "S9",
       "object": "Per-operation micro-benchmarks"
     },
     {
@@ -182,7 +182,7 @@
       "label": "tab:stride",
       "kind": "Table",
       "document": "supplementary",
-      "number": "S1",
+      "number": "S2",
       "package_name": "Table 6",
       "object": "STRIDE assessment"
     },
@@ -190,7 +190,7 @@
       "label": "tab:owasp",
       "kind": "Table",
       "document": "supplementary",
-      "number": "S2",
+      "number": "S3",
       "package_name": "Table 7",
       "object": "OWASP API Security Top 10 assessment"
     },
@@ -210,7 +210,7 @@
       "label": "tab:fbc-ab",
       "kind": "Table",
       "document": "supplementary",
-      "number": "S3",
+      "number": "S1",
       "package_name": "Table 9",
       "object": "Fixed-base comb against Straus",
       "files": [
@@ -269,8 +269,8 @@
     {
       "label": "tab:c8-parameters",
       "kind": "Table",
-      "document": "main",
-      "number": "11",
+      "document": "supplementary",
+      "number": "S4",
       "package_name": "Table 14",
       "object": "Shared parameters",
       "files": [
@@ -366,8 +366,8 @@
     {
       "label": "fig:c7-hops",
       "kind": "Figure",
-      "document": "main",
-      "number": "6",
+      "document": "supplementary",
+      "number": "S5",
       "package_name": "Figure 10",
       "object": "Stages of a journey",
       "files": [
@@ -378,7 +378,7 @@
       "label": "fig:c7-burst",
       "kind": "Figure",
       "document": "main",
-      "number": "7",
+      "number": "6",
       "package_name": "Figure 11",
       "object": "Latency during a burst",
       "files": [
@@ -389,7 +389,7 @@
       "label": "fig:c8-deployment",
       "kind": "Figure",
       "document": "supplementary",
-      "number": "S5",
+      "number": "S6",
       "package_name": "Figure 12",
       "object": "Deployment of the two-bank interoperability test"
     }
