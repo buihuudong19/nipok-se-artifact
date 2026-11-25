@@ -8,7 +8,8 @@ Formal models, testbed, benchmark harnesses and derived results for the paper
 > Non-Interactive Proofs of Knowledge for End-to-End Secure Authentication in Open Banking*. Submitted to the Journal of
 > Network and Computer Applications, 2026.
 
-Version 3.0 (doi:10.5281/zenodo.24371175) accompanies the revised manuscript. Version 2.0 (doi:10.5281/zenodo.21904704)
+Version 3.1 accompanies the revised manuscript; its DOI is listed under doi:10.5281/zenodo.24371174, which resolves
+to the latest version. Version 3.0 (doi:10.5281/zenodo.24371175) accompanied the first revision. Version 2.0 (doi:10.5281/zenodo.21904704)
 accompanied the submitted manuscript; `CHANGELOG.md` lists the differences.
 
 ## Contents

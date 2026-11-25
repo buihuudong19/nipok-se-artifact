@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this package, please cite the article and the version of the package that you used."
 type: software
 title: "NIPoK-SE Formal Verification Artifact and Reproducibility Package: ProVerif, CryptoVerif, and EasyCrypt Models, Implementation, Deployment Manifests, Benchmark Harnesses, and Raw Measurement Data"
-version: "3.0"
-date-released: "2026-11-19"
+version: "3.1"
+date-released: "2026-11-25"
 doi: "10.5281/zenodo.24371174"
 identifiers:
   - type: doi
