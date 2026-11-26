@@ -61,7 +61,7 @@ that carry the identifier, and its queries would differ from those printed in th
 |---|---|
 | `cryptoverif/nipok-idp.cv` | `All queries proved.`, with the probability `Psign(time_1, N) + 0.5 * N2^2 / \|nonce\|`. CryptoVerif names its time bounds itself; if the name differs (`time_2`, for example) and the form of the bound is the same, read its definition in the output before accepting it. |
 | `proverif/nipok-idp.pv` | `not attacker(xA[])` is true; the injective agreement is true. |
-| `proverif/nipok-e2e-idp.pv` | The seven queries S1 and A1 to A6 are true. Measure the run time; the paper quotes "under 150 s" for the archived model. |
+| `proverif/nipok-e2e-idp.pv` | The seven queries S1 and A1 to A6 are true. Measure the run time; the paper reports 0.014 s for the archived model. |
 
 ## 2. Mutation copies of `proverif/nipok-e2e.pv`
 
@@ -143,8 +143,8 @@ one enrolled account. Change:
 5. Conclusion. Replace "The formal models omit the prover identifier, whose binding is tested
    (Table~\ref{tab:c7-lifecycle}) but not modeled." by "The formal models enroll a single account; the separation
    of accounts by the prover identifier is tested (Table~\ref{tab:c7-lifecycle}) but not modeled."
-6. If the run time of `nipok-e2e-idp.pv` is not under 150 s, change "with convergence in under $150$\,s" to the
-   measured bound, and name the machine in the caption.
+6. The paper reports 0.014 s for the archived model (Section 5.5). If the run time of `nipok-e2e-idp.pv` differs
+   from it by more than the spread of three runs, report both times and name the machine.
 7. In this package: make the three copies the models that `README.md` lists under "Contents" and "Expected
    results", keep the archived files as the models of version 3.0, and rewrite the entry "Identity binding" of
    `README.md` in the words of item 1.

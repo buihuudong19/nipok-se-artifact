@@ -3,7 +3,7 @@
 (*    PSU -[NIPoK]-> AS -[PAR/PKCE]-> -[JARM: JWS-in-JWE]-> TPP -[mTLS token]-> AS *)
 (*    -> TPP -[token + certificate-bound (cnf)]-> RS -> data                      *)
 (*  LAYER 1 (symbolic / Dolev-Yao): traces + correspondence + secrecy.            *)
-(*  RUN: proverif nipok-e2e.pv   -> 7 RESULT ... is true (verified, terminates in <150 s) *)
+(*  RUN: proverif nipok-e2e.pv   -> 7 RESULT ... is true (verified; run time in formal/README.md) *)
 (*    S1 secrecy(xPSU) - A1 inj NIPoK-on-cb (anti-relay+replay) - A2 inj PKCE    *)
 (*    A3 JARM authenticity - A4 token integrity - A5 RAR resource binding (BOLA customer) *)
 (*    - A6 transitive RAR account binding (BOLA account).                        *)

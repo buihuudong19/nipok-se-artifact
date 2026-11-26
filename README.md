@@ -8,8 +8,8 @@ Formal models, testbed, benchmark harnesses and derived results for the paper
 > Non-Interactive Proofs of Knowledge for End-to-End Secure Authentication in Open Banking*. Submitted to the Journal of
 > Network and Computer Applications, 2026.
 
-Version 3.1 accompanies the revised manuscript; its DOI is listed under doi:10.5281/zenodo.24371174, which resolves
-to the latest version. Version 3.0 (doi:10.5281/zenodo.24371175) accompanied the first revision. Version 2.0 (doi:10.5281/zenodo.21904704)
+Version 3.1 (doi:10.5281/zenodo.24525751) accompanies the revised manuscript; doi:10.5281/zenodo.24371174 resolves
+to the latest version. Version 3.0 (doi:10.5281/zenodo.24371175) accompanied an earlier draft of the revised manuscript. Version 2.0 (doi:10.5281/zenodo.21904704)
 accompanied the submitted manuscript; `CHANGELOG.md` lists the differences.
 
 ## Contents
@@ -58,7 +58,8 @@ article and the version of the package that you used:
 
 | Record on Zenodo | DOI |
 |---|---|
-| Version 3.0 of this package (revised manuscript) | [10.5281/zenodo.24371175](https://doi.org/10.5281/zenodo.24371175) |
+| Version 3.1 of this package (revised manuscript) | [10.5281/zenodo.24525751](https://doi.org/10.5281/zenodo.24525751) |
+| Version 3.0 of this package (earlier draft of the revised manuscript) | [10.5281/zenodo.24371175](https://doi.org/10.5281/zenodo.24371175) |
 | All versions from 3.0 on (resolves to the latest) | [10.5281/zenodo.24371174](https://doi.org/10.5281/zenodo.24371174) |
-| Raw measurement data of version 3.0 | [10.5281/zenodo.24370110](https://doi.org/10.5281/zenodo.24370110) |
+| Raw measurement data (used by versions 3.0 and 3.1) | [10.5281/zenodo.24370110](https://doi.org/10.5281/zenodo.24370110) |
 | Version 2.0 (submitted manuscript) | [10.5281/zenodo.21904704](https://doi.org/10.5281/zenodo.21904704) |

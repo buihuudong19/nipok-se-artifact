@@ -102,7 +102,7 @@ values = {
     "| EasyCrypt |": easycrypt,
     "| SMT solver(s) |": ("Alt-Ergo " + altergo) if altergo else "",
     "| OCaml switch |": ocaml,
-    "| Machine of the 150 s |": mach,
+    "| Machine of the published runs |": mach,
     "| Measured run time of `nipok-e2e.pv` |": runtime,
 }
 
